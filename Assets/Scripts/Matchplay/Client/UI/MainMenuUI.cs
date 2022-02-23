@@ -16,9 +16,9 @@ namespace Samples.UI
         Button m_CompetetiveButton;
         Button m_PlayButton;
 
-        DropdownField m_queueDropDown;
-        VisualElement m_gameSettings;
-        VisualElement m_ipPortGroup;
+        DropdownField m_QueueDropDown;
+        VisualElement m_GameSettings;
+        VisualElement m_IPPortGroup;
 
         Toggle m_StaringMode;
         Toggle m_MeditationMode;
@@ -44,12 +44,12 @@ namespace Samples.UI
             m_LocalButton = root.Q<Button>("local_button");
             m_LocalButton.clicked += LocalbuttonPressed;
 
-            m_queueDropDown = root.Q<DropdownField>("queue_drop_down");
-            m_queueDropDown.choices = new List<string>(typeof(GameQueue).GetEnumNames());
-            m_queueDropDown.RegisterValueChangedCallback(QueueDropDownChanged);
+            m_QueueDropDown = root.Q<DropdownField>("queue_drop_down");
+            m_QueueDropDown.choices = new List<string>(typeof(GameQueue).GetEnumNames());
+            m_QueueDropDown.RegisterValueChangedCallback(QueueDropDownChanged);
 
-            m_gameSettings = root.Q<VisualElement>("game_settings");
-            m_ipPortGroup = root.Q<VisualElement>("ip_port_group");
+            m_GameSettings = root.Q<VisualElement>("game_settings");
+            m_IPPortGroup = root.Q<VisualElement>("ip_port_group");
 
             m_MeditationMode = root.Q<Toggle>("meditation_toggle");
             m_MeditationMode.RegisterValueChangedCallback(MeditationChanged);
@@ -77,7 +77,7 @@ namespace Samples.UI
 
         void OnDestroy()
         {
-            m_queueDropDown.UnregisterValueChangedCallback(QueueDropDownChanged);
+            m_QueueDropDown.UnregisterValueChangedCallback(QueueDropDownChanged);
             m_MeditationMode.UnregisterValueChangedCallback(MeditationChanged);
             m_StaringMode.UnregisterValueChangedCallback(StaringChanged);
             m_SpaceMap.UnregisterValueChangedCallback(SpaceSelection);
@@ -88,19 +88,19 @@ namespace Samples.UI
 
         void MatchmakerPressed()
         {
-            m_queueDropDown.SetEnabled(true);
-            m_ipPortGroup.SetEnabled(false);
+            m_QueueDropDown.SetEnabled(true);
+            m_IPPortGroup.SetEnabled(false);
             if (m_GameManager.ClientGameQueue == GameQueue.Competetive)
-                m_gameSettings.SetEnabled(false);
+                m_GameSettings.SetEnabled(false);
             else
-                m_gameSettings.SetEnabled(true);
+                m_GameSettings.SetEnabled(true);
         }
 
         void LocalbuttonPressed()
         {
-            m_queueDropDown.SetEnabled(false);
-            m_ipPortGroup.SetEnabled(true);
-            m_gameSettings.SetEnabled(true);
+            m_QueueDropDown.SetEnabled(false);
+            m_IPPortGroup.SetEnabled(true);
+            m_GameSettings.SetEnabled(true);
         }
 
         void PlayButtonPressed()
@@ -119,11 +119,11 @@ namespace Samples.UI
             m_GameManager.ClientGameQueue = selectedQueue;
             if (selectedQueue == GameQueue.Competetive)
             {
-                m_gameSettings.SetEnabled(false);
+                m_GameSettings.SetEnabled(false);
             }
             else
             {
-                m_gameSettings.SetEnabled(true);
+                m_GameSettings.SetEnabled(true);
             }
         }
 

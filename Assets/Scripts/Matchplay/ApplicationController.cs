@@ -3,7 +3,6 @@ using Matchplay.Client;
 using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared.Infrastructure;
-using Samples.UI;
 using UnityEngine;
 
 namespace Matchplay.Shared
@@ -11,9 +10,8 @@ namespace Matchplay.Shared
     public class ApplicationController : MonoBehaviour
     {
         /// <summary>
-        /// Main
+        /// Main project launcher, launched in Awake() for builds, and via the EditorApplicationController in-editor
         /// </summary>
-        /// <param name="isServer"></param>
         public void LaunchInMode(bool isServer)
         {
             var scope = DIScope.RootScope;
@@ -32,7 +30,6 @@ namespace Matchplay.Shared
                 scope.BindAsSingle<MatchplayMatchmaker>();
                 scope.BindAsSingle<MatchplayClient>();
                 scope.BindAsSingle<ClientGameManager>();
-                scope.BindAsSingle<MainMenuUI>();
             }
 
             scope.FinalizeScopeConstruction();
