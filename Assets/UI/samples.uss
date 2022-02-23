@@ -1,0 +1,242 @@
+.title {
+    font-size: 72px;
+    flex-shrink: 1;
+    flex-grow: 1;
+    justify-content: space-between;
+    -unity-font-style: bold;
+    align-items: center;
+    color: rgb(255, 255, 255);
+    -unity-text-align: upper-center;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    opacity: 1;
+    border-bottom-color: rgb(255, 255, 255);
+    border-bottom-width: 2px;
+    width: 80%;
+    height: 25%;
+}
+
+.subtitle {
+    font-size: 24px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+}
+
+.menu {
+}
+
+.submenu {
+    color: rgb(255, 255, 255);
+    font-size: 22px;
+    flex-shrink: 0;
+    border-left-color: rgb(255, 255, 255);
+    border-right-color: rgb(255, 255, 255);
+    border-top-color: rgb(255, 255, 255);
+    border-bottom-color: rgb(255, 255, 255);
+    background-color: rgb(128, 128, 128);
+    -unity-text-align: upper-left;
+}
+
+.subMenuButton {
+    color: rgb(255, 255, 255);
+    font-size: 22px;
+    flex-shrink: 0;
+    justify-content: space-around;
+    background-color: rgb(102, 102, 102);
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 100%;
+    width: 50%;
+    flex-direction: column;
+    flex-grow: 0;
+}
+
+.subMenuButton:hover {
+    color: rgb(255, 255, 255);
+    font-size: 22px;
+    flex-shrink: 0;
+    justify-content: space-around;
+    background-color: rgb(153, 153, 153);
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 100%;
+    width: 50%;
+    flex-direction: column;
+    flex-grow: 0;
+}
+
+.subMenuButton:hover:active {
+    color: rgb(255, 255, 255);
+    font-size: 22px;
+    flex-shrink: 0;
+    justify-content: space-around;
+    background-color: rgb(77, 77, 77);
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 100%;
+    width: 50%;
+    flex-direction: column;
+    flex-grow: 0;
+}
+
+.subMenuButton:focus {
+    color: rgb(255, 255, 255);
+    font-size: 22px;
+    flex-shrink: 0;
+    justify-content: space-around;
+    background-color: rgb(128, 128, 128);
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 100%;
+    width: 50%;
+    flex-direction: column;
+    flex-grow: 0;
+}
+
+.playButton {
+    -unity-font-style: bold;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    -unity-text-outline-width: 0;
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-center;
+    letter-spacing: 5px;
+    word-spacing: 0;
+    text-shadow: 0 0 0 rgb(0, 0, 0);
+    background-color: rgb(73, 166, 82);
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-left-color: rgb(0, 0, 0);
+    border-right-color: rgb(0, 0, 0);
+    border-top-color: rgb(0, 0, 0);
+    border-bottom-color: rgb(0, 0, 0);
+    justify-content: center;
+}
+
+.playButton:hover:active {
+    -unity-font-style: bold;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-center;
+    letter-spacing: 15px;
+    word-spacing: 0;
+    background-color: rgb(164, 164, 164);
+    border-left-width: 7px;
+    border-right-width: 7px;
+    border-top-width: 7px;
+    border-bottom-width: 7px;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-left-color: rgb(214, 214, 214);
+    border-right-color: rgb(214, 214, 214);
+    border-top-color: rgb(214, 214, 214);
+    border-bottom-color: rgb(214, 214, 214);
+    justify-content: center;
+}
+
+.playButton:hover {
+    -unity-font-style: bold;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-center;
+    letter-spacing: 15px;
+    background-color: rgb(137, 137, 137);
+    border-left-width: 7px;
+    border-right-width: 7px;
+    border-top-width: 7px;
+    border-bottom-width: 7px;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-left-color: rgb(36, 36, 36);
+    border-right-color: rgb(36, 36, 36);
+    border-top-color: rgb(36, 36, 36);
+    border-bottom-color: rgb(36, 36, 36);
+    justify-content: center;
+}
+
+.hud {
+    -unity-font-style: normal;
+    color: rgba(255, 255, 255, 0.8);
+    align-items: flex-start;
+    flex-grow: 0;
+    background-color: rgba(31, 31, 31, 0.5);
+    border-left-color: rgba(255, 255, 255, 255);
+    border-right-color: rgba(255, 255, 255, 255);
+    border-top-color: rgba(255, 255, 255, 255);
+    border-bottom-color: rgba(255, 255, 255, 255);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    justify-content: flex-end;
+}
+
+.hudText {
+    font-size: 20px;
+    -unity-font-style: normal;
+    color: rgba(255, 255, 255, 0.7);
+    align-items: flex-start;
+    flex-grow: 0;
+    background-color: rgba(31, 31, 31, 0);
+}
+
+.hudSubText {
+    font-size: 18px;
+    -unity-font-style: normal;
+    color: rgba(255, 255, 255, 0.7);
+    align-items: flex-start;
+    flex-grow: 0;
+    background-color: rgba(31, 31, 31, 0.5);
+    -unity-text-outline-color: rgba(0, 0, 0, 0);
+}
+
+.textField > #unity-text-input {
+    background-color: rgba(64, 64, 64, 255);
+    font-size: 18px;
+    color: rgba(204, 204, 204, 255);
+    -unity-font-style: italic;
+    white-space: nowrap;
+}

@@ -1,0 +1,22 @@
+{
+    "name": "Matchplay.Client",
+    "rootNamespace": "",
+    "references": [
+        "GUID:8be14b633fa251d42809fdde6023632e",
+        "GUID:3bf5041814073ec4089849c425919d5a",
+        "GUID:3b8ed52f1b5c64994af4c4e0aa4b6c4b",
+        "GUID:1491147abca9d7d4bb7105af628b223e",
+        "GUID:fe25561d224ed4743af4c60938a59d0b",
+        "GUID:5540e30183c82e84b954c033c388e06c",
+        "GUID:f58f1954bf2a1be49af6016003b22699"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
