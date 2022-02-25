@@ -1,5 +1,5 @@
 {
-    "name": "Matchplay",
+    "name": "Matchplay.Core",
     "rootNamespace": "",
     "references": [
         "GUID:3610f37ab65aada488788e0eb2414159",

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Matchplay.Shared.Infrastructure;
+using Matchplay.Infrastructure;
 using UnityEngine;
 
 namespace Matchplay.Shared
@@ -21,24 +21,22 @@ namespace Matchplay.Shared
         const string k_PortCmd = "port";
         const string k_queryPortCmd = "queryPort";
 
-        bool m_WriteLogs = false;
-
         public static bool IsServerMode()
         {
             return SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null;
         }
 
-        public static string IP()
+        public string IP()
         {
             return PlayerPrefs.GetString(k_ipCmd);
         }
 
-        public static int Port()
+        public int Port()
         {
             return PlayerPrefs.GetInt(k_PortCmd);
         }
 
-        public static int QPort()
+        public int QPort()
         {
             return PlayerPrefs.GetInt(k_queryPortCmd);
         }
@@ -46,6 +44,9 @@ namespace Matchplay.Shared
         [Inject]
         public ApplicationData()
         {
+            SetIP("127.0.0.1");
+            SetPort("7777");
+            SetQueryPort("7787");
             m_CommandDictionary["-" + k_ipCmd] = SetIP;
             m_CommandDictionary["-" + k_PortCmd] = SetPort;
             m_CommandDictionary["-" + k_queryPortCmd] = SetQueryPort;

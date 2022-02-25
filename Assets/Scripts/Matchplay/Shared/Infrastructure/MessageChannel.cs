@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine.Assertions;
 
-namespace Matchplay.Shared.Infrastructure
+namespace Matchplay.Infrastructure
 {
     public interface IPublisher<T>
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Matchplay.Shared;
-using Matchplay.Shared.Infrastructure;
+using Matchplay.Infrastructure;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Services.Authentication;
@@ -27,6 +27,12 @@ namespace Matchplay.Client
         {
             m_Matchmaker = matchmaker;
             m_MatchplayClientNetPortal = matchplayClient;
+        }
+
+        public void BeginConnection(string ip, int port)
+        {
+            Debug.Log($"Starting Client @ {ip}:{port}");
+            m_MatchplayClientNetPortal.StartClient(ip, port);
         }
 
         public void Matchmake()
@@ -65,9 +71,12 @@ namespace Matchplay.Client
             SceneManager.LoadScene("mainMenu", LoadSceneMode.Single);
         }
 
-        /// <summary>
-        /// TODO call this to UX
-        /// </summary>
+        public void Dispose()
+        {
+            m_CancelMatchmaker.Cancel();
+            m_CancelMatchmaker.Dispose();
+        }
+
         async void MatchmakeAsync(CancellationToken cancellationToken)
         {
             var matchOptions = new MatchmakingOption
@@ -81,8 +90,7 @@ namespace Matchplay.Client
 
             if (matchmakingResult.result == MatchResult.Success)
             {
-                Debug.Log($"Starting Client @ {matchmakingResult.ip}:{matchmakingResult.port}");
-                m_MatchplayClientNetPortal.StartClient(matchmakingResult.ip, matchmakingResult.port);
+                BeginConnection(matchmakingResult.ip, matchmakingResult.port);
             }
             else
             {
@@ -90,10 +98,6 @@ namespace Matchplay.Client
             }
         }
 
-        public void Dispose()
-        {
-            m_CancelMatchmaker.Cancel();
-            m_CancelMatchmaker.Dispose();
-        }
+
     }
 }

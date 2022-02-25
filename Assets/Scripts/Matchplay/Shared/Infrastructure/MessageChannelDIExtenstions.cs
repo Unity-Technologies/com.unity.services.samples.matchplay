@@ -1,4 +1,4 @@
-namespace Matchplay.Shared.Infrastructure
+namespace Matchplay.Infrastructure
 {
     public static class MessageChannelDIExtenstions
     {

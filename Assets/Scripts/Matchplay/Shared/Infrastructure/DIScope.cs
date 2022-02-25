@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
-namespace Matchplay.Shared.Infrastructure
+namespace Matchplay.Infrastructure
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor)]
     public sealed class Inject : Attribute

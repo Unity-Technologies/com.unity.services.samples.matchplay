@@ -1,7 +1,7 @@
 using System;
 using Unity.Netcode;
 
-namespace Matchplay
+namespace Matchplay.Networking
 {
     public struct NetworkGuid : INetworkSerializable
     {

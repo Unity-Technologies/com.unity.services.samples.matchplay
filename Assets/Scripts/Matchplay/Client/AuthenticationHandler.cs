@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Matchplay.Shared.Infrastructure;
+using Matchplay.Infrastructure;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using UnityEngine;
@@ -10,8 +10,7 @@ namespace Matchplay.Client
     {
         bool m_SignedIn = false;
 
-        [Inject]
-        async void InjectAndAuth()
+        public async void BeginAuth()
         {
             await UnityServices.InitializeAsync();
             await SignInAnonymouslyAsync();

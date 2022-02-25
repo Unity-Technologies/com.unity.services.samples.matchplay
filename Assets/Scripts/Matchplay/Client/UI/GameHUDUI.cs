@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Label = UnityEngine.UIElements.Label;
 
-namespace Samples.UI
+namespace Matchplay.Client.UI
 {
     [RequireComponent(typeof(UIDocument))]
     public class GameHUDUI : MonoBehaviour

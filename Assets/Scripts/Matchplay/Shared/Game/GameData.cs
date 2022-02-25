@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -37,6 +38,17 @@ namespace Matchplay.Shared
             serializer.SerializeValue(ref CurrentGameMode);
             serializer.SerializeValue(ref CurrentGameQueue);
             serializer.SerializeValue(ref MaxPlayers);
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("GameInfo:");
+            sb.AppendLine($"- Map:        {CurrentMap}");
+            sb.AppendLine($"- GameMode:   {CurrentGameMode}");
+            sb.AppendLine($"- GameQueue:  {CurrentGameQueue}");
+            sb.AppendLine($"- MaxPlayers: {MaxPlayers}");
+            return sb.ToString();
         }
     }
 }

@@ -2,15 +2,24 @@ using System;
 using System.Collections.Generic;
 using Matchplay.Client;
 using Matchplay.Shared;
-using Matchplay.Shared.Infrastructure;
+using Matchplay.Infrastructure;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Samples.UI
+namespace Matchplay.Client.UI
 {
     [RequireComponent(typeof(UIDocument))]
     public class MainMenuUI : MonoBehaviour
     {
+        UIDocument m_Document;
+        [SerializeField]
+        ClientGameManager m_GameManager;
+        [SerializeField]
+        AuthenticationHandler m_AuthenticationHandler;
+        bool m_LocalLaunchMode;
+        string m_LocalIP;
+        string m_LocalPort;
         Button m_MatchmakerButton;
         Button m_LocalButton;
         Button m_CompetetiveButton;
@@ -25,11 +34,8 @@ namespace Samples.UI
         Toggle m_SpaceMap;
         Toggle m_LabMap;
 
-        UIDocument m_Document;
-        [SerializeField]
-        ClientGameManager m_GameManager;
-        [SerializeField]
-        AuthenticationHandler m_AuthenticationHandler;
+        TextField m_IPField;
+        TextField m_PortField;
 
         async void Start()
         {
@@ -63,6 +69,13 @@ namespace Samples.UI
             m_PlayButton = root.Q<Button>("play_button");
             m_PlayButton.clicked += PlayButtonPressed;
 
+            m_IPField = root.Q<TextField>("ipTextField");
+            m_PortField = root.Q<TextField>("portTextField");
+            m_LocalIP = m_IPField.value;
+            m_LocalPort = m_PortField.value;
+            m_IPField.RegisterValueChangedCallback(IPField);
+            m_PortField.RegisterValueChangedCallback(PortField);
+
             //Set the game manager casual gameMode defaults to whatever the UI starts with
             m_GameManager.SetGameModes(GameMode.Meditating, m_MeditationMode.value);
             m_GameManager.SetGameModes(GameMode.Staring, m_StaringMode.value);
@@ -88,6 +101,7 @@ namespace Samples.UI
 
         void MatchmakerPressed()
         {
+            m_LocalLaunchMode = false;
             m_QueueDropDown.SetEnabled(true);
             m_IPPortGroup.SetEnabled(false);
             if (m_GameManager.ClientGameQueue == GameQueue.Competetive)
@@ -98,6 +112,7 @@ namespace Samples.UI
 
         void LocalbuttonPressed()
         {
+            m_LocalLaunchMode = true;
             m_QueueDropDown.SetEnabled(false);
             m_IPPortGroup.SetEnabled(true);
             m_GameSettings.SetEnabled(true);
@@ -105,7 +120,15 @@ namespace Samples.UI
 
         void PlayButtonPressed()
         {
-            m_GameManager.Matchmake();
+            if (m_LocalLaunchMode)
+            {
+                if (int.TryParse(m_LocalPort, out var localIntPort))
+                    m_GameManager.BeginConnection(m_LocalIP, localIntPort);
+                else
+                    Debug.LogError("No valid port in Port Field");
+            }
+            else
+                m_GameManager.Matchmake();
         }
 
         #endregion
@@ -145,6 +168,16 @@ namespace Samples.UI
         void LabSelection(ChangeEvent<bool> changedTo)
         {
             m_GameManager.SetGameMaps(Map.Lab, changedTo.newValue);
+        }
+
+        void IPField(ChangeEvent<string> changedTo)
+        {
+            m_LocalIP = changedTo.newValue;
+        }
+
+        void PortField(ChangeEvent<string> changedTo)
+        {
+            m_LocalPort = changedTo.newValue;
         }
 
         #endregion

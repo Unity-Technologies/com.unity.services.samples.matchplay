@@ -4,10 +4,9 @@ using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Matchplay.Networking;
 using Matchplay.Shared;
-using Matchplay.Shared.Infrastructure;
-using Samples.Tools;
+using Matchplay.Infrastructure;
+using Matchplay.Tools;
 
 namespace Matchplay.Server
 {
@@ -27,10 +26,12 @@ namespace Matchplay.Server
 
         UnitySqp m_UnitySqp;
         MatchplayServer m_Server;
+        ApplicationData m_Data;
 
         [Inject]
-        void InjectDependencies(MatchplayServer server, UnitySqp sqpServer)
+        void InjectDependencies(MatchplayServer server, UnitySqp sqpServer, ApplicationData data)
         {
+            m_Data = data;
             m_UnitySqp = sqpServer;
             m_Server = server;
             m_Server.Init();
@@ -55,6 +56,10 @@ namespace Matchplay.Server
 
         public void BeginServer()
         {
+            NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+            m_ServerIP = m_Data.IP();
+            m_ServerPort = m_Data.Port();
+            m_QueryPort = m_Data.QPort();
             m_UnitySqp.StartSqp(m_ServerIP, m_ServerPort, m_QueryPort, m_defaultServerInfo);
             m_Server.StartServer(m_ServerIP, m_ServerPort);
         }
@@ -84,14 +89,7 @@ namespace Matchplay.Server
             return "";
         }
 
-        void Start()
-        {
-            NetworkManager.Singleton.OnServerStarted += OnServerStarted;
-            m_ServerIP = ApplicationData.IP();
-            m_ServerPort = ApplicationData.Port();
-            m_QueryPort = ApplicationData.QPort();
-        }
-
+        void Start() { }
 
         void OnServerStarted()
         {

@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2577709966034035763
 Transform:
   m_ObjectHideFlags: 0
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_PanelSettings: {fileID: 11400000, guid: f00d923a1a4181643b682ceb9728d824, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 9197481963319205126, guid: f1f4916599617384ca287985ba0fb046, type: 3}
-  m_SortingOrder: 0
+  m_SortingOrder: 1
 --- !u!114 &4067625207983384706
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-namespace Matchplay
+namespace Matchplay.Networking
 {
     public enum NetworkMessage
     {

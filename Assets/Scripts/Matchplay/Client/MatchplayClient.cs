@@ -3,7 +3,7 @@ using UnityEngine;
 using Unity.Netcode;
 using Matchplay.Networking;
 using Matchplay.Shared;
-using Matchplay.Shared.Infrastructure;
+using Matchplay.Infrastructure;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
@@ -46,21 +46,6 @@ namespace Matchplay.Client
             }
         }
 
-        void OnConnectFinished(ConnectStatus status)
-        {
-            //on success, there is nothing to do (the Netcode for GameObjects (Netcode) scene management system will take us to the next scene).
-            //on failure, we must raise an event so that the UI layer can display something.
-            Debug.Log("RecvConnectFinished Got status: " + status);
-
-            if (status != ConnectStatus.Success)
-            {
-                //this indicates a game level failure, rather than a network failure. See note in ServerGameNetPortal.
-                DisconnectReason.SetDisconnectReason(status);
-            }
-
-            ConnectFinished?.Invoke(status);
-        }
-
         /// <summary>
         /// Wraps the invocation of NetworkManager.BootClient, including our GUID as the payload.
         /// </summary>
@@ -80,7 +65,7 @@ namespace Matchplay.Client
             ConnectClient();
         }
 
-        private void ConnectClient()
+        void ConnectClient()
         {
             var payload = JsonUtility.ToJson(new ConnectionPayload
             {
@@ -105,13 +90,13 @@ namespace Matchplay.Client
             //TODO YAGNI Custom Disconnect messags?
         }
 
-        public void ReceiveServerToClientConnectResult_CustomMessage(ulong clientID, FastBufferReader reader)
+        void ReceiveServerToClientConnectResult_CustomMessage(ulong clientID, FastBufferReader reader)
         {
             reader.ReadValueSafe(out ConnectStatus status);
             OnConnectFinished(status);
         }
 
-        public void ReceiveServerToClientSetDisconnectReason_CustomMessage(ulong clientID, FastBufferReader reader)
+        void ReceiveServerToClientSetDisconnectReason_CustomMessage(ulong clientID, FastBufferReader reader)
         {
             reader.ReadValueSafe(out ConnectStatus status);
             OnDisconnectReasonReceived(status);
@@ -119,15 +104,32 @@ namespace Matchplay.Client
 
         public void RecieveMatchplayGameInfo_CustomMessage(ulong clientID, FastBufferReader reader)
         {
-            reader.ReadValueSafe(out MatchplayGameInfo status);
+            reader.ReadValueSafe(out MatchplayGameInfo gameInfo);
+            Debug.Log($"Got GameInfo from server. {gameInfo}");
+
         }
 
-        private void OnDisconnectReasonReceived(ConnectStatus status)
+        void OnConnectFinished(ConnectStatus status)
+        {
+            //on success, there is nothing to do (the Netcode for GameObjects (Netcode) scene management system will take us to the next scene).
+            //on failure, we must raise an event so that the UI layer can display something.
+            Debug.Log("RecvConnectFinished Got status: " + status);
+
+            if (status != ConnectStatus.Success)
+            {
+                //this indicates a game level failure, rather than a network failure. See note in ServerGameNetPortal.
+                DisconnectReason.SetDisconnectReason(status);
+            }
+
+            ConnectFinished?.Invoke(status);
+        }
+
+        void OnDisconnectReasonReceived(ConnectStatus status)
         {
             DisconnectReason.SetDisconnectReason(status);
         }
 
-        private void OnDisconnectOrTimeout(ulong clientID)
+        void OnDisconnectOrTimeout(ulong clientID)
         {
             // we could also check whether the disconnect was us or the host, but the "interesting" question is whether
             //following the disconnect, we're no longer a Connected Client, so we just explicitly check that scenario.
@@ -165,7 +167,6 @@ namespace Matchplay.Client
                 MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ConnectionResult);
                 MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.DisconnectionResult);
             }
-
         }
     }
 }

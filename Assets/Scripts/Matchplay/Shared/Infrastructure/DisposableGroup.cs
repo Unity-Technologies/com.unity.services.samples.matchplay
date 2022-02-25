@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Matchplay.Shared.Infrastructure
+namespace Matchplay.Infrastructure
 {
     public class DisposableGroup : IDisposable
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Matchplay.Networking;
 using Matchplay.Server;
 using Unity.Collections;
 using Unity.Netcode;
@@ -8,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using Matchplay.Shared;
 
-namespace Matchplay.Networking
+namespace Matchplay.Server
 {
     public class MatchplayServer : IDisposable
     {
@@ -28,34 +29,6 @@ namespace Matchplay.Networking
         /// Map to allow us to cheaply map from guid to player data.
         /// </summary>
         private Dictionary<ulong, string> m_ClientIdToGuid = new Dictionary<ulong, string>();
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="clientId"> guid of the client whose data is requested</param>
-        /// <returns>Player data struct matching the given ID</returns>
-        public PlayerData? GetPlayerData(ulong clientId)
-        {
-            //First see if we have a guid matching the clientID given.
-
-            if (m_ClientIdToGuid.TryGetValue(clientId, out string clientguid))
-            {
-                if (m_ClientData.TryGetValue(clientguid, out PlayerData data))
-                {
-                    return data;
-                }
-                else
-                {
-                    Debug.Log("No PlayerData of matching guid found");
-                }
-            }
-            else
-            {
-                Debug.Log("No client guid found mapped to the given client ID");
-            }
-
-            return null;
-        }
 
         /// <summary>
         /// Convenience method to get player name from player data
@@ -92,6 +65,30 @@ namespace Matchplay.Networking
             NetworkManager.Singleton.OnServerStarted += OnNetworkReady;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="clientId"> guid of the client whose data is requested</param>
+        /// <returns>Player data struct matching the given ID</returns>
+        PlayerData? GetPlayerData(ulong clientId)
+        {
+            //First see if we have a guid matching the clientID given.
+            Debug.Log($"Attempting to get player data for: {clientId}");
+            if (m_ClientIdToGuid.TryGetValue(clientId, out var clientguid))
+            {
+                if (m_ClientData.TryGetValue(clientguid, out var playerData))
+                    return playerData;
+
+                Debug.LogError($"No PlayerData of matching guid found: {clientguid}");
+            }
+            else
+            {
+                Debug.LogError($"No client guid found mapped to the given client ID: {clientId}");
+            }
+
+            return null;
+        }
+
         void OnNetworkReady()
         {
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
@@ -100,7 +97,11 @@ namespace Matchplay.Networking
 
         void OnClientConnected(ulong clientId)
         {
-            OnPlayerConnected.Invoke(GetPlayerData(clientId));
+            var player = GetPlayerData(clientId);
+            if (player != null)
+            {
+                OnPlayerConnected?.Invoke(player);
+            }
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ using UnityEngine;
 using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
 using Matchplay.Shared;
-using Matchplay.Shared.Infrastructure;
+using Matchplay.Infrastructure;
 
 namespace Matchplay.Client
 {

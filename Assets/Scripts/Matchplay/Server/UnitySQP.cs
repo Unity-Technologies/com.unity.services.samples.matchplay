@@ -4,7 +4,7 @@ using Unity.Netcode;
 using Unity.Ucg.Usqp;
 using UnityEngine;
 using Matchplay.Shared;
-using Matchplay.Shared.Infrastructure;
+using Matchplay.Infrastructure;
 
 namespace Matchplay.Server
 {
