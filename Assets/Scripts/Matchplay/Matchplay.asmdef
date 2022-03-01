@@ -1,10 +1,14 @@
 {
-    "name": "Matchplay.Core",
+    "name": "Matchplay",
     "rootNamespace": "",
     "references": [
-        "GUID:3610f37ab65aada488788e0eb2414159",
-        "GUID:dd89d299cfecade4fb7a6961be934e47",
-        "GUID:8be14b633fa251d42809fdde6023632e"
+        "GUID:1491147abca9d7d4bb7105af628b223e",
+        "GUID:3bf5041814073ec4089849c425919d5a",
+        "GUID:3da09aa1a8d115d47bc55d4df9b36420",
+        "GUID:fe25561d224ed4743af4c60938a59d0b",
+        "GUID:5540e30183c82e84b954c033c388e06c",
+        "GUID:f58f1954bf2a1be49af6016003b22699",
+        "GUID:894a6cc6ed5cd2645bb542978cbed6a9"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

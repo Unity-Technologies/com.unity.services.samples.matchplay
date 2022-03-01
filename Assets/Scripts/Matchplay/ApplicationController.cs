@@ -1,19 +1,20 @@
 using System;
 using Matchplay.Client;
-using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Infrastructure;
 using UnityEngine;
+using Unity.Netcode;
 
 namespace Matchplay.Shared
 {
     public class ApplicationController : MonoBehaviour
     {
-
         [SerializeField]
         UpdateRunner m_UpdateRunnerPrefab;
 
-        void Awake()
+        NetworkManager m_NetworkManagerInstance;
+
+        void Start()
         {
             DontDestroyOnLoad(gameObject);
 
@@ -28,7 +29,9 @@ namespace Matchplay.Shared
         /// </summary>
         public void LaunchInMode(bool isServer)
         {
+            m_NetworkManagerInstance = Instantiate(Resources.Load<NetworkManager>("NetworkManager"));
             var scope = DIScope.RootScope;
+            scope.BindInstanceAsSingle(m_NetworkManagerInstance);
             scope.BindAsSingle<ApplicationData>();
 
             if (isServer)

@@ -16,21 +16,23 @@ namespace Matchplay.Server
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
 
-        MatchplayGameInfo m_defaultServerInfo = new MatchplayGameInfo()
+        MatchplayGameInfo m_serverGameInfo = new MatchplayGameInfo()
         {
-            MaxPlayers = 10,
-            CurrentGameMode = GameMode.Staring,
-            CurrentMap = Map.Lab,
-            CurrentGameQueue = GameQueue.Casual
+            maxPlayers = 10,
+            gameMode = GameMode.Staring,
+            map = Map.Lab,
+            gameQueue = GameQueue.Casual
         };
 
         UnitySqp m_UnitySqp;
         MatchplayServer m_Server;
         ApplicationData m_Data;
+        NetworkManager m_NetworkManager;
 
         [Inject]
-        void InjectDependencies(MatchplayServer server, UnitySqp sqpServer, ApplicationData data)
+        void InjectDependencies(NetworkManager manager, MatchplayServer server, UnitySqp sqpServer, ApplicationData data)
         {
+            m_NetworkManager = manager;
             m_Data = data;
             m_UnitySqp = sqpServer;
             m_Server = server;
@@ -39,28 +41,29 @@ namespace Matchplay.Server
 
         public void SetGameMode(GameMode toGameMode)
         {
-            m_defaultServerInfo.CurrentGameMode = toGameMode;
+            m_serverGameInfo.gameMode = toGameMode;
         }
 
         public void ChangeMap(Map toMap)
         {
-            m_defaultServerInfo.CurrentMap = toMap;
-            var sceneString = ToScene(m_defaultServerInfo.CurrentMap);
+            m_serverGameInfo.map = toMap;
+            var sceneString = ToScene(m_serverGameInfo.map);
             if (string.IsNullOrEmpty(sceneString))
             {
                 Debug.LogError($"Cant Change map, no valid map selection in {toMap}.");
+                return;
             }
 
-            NetworkManager.Singleton.SceneManager.LoadScene(ToScene(m_defaultServerInfo.CurrentMap), LoadSceneMode.Single);
+            m_NetworkManager.SceneManager.LoadScene(ToScene(m_serverGameInfo.map), LoadSceneMode.Single);
         }
 
         public void BeginServer()
         {
-            NetworkManager.Singleton.OnServerStarted += OnServerStarted;
+            m_NetworkManager.OnServerStarted += OnServerStarted;
             m_ServerIP = m_Data.IP();
             m_ServerPort = m_Data.Port();
             m_QueryPort = m_Data.QPort();
-            m_UnitySqp.StartSqp(m_ServerIP, m_ServerPort, m_QueryPort, m_defaultServerInfo);
+            m_UnitySqp.StartSqp(m_ServerIP, m_ServerPort, m_QueryPort, m_serverGameInfo);
             m_Server.StartServer(m_ServerIP, m_ServerPort);
         }
 
@@ -89,8 +92,9 @@ namespace Matchplay.Server
             return "";
         }
 
-        void Start() { }
-
+        /// <summary>
+        /// Will assure clients connect and join the same map.
+        /// </summary>
         void OnServerStarted()
         {
             ChangeMap(Map.Lab);
@@ -98,9 +102,9 @@ namespace Matchplay.Server
 
         public void Dispose()
         {
-            if (NetworkManager.Singleton == null)
+            if (m_NetworkManager == null)
                 return;
-            NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
+            m_NetworkManager.OnServerStarted -= OnServerStarted;
         }
     }
 }

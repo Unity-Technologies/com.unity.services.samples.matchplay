@@ -13,11 +13,12 @@ namespace Matchplay.Server
         ServerInfo.Data m_SqpServerData;
         UsqpServer m_Server;
         UpdateRunner m_UpdateRunner;
+        NetworkManager m_NetworkManager;
 
         public void StartSqp(string ip, int port, int sqpPort, MatchplayGameInfo matchplayGameMode)
         {
-            NetworkManager.Singleton.OnClientConnectedCallback += OnPlayerCountChanged;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnPlayerCountChanged;
+            m_NetworkManager.OnClientConnectedCallback += OnPlayerCountChanged;
+            m_NetworkManager.OnClientDisconnectCallback += OnPlayerCountChanged;
 
             //m_NetworkManager.SceneManager.OnSceneEvent += OnSceneChanged;
 
@@ -25,9 +26,9 @@ namespace Matchplay.Server
             {
                 BuildId = "1",
                 CurrentPlayers = 0,
-                GameType = matchplayGameMode.CurrentGameMode.ToString(),
-                Map = matchplayGameMode.CurrentMap.ToString(),
-                MaxPlayers = (ushort)matchplayGameMode.MaxPlayers,
+                GameType = matchplayGameMode.gameMode.ToString(),
+                Map = matchplayGameMode.map.ToString(),
+                MaxPlayers = (ushort)matchplayGameMode.maxPlayers,
                 Port = (ushort)port,
                 ServerName = "Matchplay Server"
             };
@@ -43,9 +44,10 @@ namespace Matchplay.Server
         }
 
         [Inject]
-        void InjectDependencies(UpdateRunner updateRunner)
+        void InjectDependencies(NetworkManager manager, UpdateRunner updateRunner)
         {
             m_UpdateRunner = updateRunner;
+            m_NetworkManager = manager;
         }
 
         void Update(float deltaTime)
@@ -55,7 +57,7 @@ namespace Matchplay.Server
 
         void OnPlayerCountChanged(ulong clientId)
         {
-            m_SqpServerData.CurrentPlayers = (ushort)NetworkManager.Singleton.ConnectedClients.Count;
+            m_SqpServerData.CurrentPlayers = (ushort)m_NetworkManager.ConnectedClients.Count;
         }
 
         void OnSceneChanged(SceneEvent sceneEvent)
@@ -65,10 +67,10 @@ namespace Matchplay.Server
 
         public void Dispose()
         {
-            if (NetworkManager.Singleton == null)
+            if (m_NetworkManager == null)
                 return;
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnPlayerCountChanged;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnPlayerCountChanged;
+            m_NetworkManager.OnClientConnectedCallback -= OnPlayerCountChanged;
+            m_NetworkManager.OnClientDisconnectCallback -= OnPlayerCountChanged;
             m_UpdateRunner?.Unsubscribe(Update);
             m_Server?.Dispose();
         }

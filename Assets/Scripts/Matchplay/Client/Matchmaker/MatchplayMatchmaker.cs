@@ -24,9 +24,7 @@ namespace Matchplay.Client
     public class MatchmakingOption
     {
         public List<string> playerIds;
-        public Map mapSelection;
-        public GameMode gameModePreference;
-        public GameQueue matchmakingQueue;
+        public MatchplayGameInfo m_GameInfo;
     }
 
     public class MatchmakingResult
@@ -72,18 +70,17 @@ namespace Matchplay.Client
                                 case "Found":
                                     return ReturnMatchResult(MatchResult.Success, "", matchAssignment);
                                 case "Timeout":
-                                    return ReturnMatchResult(MatchResult.TicketRetrievalError, $"Ticket: {m_lastUsedTicket} Timed out.");
+                                    return ReturnMatchResult(MatchResult.MatchAssignmentError, $"Ticket: {m_lastUsedTicket} Timed out.");
                                 case "Failed":
-                                {
-                                    return ReturnMatchResult(MatchResult.TicketRetrievalError, $"Failed: - {matchAssignment.Message}");
-                                }
+                                    return ReturnMatchResult(MatchResult.MatchAssignmentError, $"Failed: {matchAssignment.Message}");
+
                                 default:
                                     Debug.Log($"Assignment Status: {matchAssignment.Status}");
                                     break;
                             }
                         }
 
-                        await Task.Delay(1000);
+                        await Task.Delay(1000, cancelToken);
                     }
                 }
                 catch (MatchmakerServiceException e)
@@ -95,8 +92,17 @@ namespace Matchplay.Client
             {
                 return ReturnMatchResult(MatchResult.TicketCreationError, e.ToString());
             }
-            return ReturnMatchResult(MatchResult.TicketCancellationError, "Ticket was cancelled.");
 
+            return ReturnMatchResult(MatchResult.TicketCancellationError, "Ticket was cancelled.");
+        }
+
+        public bool IsMatchmaking => m_IsMatchmaking;
+
+        [Inject]
+        void InjectDependencies(AuthenticationHandler authenticationHandler)
+        {
+            m_AuthenticationHandler = authenticationHandler;
+            SetProdEnvironment();
         }
 
         async void CancelMatchmaking()
@@ -130,8 +136,8 @@ namespace Matchplay.Client
                     };
                 }
 
-                // Enum.TryParse(checkTicket.QueueName, out Map selectedMap);
-                // GameMode selectedMode = (GameMode)checkTicket.Attributes.GetAs<Dictionary<string, object>>()["selectedGameMode"];
+                // Enum.TryParse(checkTicket.QueueName, out map selectedMap);
+                // gameMode selectedMode = (gameMode)checkTicket.Attributes.GetAs<Dictionary<string, object>>()["selectedGameMode"];
 
                 return new MatchmakingResult
                 {
@@ -143,21 +149,12 @@ namespace Matchplay.Client
                     // selectedGameMode = selectedMode
                 };
             }
-            else
-            {
-                return new MatchmakingResult
-                {
-                    result = resultErrorType,
-                    resultMessage = message
-                };
-            }
-        }
 
-        [Inject]
-        void InjectDependencies(AuthenticationHandler authenticationHandler)
-        {
-            m_AuthenticationHandler = authenticationHandler;
-            SetProdEnvironment();
+            return new MatchmakingResult
+            {
+                result = resultErrorType,
+                resultMessage = message
+            };
         }
 
         /// <summary>
@@ -183,11 +180,11 @@ namespace Matchplay.Client
 
             var customData = new Dictionary<string, object>
             {
-                { "gameModePreference", mmOption.gameModePreference },
-                { "mapPreference", mmOption.mapSelection }
+                { "gameModePreference", mmOption.m_GameInfo.gameMode },
+                { "mapPreference", mmOption.m_GameInfo.map }
             };
 
-            var queueName = QueueModeToName(mmOption.matchmakingQueue);
+            var queueName = QueueModeToName(mmOption.m_GameInfo.gameQueue);
 
             return new CreateTicketOptions
             {

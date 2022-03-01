@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Matchplay.Infrastructure;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using UnityEngine;
@@ -8,46 +7,63 @@ namespace Matchplay.Client
 {
     public class AuthenticationHandler
     {
-        bool m_SignedIn = false;
+        int m_MaxRetries = 5;
 
-        public async void BeginAuth()
+        public async Task BeginAuth(int tries = 5)
         {
+            m_MaxRetries = tries;
             await UnityServices.InitializeAsync();
             await SignInAnonymouslyAsync();
         }
 
         public async Task Authenticating()
         {
-            while (!m_SignedIn)
+            while (!IsAuthenticated)
             {
-                await Task.Delay(500);
+                await Task.Delay(200);
             }
         }
 
+        public bool IsAuthenticated => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn;
+
         async Task SignInAnonymouslyAsync()
         {
-            try
+            var tries = 0;
+            while (!IsAuthenticated && tries < m_MaxRetries)
             {
-                //To ensure staging login vs nonstaging
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
-                Debug.Log("Sign in anonymously succeeded!");
+                try
+                {
+                    //To ensure staging login vs nonstaging
+                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                    if (IsAuthenticated)
+                    {
+                        break;
+                    }
+                }
+                catch (AuthenticationException ex)
+                {
+                    // Compare error code to AuthenticationErrorCodes
+                    // Notify the player with the proper error message
+                    Debug.LogException(ex);
+                }
+                catch (RequestFailedException exception)
+                {
+                    // Compare error code to CommonErrorCodes
+                    // Notify the player with the proper error message
+                    Debug.LogException(exception);
+                }
 
-                // Shows how to get the playerID
-                Debug.Log($"PlayerID: {AuthenticationService.Instance.PlayerId}");
-                m_SignedIn = true;
+                tries++;
+                await Task.Delay(1000);
             }
-            catch (AuthenticationException ex)
+
+            if (!IsAuthenticated)
             {
-                // Compare error code to AuthenticationErrorCodes
-                // Notify the player with the proper error message
-                Debug.LogException(ex);
+                Debug.LogError($"Player was not signed in successfully after {tries} attempts");
+                return;
             }
-            catch (RequestFailedException exception)
-            {
-                // Compare error code to CommonErrorCodes
-                // Notify the player with the proper error message
-                Debug.LogException(exception);
-            }
+
+            Debug.Log("Player signed in as player ID " + AuthenticationService.Instance.PlayerId);
         }
     }
 }

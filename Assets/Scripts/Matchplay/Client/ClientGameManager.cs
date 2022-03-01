@@ -12,13 +12,14 @@ namespace Matchplay.Client
 {
     public class ClientGameManager : IDisposable
     {
-        MatchmakingOption m_CasualMatchmakingOptions = new MatchmakingOption
+        MatchplayGameInfo m_GameOptions = new MatchplayGameInfo()
         {
-            gameModePreference = GameMode.Staring,
-            mapSelection = Map.Lab,
-            matchmakingQueue = GameQueue.Casual
+            gameMode = GameMode.Staring,
+            map = Map.Lab,
+            gameQueue = GameQueue.Casual,
+            maxPlayers = 10
         };
-        CancellationTokenSource m_CancelMatchmaker = new CancellationTokenSource();
+        CancellationTokenSource m_CancelMatchmaker;
         MatchplayClient m_MatchplayClientNetPortal;
         MatchplayMatchmaker m_Matchmaker;
 
@@ -37,33 +38,40 @@ namespace Matchplay.Client
 
         public void Matchmake()
         {
+            if (m_Matchmaker.IsMatchmaking)
+            {
+                Debug.LogWarning("Already matchmaking, please wait or cancel.");
+                return;
+            }
+
+            m_CancelMatchmaker = new CancellationTokenSource();
             MatchmakeAsync(m_CancelMatchmaker.Token);
         }
 
         public void SetGameModes(GameMode gameMode, bool added)
         {
             if (added) //Add Flag if True
-                m_CasualMatchmakingOptions.gameModePreference |= gameMode;
+                m_GameOptions.gameMode |= gameMode;
             else
             {
-                m_CasualMatchmakingOptions.gameModePreference &= ~gameMode;
+                m_GameOptions.gameMode &= ~gameMode;
             }
         }
 
         public void SetGameMaps(Map map, bool added)
         {
             if (added) //Add Flag if True
-                m_CasualMatchmakingOptions.mapSelection |= map;
+                m_GameOptions.map |= map;
             else
             {
-                m_CasualMatchmakingOptions.mapSelection &= ~map;
+                m_GameOptions.map &= ~map;
             }
         }
 
         public GameQueue ClientGameQueue
         {
-            get => m_CasualMatchmakingOptions.matchmakingQueue;
-            set => m_CasualMatchmakingOptions.matchmakingQueue = value;
+            get => m_GameOptions.gameQueue;
+            set => m_GameOptions.gameQueue = value;
         }
 
         public void ToMainMenu()
@@ -77,15 +85,14 @@ namespace Matchplay.Client
             m_CancelMatchmaker.Dispose();
         }
 
-        async void MatchmakeAsync(CancellationToken cancellationToken)
+        async Task MatchmakeAsync(CancellationToken cancellationToken)
         {
             var matchOptions = new MatchmakingOption
             {
-                mapSelection = Map.Lab,
-                gameModePreference = GameMode.Staring,
+                m_GameInfo = m_GameOptions,
                 playerIds = new List<string> { AuthenticationService.Instance.PlayerId }
             };
-
+            Debug.Log($"Beginning Matchmaking with {m_GameOptions}");
             var matchmakingResult = await m_Matchmaker.Matchmake(matchOptions, cancellationToken);
 
             if (matchmakingResult.result == MatchResult.Success)
@@ -97,7 +104,5 @@ namespace Matchplay.Client
                 Debug.LogWarning($"Matchmaking Failed {matchmakingResult.result} : {matchmakingResult.resultMessage}");
             }
         }
-
-
     }
 }

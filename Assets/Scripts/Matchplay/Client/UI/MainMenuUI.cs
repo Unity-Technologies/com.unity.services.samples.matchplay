@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Matchplay.Client;
 using Matchplay.Shared;
 using Matchplay.Infrastructure;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -81,6 +79,8 @@ namespace Matchplay.Client.UI
             m_GameManager.SetGameModes(GameMode.Staring, m_StaringMode.value);
             m_GameManager.SetGameMaps(Map.Space, m_SpaceMap.value);
             m_GameManager.SetGameMaps(Map.Lab, m_LabMap.value);
+
+            MatchmakerPressed();
 
             //We can't matchmake until the auth is set up.
             m_PlayButton.SetEnabled(false);
