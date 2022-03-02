@@ -7,7 +7,6 @@ using Matchplay.Infrastructure;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
-
 {
     public class MatchplayClient : IDisposable
     {
@@ -29,20 +28,17 @@ namespace Matchplay.Client
         /// </summary>
         public event Action NetworkTimedOut;
 
-        public MatchplayClient()
-        {
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnDisconnectOrTimeout;
-        }
+        NetworkManager m_NetworkManager;
 
         /// <summary>
         /// Invoked when the user has requested a disconnect via the UI, e.g. when hitting "Return to Main Menu" in the post-game scene.
         /// </summary>
         public void OnUserDisconnectRequest()
         {
-            if (NetworkManager.Singleton.IsClient)
+            if (m_NetworkManager.IsClient)
             {
                 DisconnectReason.SetDisconnectReason(ConnectStatus.UserRequestedDisconnect);
-                NetworkManager.Singleton.DisconnectClient(NetworkManager.Singleton.LocalClientId);
+                m_NetworkManager.DisconnectClient(NetworkManager.Singleton.LocalClientId);
             }
         }
 
@@ -58,11 +54,17 @@ namespace Matchplay.Client
         /// <param name="port">The port of the host to connect to. </param>
         public void StartClient(string ipaddress, int port)
         {
-            var unityTransport = NetworkManager.Singleton.gameObject.GetComponent<UnityTransport>();
+            var unityTransport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
 
             unityTransport.SetConnectionData(ipaddress, (ushort)port);
 
             ConnectClient();
+        }
+
+        public MatchplayClient()
+        {
+            m_NetworkManager = NetworkManager.Singleton;
+            m_NetworkManager.OnClientDisconnectCallback += OnDisconnectOrTimeout;
         }
 
         void ConnectClient()
@@ -75,13 +77,13 @@ namespace Matchplay.Client
 
             var payloadBytes = System.Text.Encoding.UTF8.GetBytes(payload);
 
-            NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes;
-            NetworkManager.Singleton.NetworkConfig.ClientConnectionBufferTimeout = k_TimeoutDuration;
+            m_NetworkManager.NetworkConfig.ConnectionData = payloadBytes;
+            m_NetworkManager.NetworkConfig.ClientConnectionBufferTimeout = k_TimeoutDuration;
 
             //and...we're off! Netcode will establish a socket connection to the host.
             //  If the socket connection fails, we'll hear back by getting an OnClientDisconnect callback for ourselves and get a message telling us the reason
             //  If the socket connection succeeds, we'll get our RecvConnectFinished invoked. This is where game-layer failures will be reported.
-            NetworkManager.Singleton.StartClient();
+            m_NetworkManager.StartClient();
 
             // should only do this once BootClient has been called (start client will initialize CustomMessagingManager
             MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ConnectionResult, ReceiveServerToClientConnectResult_CustomMessage);
@@ -106,7 +108,6 @@ namespace Matchplay.Client
         {
             reader.ReadValueSafe(out MatchplayGameInfo gameInfo);
             Debug.Log($"Got GameInfo from server. {gameInfo}");
-
         }
 
         void OnConnectFinished(ConnectStatus status)
@@ -141,7 +142,7 @@ namespace Matchplay.Client
                 {
                     // we're not at the main menu, so we obviously had a connection before... thus, we aren't in a timeout scenario.
                     // Just shut down networking and switch back to main menu.
-                    NetworkManager.Singleton.Shutdown();
+                    m_NetworkManager.Shutdown();
                     if (!DisconnectReason.HasTransitionReason)
                     {
                         //disconnect that happened for some other reason than user UI interaction--should display a message.
@@ -160,9 +161,9 @@ namespace Matchplay.Client
 
         public void Dispose()
         {
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.CustomMessagingManager != null)
+            if (NetworkManager.Singleton != null && m_NetworkManager.CustomMessagingManager != null)
             {
-                NetworkManager.Singleton.OnClientDisconnectCallback -= OnDisconnectOrTimeout;
+                m_NetworkManager.OnClientDisconnectCallback -= OnDisconnectOrTimeout;
 
                 MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ConnectionResult);
                 MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.DisconnectionResult);

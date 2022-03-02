@@ -1,0 +1,23 @@
+{
+    "name": "Matchplay.RuntimeTests",
+    "rootNamespace": "",
+    "references": [
+        "UnityEngine.TestRunner",
+        "Unity.Netcode.Runtime",
+        "Matchplay",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Matchplay.Infrastructure;
 using Matchplay.Networking;
 using Matchplay.Server;
 using Unity.Collections;
@@ -13,22 +14,33 @@ namespace Matchplay.Server
 {
     public class MatchplayServer : IDisposable
     {
-        public NetworkVariable<MatchplayGameInfo> MatchInfo;
         public UnityEvent<PlayerData?> OnPlayerConnected;
         public UnityEvent<PlayerData?> OnPlayerDisconnected;
+
+        NetworkManager m_NetworkManager;
 
         // used in ApprovalCheck. This is intended as a bit of light protection against DOS attacks that rely on sending silly big buffers of garbage.
         private const int k_MaxConnectPayload = 1024;
 
         /// <summary>
-        /// Map a given client guid to the data for a given client player.
+        /// map a given client guid to the data for a given client player.
         /// </summary>
         private Dictionary<string, PlayerData> m_ClientData = new Dictionary<string, PlayerData>();
 
         /// <summary>
-        /// Map to allow us to cheaply map from guid to player data.
+        /// map to allow us to cheaply map from guid to player data.
         /// </summary>
         private Dictionary<ulong, string> m_ClientIdToGuid = new Dictionary<ulong, string>();
+
+        public MatchplayServer()
+        {
+            m_NetworkManager = NetworkManager.Singleton;
+
+            // we add ApprovalCheck callback BEFORE OnNetworkSpawn to avoid spurious Netcode for GameObjects (Netcode)
+            // warning: "No ConnectionApproval callback defined. Connection approval will timeout"
+            m_NetworkManager.ConnectionApprovalCallback += ApprovalCheck;
+            m_NetworkManager.OnServerStarted += OnNetworkReady;
+        }
 
         /// <summary>
         /// Convenience method to get player name from player data
@@ -42,10 +54,10 @@ namespace Matchplay.Server
 
         public void StartServer(string ip, int port)
         {
-            var unityTransport = NetworkManager.Singleton.gameObject.GetComponent<UnityTransport>();
-            NetworkManager.Singleton.NetworkConfig.NetworkTransport = unityTransport;
+            var unityTransport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
+            m_NetworkManager.NetworkConfig.NetworkTransport = unityTransport;
             unityTransport.SetConnectionData(ip, (ushort)port);
-            NetworkManager.Singleton.StartServer();
+            m_NetworkManager.StartServer();
         }
 
         /// <summary>
@@ -57,12 +69,10 @@ namespace Matchplay.Server
             Clear();
         }
 
-        public void Init()
+        void OnNetworkReady()
         {
-            // we add ApprovalCheck callback BEFORE OnNetworkSpawn to avoid spurious Netcode for GameObjects (Netcode)
-            // warning: "No ConnectionApproval callback defined. Connection approval will timeout"
-            NetworkManager.Singleton.ConnectionApprovalCallback += ApprovalCheck;
-            NetworkManager.Singleton.OnServerStarted += OnNetworkReady;
+            m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
+            m_NetworkManager.OnClientConnectedCallback += OnClientConnected;
         }
 
         /// <summary>
@@ -87,12 +97,6 @@ namespace Matchplay.Server
             }
 
             return null;
-        }
-
-        void OnNetworkReady()
-        {
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
-            NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         }
 
         void OnClientConnected(ulong clientId)
@@ -196,7 +200,7 @@ namespace Matchplay.Server
         private async void WaitToDisconnect(ulong clientId)
         {
             await Task.Delay(500);
-            NetworkManager.Singleton.DisconnectClient(clientId);
+            m_NetworkManager.DisconnectClient(clientId);
         }
 
         /// <summary>
@@ -229,19 +233,19 @@ namespace Matchplay.Server
         void AssignPlayerName(ulong clientId, string playerName)
         {
             // get this client's player NetworkObject
-            var networkObject = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(clientId);
+            var networkObject = m_NetworkManager.SpawnManager.GetPlayerNetworkObject(clientId);
 
             networkObject.GetComponent<Matchplayer>().SetName_ServerRpc(playerName);
         }
 
         public void Dispose()
         {
-            if (NetworkManager.Singleton == null)
+            if (m_NetworkManager == null)
                 return;
-            NetworkManager.Singleton.ConnectionApprovalCallback -= ApprovalCheck;
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
-            NetworkManager.Singleton.OnServerStarted -= OnNetworkReady;
+            m_NetworkManager.ConnectionApprovalCallback -= ApprovalCheck;
+            m_NetworkManager.OnClientConnectedCallback -= OnClientConnected;
+            m_NetworkManager.OnClientDisconnectCallback -= OnClientDisconnect;
+            m_NetworkManager.OnServerStarted -= OnNetworkReady;
         }
     }
 }

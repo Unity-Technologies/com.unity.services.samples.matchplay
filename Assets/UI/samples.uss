@@ -146,6 +146,7 @@
     border-top-color: rgb(0, 0, 0);
     border-bottom-color: rgb(0, 0, 0);
     justify-content: center;
+    display: flex;
 }
 
 .playButton:hover:active {
@@ -193,16 +194,42 @@
     justify-content: center;
 }
 
+.playButton :inactive {
+    -unity-font-style: bold;
+    -unity-text-outline-color: rgb(0, 0, 0);
+    -unity-text-outline-width: 0;
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-center;
+    letter-spacing: 5px;
+    word-spacing: 0;
+    text-shadow: 0 0 0 rgb(0, 0, 0);
+    background-color: rgb(76, 99, 76);
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-left-color: rgb(0, 0, 0);
+    border-right-color: rgb(0, 0, 0);
+    border-top-color: rgb(0, 0, 0);
+    border-bottom-color: rgb(0, 0, 0);
+    justify-content: center;
+    opacity: 0.5;
+}
+
 .hud {
     -unity-font-style: normal;
     color: rgba(255, 255, 255, 0.8);
     align-items: flex-start;
     flex-grow: 0;
     background-color: rgba(31, 31, 31, 0.5);
-    border-left-color: rgba(255, 255, 255, 255);
-    border-right-color: rgba(255, 255, 255, 255);
-    border-top-color: rgba(255, 255, 255, 255);
-    border-bottom-color: rgba(255, 255, 255, 255);
+    border-left-color: rgb(255, 255, 255);
+    border-right-color: rgb(255, 255, 255);
+    border-top-color: rgb(255, 255, 255);
+    border-bottom-color: rgb(255, 255, 255);
     border-left-width: 2px;
     border-right-width: 2px;
     border-top-width: 2px;
@@ -234,9 +261,9 @@
 }
 
 .textField > #unity-text-input {
-    background-color: rgba(64, 64, 64, 255);
+    background-color: rgb(64, 64, 64);
     font-size: 18px;
-    color: rgba(204, 204, 204, 255);
+    color: rgb(204, 204, 204);
     -unity-font-style: italic;
     white-space: nowrap;
 }

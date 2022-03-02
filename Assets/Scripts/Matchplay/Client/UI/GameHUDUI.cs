@@ -19,9 +19,9 @@ namespace Matchplay.Client.UI
 
         void OnGameInfoUpdated(MatchplayGameInfo oldValue, MatchplayGameInfo newValue)
         {
-            m_GameModeValue.text = newValue.CurrentGameMode.ToString();
-            m_QueueValue.text = newValue.CurrentGameQueue.ToString();
-            m_MapValue.text = newValue.CurrentMap.ToString();
+            m_GameModeValue.text = newValue.gameMode.ToString();
+            m_QueueValue.text = newValue.gameQueue.ToString();
+            m_MapValue.text = newValue.map.ToString();
         }
 
         void AddPlayerLabel(PlayerData? playerId)

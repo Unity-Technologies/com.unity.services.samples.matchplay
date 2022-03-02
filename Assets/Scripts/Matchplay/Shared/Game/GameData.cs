@@ -27,27 +27,27 @@ namespace Matchplay.Shared
 
     public struct MatchplayGameInfo : INetworkSerializable
     {
-        public Map CurrentMap;
-        public GameMode CurrentGameMode;
-        public GameQueue CurrentGameQueue;
-        public int MaxPlayers;
+        public Map map;
+        public GameMode gameMode;
+        public GameQueue gameQueue;
+        public int maxPlayers;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            serializer.SerializeValue(ref CurrentMap);
-            serializer.SerializeValue(ref CurrentGameMode);
-            serializer.SerializeValue(ref CurrentGameQueue);
-            serializer.SerializeValue(ref MaxPlayers);
+            serializer.SerializeValue(ref map);
+            serializer.SerializeValue(ref gameMode);
+            serializer.SerializeValue(ref gameQueue);
+            serializer.SerializeValue(ref maxPlayers);
         }
 
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("GameInfo:");
-            sb.AppendLine($"- Map:        {CurrentMap}");
-            sb.AppendLine($"- GameMode:   {CurrentGameMode}");
-            sb.AppendLine($"- GameQueue:  {CurrentGameQueue}");
-            sb.AppendLine($"- MaxPlayers: {MaxPlayers}");
+            sb.AppendLine($"- map:        {map}");
+            sb.AppendLine($"- gameMode:   {gameMode}");
+            sb.AppendLine($"- GameQueue:  {gameQueue}");
+            sb.AppendLine($"- maxPlayers: {maxPlayers}");
             return sb.ToString();
         }
     }

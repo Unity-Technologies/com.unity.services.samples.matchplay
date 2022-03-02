@@ -10,58 +10,76 @@ using Matchplay.Tools;
 
 namespace Matchplay.Server
 {
-    public class ServerGameManager : IDisposable
+    public class ServerGameManager : MonoBehaviour
     {
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
 
-        MatchplayGameInfo m_defaultServerInfo = new MatchplayGameInfo()
+        MatchplayGameInfo m_serverGameInfo = new MatchplayGameInfo
         {
-            MaxPlayers = 10,
-            CurrentGameMode = GameMode.Staring,
-            CurrentMap = Map.Lab,
-            CurrentGameQueue = GameQueue.Casual
+            maxPlayers = 10,
+            gameMode = GameMode.Staring,
+            map = Map.Lab,
+            gameQueue = GameQueue.Casual
         };
 
         UnitySqp m_UnitySqp;
         MatchplayServer m_Server;
-        ApplicationData m_Data;
+        NetworkManager m_NetworkManager;
 
-        [Inject]
-        void InjectDependencies(MatchplayServer server, UnitySqp sqpServer, ApplicationData data)
+        public static ServerGameManager Singleton
         {
-            m_Data = data;
-            m_UnitySqp = sqpServer;
-            m_Server = server;
-            m_Server.Init();
+            get
+            {
+                if (s_ServerGameManager != null) return s_ServerGameManager;
+                s_ServerGameManager = FindObjectOfType<ServerGameManager>();
+                if (s_ServerGameManager == null)
+                {
+                    Debug.LogError("No ClientGameManager in scene, did you run this from the bootStrap scene?");
+                    return null;
+                }
+
+                return s_ServerGameManager;
+            }
         }
+
+        static ServerGameManager s_ServerGameManager;
 
         public void SetGameMode(GameMode toGameMode)
         {
-            m_defaultServerInfo.CurrentGameMode = toGameMode;
+            m_serverGameInfo.gameMode = toGameMode;
         }
 
         public void ChangeMap(Map toMap)
         {
-            m_defaultServerInfo.CurrentMap = toMap;
-            var sceneString = ToScene(m_defaultServerInfo.CurrentMap);
+            m_serverGameInfo.map = toMap;
+            var sceneString = ToScene(m_serverGameInfo.map);
             if (string.IsNullOrEmpty(sceneString))
             {
                 Debug.LogError($"Cant Change map, no valid map selection in {toMap}.");
+                return;
             }
 
-            NetworkManager.Singleton.SceneManager.LoadScene(ToScene(m_defaultServerInfo.CurrentMap), LoadSceneMode.Single);
+            m_NetworkManager.SceneManager.LoadScene(ToScene(m_serverGameInfo.map), LoadSceneMode.Single);
         }
 
         public void BeginServer()
         {
-            NetworkManager.Singleton.OnServerStarted += OnServerStarted;
-            m_ServerIP = m_Data.IP();
-            m_ServerPort = m_Data.Port();
-            m_QueryPort = m_Data.QPort();
-            m_UnitySqp.StartSqp(m_ServerIP, m_ServerPort, m_QueryPort, m_defaultServerInfo);
+            m_NetworkManager.OnServerStarted += OnServerStarted;
+            m_ServerIP = ApplicationData.IP();
+            m_ServerPort = ApplicationData.Port();
+            m_QueryPort = ApplicationData.QPort();
+            m_UnitySqp.StartSqp(m_ServerIP, m_ServerPort, m_QueryPort, m_serverGameInfo);
             m_Server.StartServer(m_ServerIP, m_ServerPort);
+        }
+
+        void Start()
+        {
+            DontDestroyOnLoad(gameObject);
+            m_UnitySqp = new UnitySqp();
+            m_NetworkManager = NetworkManager.Singleton;
+            m_Server = new MatchplayServer();
         }
 
         /// <summary>
@@ -89,18 +107,21 @@ namespace Matchplay.Server
             return "";
         }
 
-        void Start() { }
-
+        /// <summary>
+        /// Will assure clients connect and join the same map.
+        /// </summary>
         void OnServerStarted()
         {
             ChangeMap(Map.Lab);
         }
 
-        public void Dispose()
+        public void OnDestroy()
         {
-            if (NetworkManager.Singleton == null)
+            m_UnitySqp.Dispose();
+            m_Server.Dispose();
+            if (m_NetworkManager == null)
                 return;
-            NetworkManager.Singleton.OnServerStarted -= OnServerStarted;
+            m_NetworkManager.OnServerStarted -= OnServerStarted;
         }
     }
 }

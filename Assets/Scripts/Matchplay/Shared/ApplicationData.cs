@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Matchplay.Infrastructure;
 using UnityEngine;
 
 namespace Matchplay.Shared
@@ -26,22 +25,21 @@ namespace Matchplay.Shared
             return SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null;
         }
 
-        public string IP()
+        public static string IP()
         {
             return PlayerPrefs.GetString(k_ipCmd);
         }
 
-        public int Port()
+        public static int Port()
         {
             return PlayerPrefs.GetInt(k_PortCmd);
         }
 
-        public int QPort()
+        public static int QPort()
         {
             return PlayerPrefs.GetInt(k_queryPortCmd);
         }
 
-        [Inject]
         public ApplicationData()
         {
             SetIP("127.0.0.1");

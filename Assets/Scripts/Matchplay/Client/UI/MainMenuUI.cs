@@ -1,33 +1,40 @@
 using System;
 using System.Collections.Generic;
-using Matchplay.Client;
 using Matchplay.Shared;
-using Matchplay.Infrastructure;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Matchplay.Client.UI
 {
+    enum MainMenuPlayState
+    {
+        Ready,
+        Playing,
+        Cancelling
+    }
+
     [RequireComponent(typeof(UIDocument))]
     public class MainMenuUI : MonoBehaviour
     {
         UIDocument m_Document;
         [SerializeField]
         ClientGameManager m_GameManager;
-        [SerializeField]
-        AuthenticationHandler m_AuthenticationHandler;
+        MainMenuPlayState m_PlayState = MainMenuPlayState.Ready;
+
         bool m_LocalLaunchMode;
         string m_LocalIP;
         string m_LocalPort;
         Button m_MatchmakerButton;
+        Button m_CancelButton;
         Button m_LocalButton;
         Button m_CompetetiveButton;
         Button m_PlayButton;
 
         DropdownField m_QueueDropDown;
+        VisualElement m_buttonGroup;
         VisualElement m_GameSettings;
         VisualElement m_IPPortGroup;
+        VisualElement m_QueueGroup;
 
         Toggle m_StaringMode;
         Toggle m_MeditationMode;
@@ -39,20 +46,24 @@ namespace Matchplay.Client.UI
 
         async void Start()
         {
-            m_GameManager = DIScope.RootScope.Resolve<ClientGameManager>();
-            m_AuthenticationHandler = DIScope.RootScope.Resolve<AuthenticationHandler>();
+            m_GameManager = ClientGameManager.Singleton;
             m_Document = GetComponent<UIDocument>();
             var root = m_Document.rootVisualElement;
+            m_buttonGroup = root.Q<VisualElement>("playButtonGroup");
 
             m_MatchmakerButton = root.Q<Button>("matchmaking_button");
-            m_MatchmakerButton.clicked += MatchmakerPressed;
+            m_MatchmakerButton.clicked += MatchmakerMode;
+            m_CancelButton = root.Q<Button>("cancel_button");
+            m_CancelButton.clicked += CancelButtonPressed;
 
             m_LocalButton = root.Q<Button>("local_button");
-            m_LocalButton.clicked += LocalbuttonPressed;
+            m_LocalButton.clicked += LocalGameMode;
 
             m_QueueDropDown = root.Q<DropdownField>("queue_drop_down");
             m_QueueDropDown.choices = new List<string>(typeof(GameQueue).GetEnumNames());
             m_QueueDropDown.RegisterValueChangedCallback(QueueDropDownChanged);
+
+            m_QueueGroup = root.Q<VisualElement>("QueueGroup");
 
             m_GameSettings = root.Q<VisualElement>("game_settings");
             m_IPPortGroup = root.Q<VisualElement>("ip_port_group");
@@ -82,10 +93,12 @@ namespace Matchplay.Client.UI
             m_GameManager.SetGameMaps(Map.Space, m_SpaceMap.value);
             m_GameManager.SetGameMaps(Map.Lab, m_LabMap.value);
 
-            //We can't matchmake until the auth is set up.
-            m_PlayButton.SetEnabled(false);
-            await m_AuthenticationHandler.Authenticating();
-            m_PlayButton.SetEnabled(true);
+            MatchmakerMode();
+
+            //We can't click play until the auth is set up.
+            m_buttonGroup.SetEnabled(false);
+            await AuthenticationHandler.Authenticating();
+            SetMenuState(MainMenuPlayState.Ready);
         }
 
         void OnDestroy()
@@ -99,23 +112,23 @@ namespace Matchplay.Client.UI
 
         #region buttonPresses
 
-        void MatchmakerPressed()
+        void MatchmakerMode()
         {
             m_LocalLaunchMode = false;
-            m_QueueDropDown.SetEnabled(true);
-            m_IPPortGroup.SetEnabled(false);
+            m_QueueGroup.contentContainer.style.display = DisplayStyle.Flex;
+            m_IPPortGroup.contentContainer.style.display = DisplayStyle.None;
             if (m_GameManager.ClientGameQueue == GameQueue.Competetive)
-                m_GameSettings.SetEnabled(false);
+                m_GameSettings.contentContainer.style.display = DisplayStyle.None;
             else
-                m_GameSettings.SetEnabled(true);
+                m_GameSettings.contentContainer.style.display = DisplayStyle.Flex;
         }
 
-        void LocalbuttonPressed()
+        void LocalGameMode()
         {
             m_LocalLaunchMode = true;
-            m_QueueDropDown.SetEnabled(false);
-            m_IPPortGroup.SetEnabled(true);
-            m_GameSettings.SetEnabled(true);
+            m_QueueGroup.contentContainer.style.display = DisplayStyle.None;
+            m_IPPortGroup.contentContainer.style.display = DisplayStyle.Flex;
+            m_GameSettings.contentContainer.style.display = DisplayStyle.Flex;
         }
 
         void PlayButtonPressed()
@@ -128,7 +141,42 @@ namespace Matchplay.Client.UI
                     Debug.LogError("No valid port in Port Field");
             }
             else
-                m_GameManager.Matchmake();
+                m_GameManager.Matchmake(OnMatchmade);
+
+            SetMenuState(MainMenuPlayState.Playing);
+        }
+
+        async void CancelButtonPressed()
+        {
+            SetMenuState(MainMenuPlayState.Cancelling);
+            await m_GameManager.CancelMatchmaking();
+            SetMenuState(MainMenuPlayState.Ready);
+        }
+
+        void OnMatchmade(MatchResult result)
+        {
+            SetMenuState(MainMenuPlayState.Ready);
+        }
+
+        void SetMenuState(MainMenuPlayState state)
+        {
+            switch (state)
+            {
+                case MainMenuPlayState.Ready:
+                    m_PlayButton.contentContainer.style.display = DisplayStyle.Flex;
+                    m_buttonGroup.contentContainer.SetEnabled(true);
+                    m_CancelButton.contentContainer.style.display = DisplayStyle.None;
+                    break;
+                case MainMenuPlayState.Playing:
+                    m_PlayButton.contentContainer.style.display = DisplayStyle.None;
+                    m_CancelButton.contentContainer.style.display = DisplayStyle.Flex;
+                    break;
+                case MainMenuPlayState.Cancelling:
+                    m_buttonGroup.contentContainer.SetEnabled(false);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(state), state, null);
+            }
         }
 
         #endregion
@@ -142,11 +190,11 @@ namespace Matchplay.Client.UI
             m_GameManager.ClientGameQueue = selectedQueue;
             if (selectedQueue == GameQueue.Competetive)
             {
-                m_GameSettings.SetEnabled(false);
+                m_GameSettings.contentContainer.SetEnabled(false);
             }
             else
             {
-                m_GameSettings.SetEnabled(true);
+                m_GameSettings.contentContainer.SetEnabled(true);
             }
         }
 
