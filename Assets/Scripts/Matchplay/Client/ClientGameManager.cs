@@ -3,31 +3,47 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Matchplay.Shared;
-using Matchplay.Infrastructure;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Services.Authentication;
 
 namespace Matchplay.Client
 {
-    public class ClientGameManager : IDisposable
+    public class ClientGameManager : MonoBehaviour
     {
-        MatchplayGameInfo m_GameOptions = new MatchplayGameInfo()
+        MatchplayGameInfo m_GameOptions = new MatchplayGameInfo
         {
             gameMode = GameMode.Staring,
             map = Map.Lab,
             gameQueue = GameQueue.Casual,
             maxPlayers = 10
         };
-        CancellationTokenSource m_CancelMatchmaker;
         MatchplayClient m_MatchplayClientNetPortal;
         MatchplayMatchmaker m_Matchmaker;
 
-        [Inject]
-        void InitClientScope(MatchplayClient matchplayClient, MatchplayMatchmaker matchmaker)
+        public static ClientGameManager Singleton
         {
-            m_Matchmaker = matchmaker;
-            m_MatchplayClientNetPortal = matchplayClient;
+            get
+            {
+                if (m_ClientGameManager != null) return m_ClientGameManager;
+                m_ClientGameManager = FindObjectOfType<ClientGameManager>();
+                if (m_ClientGameManager == null)
+                {
+                    Debug.LogError("No ClientGameManager in scene, did you run this from the bootStrap scene?");
+                    return null;
+                }
+
+                return m_ClientGameManager;
+            }
+        }
+
+        static ClientGameManager m_ClientGameManager;
+
+        void Start()
+        {
+            DontDestroyOnLoad(gameObject);
+            m_Matchmaker = new MatchplayMatchmaker();
+            m_MatchplayClientNetPortal = new MatchplayClient();
         }
 
         public void BeginConnection(string ip, int port)
@@ -36,7 +52,7 @@ namespace Matchplay.Client
             m_MatchplayClientNetPortal.StartClient(ip, port);
         }
 
-        public void Matchmake()
+        public async void Matchmake(Action<MatchResult> onMatchmakerResponse = null)
         {
             if (m_Matchmaker.IsMatchmaking)
             {
@@ -44,8 +60,13 @@ namespace Matchplay.Client
                 return;
             }
 
-            m_CancelMatchmaker = new CancellationTokenSource();
-            MatchmakeAsync(m_CancelMatchmaker.Token);
+            var matchResult = await MatchmakeAsync();
+            onMatchmakerResponse?.Invoke(matchResult);
+        }
+
+        public async Task CancelMatchmaking()
+        {
+            await m_Matchmaker.CancelMatchmaking();
         }
 
         public void SetGameModes(GameMode gameMode, bool added)
@@ -79,13 +100,13 @@ namespace Matchplay.Client
             SceneManager.LoadScene("mainMenu", LoadSceneMode.Single);
         }
 
-        public void Dispose()
+        public void OnDestroy()
         {
-            m_CancelMatchmaker.Cancel();
-            m_CancelMatchmaker.Dispose();
+            m_MatchplayClientNetPortal.Dispose();
+            m_Matchmaker.Dispose();
         }
 
-        async Task MatchmakeAsync(CancellationToken cancellationToken)
+        async Task<MatchResult> MatchmakeAsync()
         {
             var matchOptions = new MatchmakingOption
             {
@@ -93,7 +114,7 @@ namespace Matchplay.Client
                 playerIds = new List<string> { AuthenticationService.Instance.PlayerId }
             };
             Debug.Log($"Beginning Matchmaking with {m_GameOptions}");
-            var matchmakingResult = await m_Matchmaker.Matchmake(matchOptions, cancellationToken);
+            var matchmakingResult = await m_Matchmaker.Matchmake(matchOptions);
 
             if (matchmakingResult.result == MatchResult.Success)
             {
@@ -103,6 +124,8 @@ namespace Matchplay.Client
             {
                 Debug.LogWarning($"Matchmaking Failed {matchmakingResult.result} : {matchmakingResult.resultMessage}");
             }
+
+            return matchmakingResult.result;
         }
     }
 }

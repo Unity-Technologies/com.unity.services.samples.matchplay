@@ -43,11 +43,11 @@ namespace Matchplay.Server
             m_UpdateRunner?.Subscribe(Update, 0.5f);
         }
 
-        [Inject]
-        void InjectDependencies(NetworkManager manager, UpdateRunner updateRunner)
+
+        public UnitySqp ()
         {
-            m_UpdateRunner = updateRunner;
-            m_NetworkManager = manager;
+            m_UpdateRunner = UpdateRunner.Singleton;
+            m_NetworkManager = NetworkManager.Singleton;
         }
 
         void Update(float deltaTime)

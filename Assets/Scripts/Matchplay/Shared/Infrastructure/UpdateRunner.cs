@@ -11,6 +11,24 @@ namespace Matchplay.Infrastructure
     /// </summary>
     public class UpdateRunner : MonoBehaviour
     {
+        public static UpdateRunner Singleton
+        {
+            get
+            {
+                if (s_UpdateRunner != null) return s_UpdateRunner;
+                s_UpdateRunner = FindObjectOfType<UpdateRunner>();
+                if (s_UpdateRunner == null)
+                {
+                    Debug.LogError("No ClientGameManager in scene, did you run this from the bootStrap scene?");
+                    return null;
+                }
+
+                return s_UpdateRunner;
+            }
+        }
+
+        static UpdateRunner s_UpdateRunner;
+
         private class Subscriber
         {
             public Action<float> updateMethod;

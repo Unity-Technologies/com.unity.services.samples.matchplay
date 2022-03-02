@@ -10,13 +10,13 @@ using Matchplay.Tools;
 
 namespace Matchplay.Server
 {
-    public class ServerGameManager : IDisposable
+    public class ServerGameManager : MonoBehaviour
     {
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
 
-        MatchplayGameInfo m_serverGameInfo = new MatchplayGameInfo()
+        MatchplayGameInfo m_serverGameInfo = new MatchplayGameInfo
         {
             maxPlayers = 10,
             gameMode = GameMode.Staring,
@@ -26,18 +26,25 @@ namespace Matchplay.Server
 
         UnitySqp m_UnitySqp;
         MatchplayServer m_Server;
-        ApplicationData m_Data;
         NetworkManager m_NetworkManager;
 
-        [Inject]
-        void InjectDependencies(NetworkManager manager, MatchplayServer server, UnitySqp sqpServer, ApplicationData data)
+        public static ServerGameManager Singleton
         {
-            m_NetworkManager = manager;
-            m_Data = data;
-            m_UnitySqp = sqpServer;
-            m_Server = server;
-            m_Server.Init();
+            get
+            {
+                if (s_ServerGameManager != null) return s_ServerGameManager;
+                s_ServerGameManager = FindObjectOfType<ServerGameManager>();
+                if (s_ServerGameManager == null)
+                {
+                    Debug.LogError("No ClientGameManager in scene, did you run this from the bootStrap scene?");
+                    return null;
+                }
+
+                return s_ServerGameManager;
+            }
         }
+
+        static ServerGameManager s_ServerGameManager;
 
         public void SetGameMode(GameMode toGameMode)
         {
@@ -60,11 +67,19 @@ namespace Matchplay.Server
         public void BeginServer()
         {
             m_NetworkManager.OnServerStarted += OnServerStarted;
-            m_ServerIP = m_Data.IP();
-            m_ServerPort = m_Data.Port();
-            m_QueryPort = m_Data.QPort();
+            m_ServerIP = ApplicationData.IP();
+            m_ServerPort = ApplicationData.Port();
+            m_QueryPort = ApplicationData.QPort();
             m_UnitySqp.StartSqp(m_ServerIP, m_ServerPort, m_QueryPort, m_serverGameInfo);
             m_Server.StartServer(m_ServerIP, m_ServerPort);
+        }
+
+        void Start()
+        {
+            DontDestroyOnLoad(gameObject);
+            m_UnitySqp = new UnitySqp();
+            m_NetworkManager = NetworkManager.Singleton;
+            m_Server = new MatchplayServer();
         }
 
         /// <summary>
@@ -100,8 +115,10 @@ namespace Matchplay.Server
             ChangeMap(Map.Lab);
         }
 
-        public void Dispose()
+        public void OnDestroy()
         {
+            m_UnitySqp.Dispose();
+            m_Server.Dispose();
             if (m_NetworkManager == null)
                 return;
             m_NetworkManager.OnServerStarted -= OnServerStarted;

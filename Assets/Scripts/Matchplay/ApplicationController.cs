@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Matchplay.Client;
 using Matchplay.Server;
 using Matchplay.Infrastructure;
@@ -9,10 +10,17 @@ namespace Matchplay.Shared
 {
     public class ApplicationController : MonoBehaviour
     {
+        //Manager instances to be instantiated.
         [SerializeField]
-        UpdateRunner m_UpdateRunnerPrefab;
-
-        NetworkManager m_NetworkManagerInstance;
+        ServerGameManager m_serverPrefab;
+        [SerializeField]
+        ClientGameManager m_clientPrefab;
+        [SerializeField]
+        List<GameObject> m_sharedManagers = new List<GameObject>();
+        [SerializeField]
+        List<GameObject> m_serverManagers = new List<GameObject>();
+        [SerializeField]
+        List<GameObject> m_clientManagers = new List<GameObject>();
 
         void Start()
         {
@@ -29,45 +37,28 @@ namespace Matchplay.Shared
         /// </summary>
         public void LaunchInMode(bool isServer)
         {
-            m_NetworkManagerInstance = Instantiate(Resources.Load<NetworkManager>("NetworkManager"));
-            var scope = DIScope.RootScope;
-            scope.BindInstanceAsSingle(m_NetworkManagerInstance);
-            scope.BindAsSingle<ApplicationData>();
-
+            InstantiateManagers(m_sharedManagers);
             if (isServer)
             {
-                var updateInstance = Instantiate(m_UpdateRunnerPrefab);
-                DontDestroyOnLoad(updateInstance.gameObject);
-                scope.BindInstanceAsSingle(updateInstance);
-                scope.BindAsSingle<MatchplayServer>();
-                scope.BindAsSingle<UnitySqp>();
-                scope.BindAsSingle<ServerGameManager>();
+                InstantiateManagers(m_serverManagers);
+                var serverInstance = Instantiate(m_serverPrefab);
+                serverInstance.BeginServer();
             }
             else
             {
-                scope.BindAsSingle<AuthenticationHandler>();
-                scope.BindAsSingle<MatchplayMatchmaker>();
-                scope.BindAsSingle<MatchplayClient>();
-                scope.BindAsSingle<ClientGameManager>();
-            }
-
-            scope.FinalizeScopeConstruction();
-
-            if (isServer)
-            {
-                scope.Resolve<ServerGameManager>().BeginServer();
-            }
-            else
-            {
-                scope.Resolve<AuthenticationHandler>().BeginAuth();
-                scope.Resolve<ClientGameManager>().ToMainMenu();
+                InstantiateManagers(m_clientManagers);
+                AuthenticationHandler.Singleton.BeginAuth();
+                var clientInstance = Instantiate(m_clientPrefab);
+                clientInstance.ToMainMenu();
             }
         }
 
-        void OnDestroy()
+        void InstantiateManagers(List<GameObject> managers)
         {
-            //Will Call Dispose on all IDisposable in the rootscope.
-            DIScope.RootScope.Dispose();
+            foreach (var go in managers)
+            {
+                Instantiate(go);
+            }
         }
     }
 }

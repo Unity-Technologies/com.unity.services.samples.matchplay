@@ -5,18 +5,21 @@ using UnityEngine;
 
 namespace Matchplay.Client
 {
-    public class AuthenticationHandler
+    public class AuthenticationHandler : MonoBehaviour
     {
+        public static bool IsAuthenticated => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn;
         int m_MaxRetries = 5;
 
-        public async Task BeginAuth(int tries = 5)
+        public async void BeginAuth(int tries = 5)
         {
+            if (IsAuthenticated)
+                return;
             m_MaxRetries = tries;
             await UnityServices.InitializeAsync();
             await SignInAnonymouslyAsync();
         }
 
-        public async Task Authenticating()
+        public static async Task Authenticating()
         {
             while (!IsAuthenticated)
             {
@@ -24,7 +27,28 @@ namespace Matchplay.Client
             }
         }
 
-        public bool IsAuthenticated => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn;
+        public static AuthenticationHandler Singleton
+        {
+            get
+            {
+                if (s_AuthenticationHandler != null) return s_AuthenticationHandler;
+                s_AuthenticationHandler = FindObjectOfType<AuthenticationHandler>();
+                if (s_AuthenticationHandler == null)
+                {
+                    Debug.LogError("No AuthenticationHandler in scene, did you run this from the bootStrap scene?");
+                    return null;
+                }
+
+                return s_AuthenticationHandler;
+            }
+        }
+
+        static AuthenticationHandler s_AuthenticationHandler;
+
+        void Start()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
 
         async Task SignInAnonymouslyAsync()
         {

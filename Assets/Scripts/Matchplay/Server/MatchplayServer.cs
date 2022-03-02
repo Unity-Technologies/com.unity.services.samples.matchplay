@@ -14,7 +14,6 @@ namespace Matchplay.Server
 {
     public class MatchplayServer : IDisposable
     {
-        public NetworkVariable<MatchplayGameInfo> MatchInfo;
         public UnityEvent<PlayerData?> OnPlayerConnected;
         public UnityEvent<PlayerData?> OnPlayerDisconnected;
 
@@ -32,6 +31,16 @@ namespace Matchplay.Server
         /// map to allow us to cheaply map from guid to player data.
         /// </summary>
         private Dictionary<ulong, string> m_ClientIdToGuid = new Dictionary<ulong, string>();
+
+        public MatchplayServer()
+        {
+            m_NetworkManager = NetworkManager.Singleton;
+
+            // we add ApprovalCheck callback BEFORE OnNetworkSpawn to avoid spurious Netcode for GameObjects (Netcode)
+            // warning: "No ConnectionApproval callback defined. Connection approval will timeout"
+            m_NetworkManager.ConnectionApprovalCallback += ApprovalCheck;
+            m_NetworkManager.OnServerStarted += OnNetworkReady;
+        }
 
         /// <summary>
         /// Convenience method to get player name from player data
@@ -58,20 +67,6 @@ namespace Matchplay.Server
         public void OnUserDisconnectRequest()
         {
             Clear();
-        }
-
-        public void Init()
-        {
-            // we add ApprovalCheck callback BEFORE OnNetworkSpawn to avoid spurious Netcode for GameObjects (Netcode)
-            // warning: "No ConnectionApproval callback defined. Connection approval will timeout"
-            m_NetworkManager.ConnectionApprovalCallback += ApprovalCheck;
-            m_NetworkManager.OnServerStarted += OnNetworkReady;
-        }
-
-        [Inject]
-        void InjectNetwork(NetworkManager manager)
-        {
-            m_NetworkManager = manager;
         }
 
         void OnNetworkReady()

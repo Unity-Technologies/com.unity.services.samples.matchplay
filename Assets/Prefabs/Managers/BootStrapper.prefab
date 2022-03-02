@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &805244812784019364
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 805244812784019367}
+  - component: {fileID: 805244812784019366}
+  - component: {fileID: 805244812784019361}
+  m_Layer: 0
+  m_Name: BootStrapper
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &805244812784019367
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 805244812784019364}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &805244812784019366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 805244812784019364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17b4b8e111db8554390425c0c7a04367, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_serverPrefab: {fileID: 7148318723478363551, guid: 086dc5b4dd92f4e42a6af0934c2bbf0b, type: 3}
+  m_clientPrefab: {fileID: 2538532228289365691, guid: cf023b2898aba4648bce121a5fb8418d, type: 3}
+  m_sharedManagers:
+  - {fileID: 6052207803524585811, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
+  m_serverManagers:
+  - {fileID: 4356242913966855994, guid: a54a1ff90787fa54c925f8aa3372e48c, type: 3}
+  m_clientManagers:
+  - {fileID: 1425957770012601827, guid: a98445284d744f04196265a8e3497859, type: 3}
+--- !u!114 &805244812784019361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 805244812784019364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ec48f5019a1a9f4a9ae7ca2d44d6ce3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onServerStart:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 805244812784019366}
+        m_TargetAssemblyTypeName: Matchplay.Shared.ApplicationController, Matchplay
+        m_MethodName: LaunchInMode
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+  onClientStart:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 805244812784019366}
+        m_TargetAssemblyTypeName: Matchplay.Shared.ApplicationController, Matchplay
+        m_MethodName: LaunchInMode
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2

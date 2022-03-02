@@ -61,10 +61,9 @@ namespace Matchplay.Client
             ConnectClient();
         }
 
-        [Inject]
-        void InjectDependencies(NetworkManager manager)
+        public MatchplayClient()
         {
-            m_NetworkManager = manager;
+            m_NetworkManager = NetworkManager.Singleton;
             m_NetworkManager.OnClientDisconnectCallback += OnDisconnectOrTimeout;
         }
 
