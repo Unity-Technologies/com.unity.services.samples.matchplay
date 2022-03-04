@@ -45,6 +45,11 @@ namespace Matchplay.Infrastructure
 
         private List<Subscriber> m_subscribers = new List<Subscriber>();
 
+        void Start()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         public void OnDestroy()
         {
             m_subscribers.Clear(); // We should clean up references in case they would prevent garbage collection.
@@ -104,7 +109,7 @@ namespace Matchplay.Infrastructure
         /// <summary>
         /// Each frame, advance all subscribers. Any that have hit their periodSeconds should then act, though if they take too long they could be removed.
         /// </summary>
-        public void OnUpdate(float dt)
+        void OnUpdate(float dt)
         {
             for (var subscriberIndex = m_subscribers.Count - 1; subscriberIndex >= 0; subscriberIndex--) // Iterate in reverse in case we need to remove something.
             {

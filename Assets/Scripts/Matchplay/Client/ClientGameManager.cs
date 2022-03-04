@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Matchplay.Shared;
 using UnityEngine;
@@ -11,45 +10,46 @@ namespace Matchplay.Client
 {
     public class ClientGameManager : MonoBehaviour
     {
+        public MatchplayClient Client => m_MatchplayClient;
         MatchplayGameInfo m_GameOptions = new MatchplayGameInfo
         {
             gameMode = GameMode.Staring,
             map = Map.Lab,
-            gameQueue = GameQueue.Casual,
-            maxPlayers = 10
+            gameQueue = GameQueue.Casual
         };
-        MatchplayClient m_MatchplayClientNetPortal;
+        MatchplayClient m_MatchplayClient;
         MatchplayMatchmaker m_Matchmaker;
 
         public static ClientGameManager Singleton
         {
             get
             {
-                if (m_ClientGameManager != null) return m_ClientGameManager;
-                m_ClientGameManager = FindObjectOfType<ClientGameManager>();
-                if (m_ClientGameManager == null)
+                if (s_ClientGameManager != null) return s_ClientGameManager;
+                s_ClientGameManager = FindObjectOfType<ClientGameManager>();
+                if (s_ClientGameManager == null)
                 {
                     Debug.LogError("No ClientGameManager in scene, did you run this from the bootStrap scene?");
                     return null;
                 }
 
-                return m_ClientGameManager;
+                return s_ClientGameManager;
             }
         }
 
-        static ClientGameManager m_ClientGameManager;
+        static ClientGameManager s_ClientGameManager;
 
-        void Start()
+        public void Init()
         {
-            DontDestroyOnLoad(gameObject);
             m_Matchmaker = new MatchplayMatchmaker();
-            m_MatchplayClientNetPortal = new MatchplayClient();
+            m_MatchplayClient = new MatchplayClient();
+
         }
 
         public void BeginConnection(string ip, int port)
         {
-            Debug.Log($"Starting Client @ {ip}:{port}");
-            m_MatchplayClientNetPortal.StartClient(ip, port);
+            Debug.Log($"Starting Client @ {ip}:{port}\n - {m_GameOptions}");
+            m_MatchplayClient.SetClientOptions(m_GameOptions);
+            m_MatchplayClient.StartClient(ip, port);
         }
 
         public async void Matchmake(Action<MatchResult> onMatchmakerResponse = null)
@@ -102,8 +102,13 @@ namespace Matchplay.Client
 
         public void OnDestroy()
         {
-            m_MatchplayClientNetPortal.Dispose();
+            m_MatchplayClient.Dispose();
             m_Matchmaker.Dispose();
+        }
+
+        void Start()
+        {
+            DontDestroyOnLoad(gameObject);
         }
 
         async Task<MatchResult> MatchmakeAsync()

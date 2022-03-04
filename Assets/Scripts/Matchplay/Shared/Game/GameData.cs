@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using Unity.Netcode;
 using UnityEngine;
 
 namespace Matchplay.Shared
@@ -25,20 +24,12 @@ namespace Matchplay.Shared
         Competetive
     }
 
-    public struct MatchplayGameInfo : INetworkSerializable
+    [Serializable]
+    public class MatchplayGameInfo
     {
         public Map map;
         public GameMode gameMode;
         public GameQueue gameQueue;
-        public int maxPlayers;
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref map);
-            serializer.SerializeValue(ref gameMode);
-            serializer.SerializeValue(ref gameQueue);
-            serializer.SerializeValue(ref maxPlayers);
-        }
 
         public override string ToString()
         {
@@ -47,8 +38,12 @@ namespace Matchplay.Shared
             sb.AppendLine($"- map:        {map}");
             sb.AppendLine($"- gameMode:   {gameMode}");
             sb.AppendLine($"- GameQueue:  {gameQueue}");
-            sb.AppendLine($"- maxPlayers: {maxPlayers}");
             return sb.ToString();
         }
+    }
+
+    public class GameData
+    {
+
     }
 }

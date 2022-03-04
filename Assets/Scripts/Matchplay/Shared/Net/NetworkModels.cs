@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Matchplay.Shared;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Matchplay.Networking
 {
@@ -14,6 +16,7 @@ namespace Matchplay.Networking
         LoggedInAgain, //logged in on a separate client, causing this one to be kicked out.
         UserRequestedDisconnect, //Intentional Disconnect triggered by the user.
         GenericDisconnect, //server disconnected, but no specific reason given.
+        Timeout //Client timed out while connecting
     }
 
     [Serializable]
@@ -21,26 +24,26 @@ namespace Matchplay.Networking
     {
         public string clientGUID;
         public string playerName;
+        public MatchplayGameInfo clientMatchInfo;
     }
 
     /// <summary>
     /// Represents a single player on the game server
     /// </summary>
-    public struct PlayerData : INetworkSerializable
+    public struct UserData
     {
-        public string m_PlayerName; //name of the player
-        public ulong m_ClientID; //the identifying id of the client
+        public string playerName; //name of the player
+        public ulong clientId; //the identifying id of the client
+        public MatchplayGameInfo playerGameInfo;//The game info the player thought he was joining with
 
-        public PlayerData(string playerName, ulong clientId)
+        public UserData(string playerName, ulong clientId, MatchplayGameInfo gameInfo)
         {
-            m_PlayerName = playerName;
-            m_ClientID = clientId;
+            this.playerName = playerName;
+            this.clientId = clientId;
+            playerGameInfo = gameInfo;
+
         }
 
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref m_PlayerName);
-            serializer.SerializeValue(ref m_ClientID);
-        }
+
     }
 }

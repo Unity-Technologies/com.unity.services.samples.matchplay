@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace Matchplay.Server
 {
+    /// <summary>
+    /// Server Spawns and manages the networked game objects
+    /// </summary>
     public class SeatManager : NetworkBehaviour
     {
         [SerializeField]
@@ -13,30 +16,34 @@ namespace Matchplay.Server
         [SerializeField]
         Seat m_SeatGraphic;
 
-        Dictionary<ulong, Seat> m_CurrentSeats = new Dictionary<ulong, Seat>();
+        Dictionary<Matchplayer, Seat> m_CurrentSeats = new Dictionary<Matchplayer, Seat>();
 
         void Start()
         {
-            NetworkManager.Singleton.OnClientConnectedCallback += OnPlayerConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnPlayerDisconnected;
+            if (!IsServer)
+                return;
+            ServerGameManager.Singleton.Server.OnServerPlayerSpawned += JoinSeat;
+            ServerGameManager.Singleton.Server.OnServerPlayerDespawned += LeaveSeat;
         }
 
         public override void OnDestroy()
         {
             base.OnDestroy();
-            if (NetworkManager.Singleton == null)
+            if (!IsServer)
                 return;
-            NetworkManager.Singleton.OnClientConnectedCallback -= OnPlayerConnected;
-            NetworkManager.Singleton.OnClientDisconnectCallback -= OnPlayerDisconnected;
+            if (ServerGameManager.Singleton == null)
+                return;
+            ServerGameManager.Singleton.Server.OnServerPlayerSpawned -= JoinSeat;
+            ServerGameManager.Singleton.Server.OnServerPlayerDespawned -= LeaveSeat;
         }
 
-        void JoinSeat(Matchplayer player)
+        public void JoinSeat(Matchplayer player)
         {
             var seatInstance = Instantiate(m_SeatGraphic);
             seatInstance.GetComponent<NetworkObject>().Spawn();
             RearrangeSeats();
             seatInstance.SeatPlayer(player);
-            m_CurrentSeats[player.OwnerClientId] = seatInstance;
+            m_CurrentSeats[player] = seatInstance;
         }
 
         void RearrangeSeats()
@@ -52,18 +59,12 @@ namespace Matchplay.Server
             }
         }
 
-        void OnPlayerConnected(ulong playerId)
+        void LeaveSeat(Matchplayer player)
         {
-            var matchmakingPlayerPref = NetworkManager.Singleton.ConnectedClients[playerId].PlayerObject.GetComponent<Matchplayer>();
-            JoinSeat(matchmakingPlayerPref);
-        }
-
-        void OnPlayerDisconnected(ulong playerId)
-        {
-            if (m_CurrentSeats.ContainsKey(playerId))
+            if (m_CurrentSeats.ContainsKey(player))
             {
-                var playerSeat = m_CurrentSeats[playerId];
-                m_CurrentSeats.Remove(playerId);
+                var playerSeat = m_CurrentSeats[player];
+                m_CurrentSeats.Remove(player);
                 playerSeat.GetComponent<NetworkObject>().Despawn();
                 RearrangeSeats();
             }

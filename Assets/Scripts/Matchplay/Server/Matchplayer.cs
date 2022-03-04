@@ -1,5 +1,6 @@
 using System;
-using Matchplay.Networking;
+using Matchplay.Client;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,7 +11,9 @@ namespace Matchplay.Server
     /// </summary>
     public class Matchplayer : NetworkBehaviour
     {
-        public string PlayerName { get; private set; }
+        public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>(NetworkVariableReadPermission.Everyone);
+
+        void Start() { }
 
         /// <summary>
         /// Server Only
@@ -32,10 +35,9 @@ namespace Matchplay.Server
             transform.rotation = rot;
         }
 
-        [ServerRpc]
-        public void SetName_ServerRpc(string name)
+        public void ServerSetName(string name)
         {
-            PlayerName = name;
+            PlayerName.Value = name;
         }
     }
 }

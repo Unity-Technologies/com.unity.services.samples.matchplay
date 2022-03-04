@@ -1,4 +1,5 @@
 using Unity.Netcode;
+using UnityEditor;
 using UnityEngine;
 
 namespace Matchplay.Networking
@@ -6,7 +7,10 @@ namespace Matchplay.Networking
     public enum NetworkMessage
     {
         ConnectionResult,
-        DisconnectionResult
+        DisconnectionResult,
+        ServerChangedMap,
+        ServerChangedGameMode,
+        ServerChangedQueue
     }
 
     /// <summary>
@@ -14,7 +18,12 @@ namespace Matchplay.Networking
     /// </summary>
     public class MatchplayNetworkMessenger
     {
-        public static void SendMessage(NetworkMessage messageType, ulong clientID, FastBufferWriter writer)
+        public static void SendMessageToAll(NetworkMessage mesageType, FastBufferWriter writer)
+        {
+            NetworkManager.Singleton.CustomMessagingManager.SendNamedMessageToAll(mesageType.ToString(), writer);
+        }
+
+        public static void SendMessageTo(NetworkMessage messageType, ulong clientID, FastBufferWriter writer)
         {
             NetworkManager.Singleton.CustomMessagingManager.SendNamedMessage(messageType.ToString(), clientID, writer);
         }
@@ -26,6 +35,8 @@ namespace Matchplay.Networking
 
         public static void UnRegisterListener(NetworkMessage messageType)
         {
+            if (NetworkManager.Singleton == null)
+                return;
             NetworkManager.Singleton.CustomMessagingManager.UnregisterNamedMessageHandler(messageType.ToString());
         }
     }

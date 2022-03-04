@@ -51,7 +51,7 @@ namespace Matchplay.Client
             try
             {
                 m_IsMatchmaking = true;
-                var createResult = await Matchmaker.Instance.CreateTicketAsync(createTicketOptions);
+                var createResult = await MatchmakerService.Instance.CreateTicketAsync(createTicketOptions);
                 m_LastUsedTicket = createResult.Id;
                 try
                 {
@@ -59,7 +59,7 @@ namespace Matchplay.Client
                     while (!m_CancelToken.IsCancellationRequested)
                     {
                         Debug.Log($"Polling Ticket: {m_LastUsedTicket}");
-                        var checkTicket = await Matchmaker.Instance.GetTicketAsync(m_LastUsedTicket);
+                        var checkTicket = await MatchmakerService.Instance.GetTicketAsync(m_LastUsedTicket);
 
                         if (checkTicket.Type == typeof(MultiplayAssignment))
                         {
@@ -113,7 +113,7 @@ namespace Matchplay.Client
                 return;
 
             Debug.Log($"Cancelling {m_LastUsedTicket}");
-            await Matchmaker.Instance.DeleteTicketAsync(m_LastUsedTicket);
+            await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
         }
 
         //Make sure we exit the matchmaking cycle through this method every time.
@@ -163,7 +163,7 @@ namespace Matchplay.Client
         async void SetProdEnvironment()
         {
             await AuthenticationHandler.Authenticating();
-            var sdkConfiguration = (IMatchmakerSdkConfiguration)Matchmaker.Instance;
+            var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
             sdkConfiguration.SetBasePath("https://matchmaker.services.api.unity.com");
         }
 
@@ -174,26 +174,16 @@ namespace Matchplay.Client
         {
             var players = mmOption.playerIds.Select(s => new Player(s)).ToList();
 
-            var qosResults = new List<RuleBasedQoSResult> { new RuleBasedQoSResult("c98f7689-5913-446b-bce5-a3cb9417e906", 0.3, 50) };
-
-            var attributes = new Dictionary<string, object>();
-
-            var customData = new Dictionary<string, object>
+            var attributes = new Dictionary<string, object>
             {
                 { "gameModePreference", mmOption.m_GameInfo.gameMode },
                 { "mapPreference", mmOption.m_GameInfo.map }
             };
 
+            var qosResults = new List<RuleBasedQoSResult> { new RuleBasedQoSResult("c98f7689-5913-446b-bce5-a3cb9417e906", 0.3, 50) };
             var queueName = QueueModeToName(mmOption.m_GameInfo.gameQueue);
 
-            return new CreateTicketOptions
-            {
-                QueueName = queueName,
-                QosResult = qosResults,
-                Players = players,
-                Attributes = attributes,
-                Data = customData
-            };
+            return new CreateTicketOptions(queueName, attributes, players);
         }
 
         /// <summary>

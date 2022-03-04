@@ -1,22 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Matchplay.Infrastructure;
 using Matchplay.Networking;
-using Matchplay.Server;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Events;
 using Matchplay.Shared;
+using Matchplay.Tools;
+using UnityEngine.SceneManagement;
 
 namespace Matchplay.Server
 {
     public class MatchplayServer : IDisposable
     {
-        public UnityEvent<PlayerData?> OnPlayerConnected;
-        public UnityEvent<PlayerData?> OnPlayerDisconnected;
+        public Action<Matchplayer> OnServerPlayerSpawned;
+        public Action<Matchplayer> OnServerPlayerDespawned;
 
+        MatchplayGameInfo m_ServerGameInfo = new MatchplayGameInfo
+        {
+            gameMode = GameMode.Staring,
+            map = Map.Lab,
+            gameQueue = GameQueue.Casual
+        };
+
+        bool m_InitializedServer;
         NetworkManager m_NetworkManager;
 
         // used in ApprovalCheck. This is intended as a bit of light protection against DOS attacks that rely on sending silly big buffers of garbage.
@@ -25,7 +33,7 @@ namespace Matchplay.Server
         /// <summary>
         /// map a given client guid to the data for a given client player.
         /// </summary>
-        private Dictionary<string, PlayerData> m_ClientData = new Dictionary<string, PlayerData>();
+        private Dictionary<string, UserData> m_ClientData = new Dictionary<string, UserData>();
 
         /// <summary>
         /// map to allow us to cheaply map from guid to player data.
@@ -49,7 +57,7 @@ namespace Matchplay.Server
         public string GetPlayerName(ulong clientId, int playerNum)
         {
             var playerData = GetPlayerData(clientId);
-            return (playerData != null) ? playerData.Value.m_PlayerName : ("Player" + playerNum);
+            return (playerData != null) ? playerData.Value.playerName : "Player" + playerNum;
         }
 
         public void StartServer(string ip, int port)
@@ -61,80 +69,17 @@ namespace Matchplay.Server
         }
 
         /// <summary>
-        /// Handles the flow when a user has requested a disconnect via UI (which can be invoked on the Host, and thus must be
-        /// handled in server code).
+        /// TEMP: Since we can't receive the info from the server allocation before the client joins, we need to make sure we are in an empty scene to avoid duplicating our bootstrap objects.
         /// </summary>
-        public void OnUserDisconnectRequest()
+        public void ToWaitingScene()
         {
-            Clear();
+            m_NetworkManager.SceneManager.LoadScene("server_waitScene", LoadSceneMode.Single);
         }
 
         void OnNetworkReady()
         {
-            m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
             m_NetworkManager.OnClientConnectedCallback += OnClientConnected;
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="clientId"> guid of the client whose data is requested</param>
-        /// <returns>Player data struct matching the given ID</returns>
-        PlayerData? GetPlayerData(ulong clientId)
-        {
-            //First see if we have a guid matching the clientID given.
-            Debug.Log($"Attempting to get player data for: {clientId}");
-            if (m_ClientIdToGuid.TryGetValue(clientId, out var clientguid))
-            {
-                if (m_ClientData.TryGetValue(clientguid, out var playerData))
-                    return playerData;
-
-                Debug.LogError($"No PlayerData of matching guid found: {clientguid}");
-            }
-            else
-            {
-                Debug.LogError($"No client guid found mapped to the given client ID: {clientId}");
-            }
-
-            return null;
-        }
-
-        void OnClientConnected(ulong clientId)
-        {
-            var player = GetPlayerData(clientId);
-            if (player != null)
-            {
-                OnPlayerConnected?.Invoke(player);
-            }
-        }
-
-        /// <summary>
-        /// Handles the case where NetworkManager has told us a client has disconnected. This includes ourselves, if we're the host,
-        /// and the server is stopped."
-        /// </summary>
-        private void OnClientDisconnect(ulong clientId)
-        {
-            if (m_ClientIdToGuid.TryGetValue(clientId, out var guid))
-            {
-                OnPlayerDisconnected.Invoke(GetPlayerData(clientId));
-                m_ClientIdToGuid.Remove(clientId);
-
-                if (m_ClientData[guid].m_ClientID == clientId)
-                {
-                    //be careful to only remove the ClientData if it is associated with THIS clientId; in a case where a new connection
-                    //for the same GUID kicks the old connection, this could get complicated. In a game that fully supported the reconnect flow,
-                    //we would NOT remove ClientData here, but instead time it out after a certain period, since the whole point of it is
-                    //to remember client information on a per-guid basis after the connection has been lost.
-                    m_ClientData.Remove(guid);
-                }
-            }
-        }
-
-        private void Clear()
-        {
-            //resets all our runtime state.
-            m_ClientData.Clear();
-            m_ClientIdToGuid.Clear();
+            m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
         }
 
         /// <summary>
@@ -151,7 +96,7 @@ namespace Matchplay.Server
         /// <param name="connectionData">binary data passed into BootClient. In our case this is the client's GUID, which is a unique identifier for their install of the game that persists across app restarts. </param>
         /// <param name="clientId">This is the clientId that Netcode assigned us on login. It does not persist across multiple logins from the same client. </param>
         /// <param name="connectionApprovedCallback">The delegate we must invoke to signal that the connection was approved or not. </param>
-        private void ApprovalCheck(byte[] connectionData, ulong clientId, NetworkManager.ConnectionApprovedDelegate connectionApprovedCallback)
+        void ApprovalCheck(byte[] connectionData, ulong clientId, NetworkManager.ConnectionApprovedDelegate connectionApprovedCallback)
         {
             if (connectionData.Length > k_MaxConnectPayload)
             {
@@ -176,7 +121,7 @@ namespace Matchplay.Server
                 }
                 else
                 {
-                    ulong oldClientId = m_ClientData[connectionPayload.clientGUID].m_ClientID;
+                    ulong oldClientId = m_ClientData[connectionPayload.clientGUID].clientId;
 
                     // kicking old client to leave only current
                     SendServerToClientSetDisconnectReason(oldClientId, ConnectStatus.LoggedInAgain);
@@ -189,53 +134,181 @@ namespace Matchplay.Server
 
             //Populate our dictionaries with the playerData
             m_ClientIdToGuid[clientId] = connectionPayload.clientGUID;
-            m_ClientData[connectionPayload.clientGUID] = new PlayerData(connectionPayload.playerName, clientId);
-
+            m_ClientData[connectionPayload.clientGUID] = new UserData(connectionPayload.playerName, clientId, connectionPayload.clientMatchInfo);
             connectionApprovedCallback(true, null, true, Vector3.zero, Quaternion.identity);
 
             // connection approval will create a player object for you
-            AssignPlayerName(clientId, connectionPayload.playerName);
+            SetupPlayerPrefab(clientId, connectionPayload.playerName);
         }
 
-        private async void WaitToDisconnect(ulong clientId)
+        void OnClientConnected(ulong clientId)
+        {
+            var player = GetPlayerData(clientId);
+            if (player != null)
+            {
+                if (m_InitializedServer == false) //TODO First-time-setup for servers, taking info from the first client to connect and  using that to set up
+                {
+                    UpdateMap(player.Value.playerGameInfo.map);
+                    UpdateMode(player.Value.playerGameInfo.gameMode);
+                    UpdateQueueMode(player.Value.playerGameInfo.gameQueue);
+                    m_InitializedServer = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the case where NetworkManager has told us a client has disconnected. This includes ourselves, if we're the host,
+        /// and the server is stopped."
+        /// </summary>
+        private void OnClientDisconnect(ulong clientId)
+        {
+            SendServerToClientSetDisconnectReason(clientId, ConnectStatus.GenericDisconnect);
+            if (m_ClientIdToGuid.TryGetValue(clientId, out var guid))
+            {
+                m_ClientIdToGuid?.Remove(clientId);
+
+                if (m_ClientData[guid].clientId == clientId)
+                {
+                    OnServerPlayerDespawned.Invoke(GetNetworkedMatchPlayer(clientId));
+                    m_ClientData.Remove(guid);
+                }
+            }
+        }
+
+        void SetupPlayerPrefab(ulong clientId, string playerName)
+        {
+            // get this client's player NetworkObject
+            var networkedMatchPlayer = GetNetworkedMatchPlayer(clientId);
+            networkedMatchPlayer.ServerSetName(playerName);
+            OnServerPlayerSpawned?.Invoke(networkedMatchPlayer);
+        }
+
+        Matchplayer GetNetworkedMatchPlayer(ulong clientId)
+        {
+            var networkObject = m_NetworkManager.SpawnManager.GetPlayerNetworkObject(clientId);
+            return networkObject.GetComponent<Matchplayer>();
+        }
+
+        async void WaitToDisconnect(ulong clientId)
         {
             await Task.Delay(500);
             m_NetworkManager.DisconnectClient(clientId);
         }
 
         /// <summary>
-        /// Sends a DisconnectReason to the indicated client. This should only be done on the server, prior to disconnecting the client.
+        /// Sends a message that a client has connected to the server
         /// </summary>
-        /// <param name="clientID"> id of the client to send to </param>
-        /// <param name="status"> The reason for the upcoming disconnect.</param>
-        void SendServerToClientSetDisconnectReason(ulong clientID, ConnectStatus status)
+        /// <param name="clientId"> id of the client to send to </param>
+        /// <param name="status"> the status to pass to the client</param>
+        void SendServerToClientConnectResult(ulong clientId, ConnectStatus status)
         {
             var writer = new FastBufferWriter(sizeof(ConnectStatus), Allocator.Temp);
             writer.WriteValueSafe(status);
-            MatchplayNetworkMessenger.SendMessage(NetworkMessage.DisconnectionResult, clientID, writer);
 
-            //TODO Messaging system for disconnect messages?
+            MatchplayNetworkMessenger.SendMessageTo(NetworkMessage.ConnectionResult, clientId, writer);
         }
 
         /// <summary>
-        /// Responsible for the Server->Client custom message of the connection result.
+        /// Sends a DisconnectReason to the indicated client. This should only be done on the server, prior to disconnecting the client.
         /// </summary>
-        /// <param name="clientID"> id of the client to send to </param>
-        /// <param name="status"> the status to pass to the client</param>
-        void SendServerToClientConnectResult(ulong clientID, ConnectStatus status)
+        /// <param name="clientId"> id of the client to send to </param>
+        /// <param name="status"> The reason for the upcoming disconnect.</param>
+        void SendServerToClientSetDisconnectReason(ulong clientId, ConnectStatus status)
         {
             var writer = new FastBufferWriter(sizeof(ConnectStatus), Allocator.Temp);
             writer.WriteValueSafe(status);
-
-            MatchplayNetworkMessenger.SendMessage(NetworkMessage.ConnectionResult, clientID, writer);
+            MatchplayNetworkMessenger.SendMessageTo(NetworkMessage.DisconnectionResult, clientId, writer);
         }
 
-        void AssignPlayerName(ulong clientId, string playerName)
+        void SendServerChangedGameMode(GameMode gameInfo)
         {
-            // get this client's player NetworkObject
-            var networkObject = m_NetworkManager.SpawnManager.GetPlayerNetworkObject(clientId);
+            var writer = new FastBufferWriter(sizeof(GameMode), Allocator.Temp);
+            writer.WriteValueSafe(gameInfo);
 
-            networkObject.GetComponent<Matchplayer>().SetName_ServerRpc(playerName);
+            MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedGameMode, writer);
+        }
+
+        void SendServerChangedMap(Map gameMap)
+        {
+            var writer = new FastBufferWriter(sizeof(Map), Allocator.Temp);
+            writer.WriteValueSafe(gameMap);
+
+            MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedMap, writer);
+        }
+
+        void SendServerChangedQueueMode(GameQueue queueMode)
+        {
+            var writer = new FastBufferWriter(sizeof(QueueMode), Allocator.Temp);
+            writer.WriteValueSafe(queueMode);
+
+            MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedQueue, writer);
+        }
+
+        void UpdateMap(Map newMap)
+        {
+            m_ServerGameInfo.map = newMap;
+            var sceneString = ToMap(m_ServerGameInfo.map);
+            if (string.IsNullOrEmpty(sceneString))
+            {
+                Debug.LogError($"Cant Change map, no valid map selection in {newMap}.");
+                return;
+            }
+
+            m_NetworkManager.SceneManager.LoadScene(sceneString, LoadSceneMode.Single);
+            SendServerChangedMap(newMap);
+        }
+
+        void UpdateMode(GameMode mode)
+        {
+            m_ServerGameInfo.gameMode = mode;
+            SendServerChangedGameMode(mode);
+        }
+
+        void UpdateQueueMode(GameQueue queueMode)
+        {
+            m_ServerGameInfo.gameQueue = queueMode;
+            SendServerChangedQueueMode(queueMode);
+        }
+
+        /// <summary>
+        /// Convert the map flag enum to a scene name.
+        /// </summary>
+        string ToMap(Map map)
+        {
+            switch (map)
+            {
+                case Map.Lab:
+                    return "game_lab";
+                case Map.Space:
+                    return "game_space";
+                default:
+                    Debug.LogWarning($"{map} - is not supported.");
+                    return "";
+            }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="clientId"> guid of the client whose data is requested</param>
+        /// <returns>Player data struct matching the given ID</returns>
+        UserData? GetPlayerData(ulong clientId)
+        {
+            //First see if we have a guid matching the clientID given.
+            Debug.Log($"Attempting to get player data for: {clientId}");
+            if (m_ClientIdToGuid.TryGetValue(clientId, out var clientguid))
+            {
+                if (m_ClientData.TryGetValue(clientguid, out var playerData))
+                    return playerData;
+
+                Debug.LogError($"No UserData of matching GUID found: {clientguid}");
+            }
+            else
+            {
+                Debug.LogError($"No client GUID found mapped to the given client Network ID: {clientId}");
+            }
+
+            return null;
         }
 
         public void Dispose()

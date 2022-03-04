@@ -12,7 +12,7 @@
     "com.unity.netcode.gameobjects": "1.0.0-pre.4",
     "com.unity.render-pipelines.universal": "12.1.4",
     "com.unity.services.authentication": "1.0.0-pre.37",
-    "com.unity.services.matchmaker": "file:com.unity.services.matchmaker-1.0.0-pre.4.tgz",
+    "com.unity.services.matchmaker": "1.0.0-pre.7",
     "com.unity.test-framework": "1.1.30",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.toolchain.win-x86_64-linux-x86_64": "1.0.0",
