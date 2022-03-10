@@ -1,55 +1,56 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+using Matchplay.Server;
 using Matchplay.Shared;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Unity.Services.Authentication;
 
 namespace Matchplay.Client
 {
     public class ClientGameManager : MonoBehaviour
     {
-        MatchplayGameInfo m_GameOptions = new MatchplayGameInfo
-        {
-            gameMode = GameMode.Staring,
-            map = Map.Lab,
-            gameQueue = GameQueue.Casual,
-            maxPlayers = 10
-        };
-        MatchplayClient m_MatchplayClientNetPortal;
+        public event Action<Matchplayer> MatchPlayerSpawned;
+        public event Action<Matchplayer> MatchPlayerDespawned;
+
+        public ObservableUser observableUser { get; private set; }
+
+        public MatchplayNetworkClient networkClient { get; set; }
+
         MatchplayMatchmaker m_Matchmaker;
 
         public static ClientGameManager Singleton
         {
             get
             {
-                if (m_ClientGameManager != null) return m_ClientGameManager;
-                m_ClientGameManager = FindObjectOfType<ClientGameManager>();
-                if (m_ClientGameManager == null)
+                if (s_ClientGameManager != null) return s_ClientGameManager;
+                s_ClientGameManager = FindObjectOfType<ClientGameManager>();
+                if (s_ClientGameManager == null)
                 {
                     Debug.LogError("No ClientGameManager in scene, did you run this from the bootStrap scene?");
                     return null;
                 }
 
-                return m_ClientGameManager;
+                return s_ClientGameManager;
             }
         }
 
-        static ClientGameManager m_ClientGameManager;
+        static ClientGameManager s_ClientGameManager;
 
-        void Start()
+        public async void Init()
         {
-            DontDestroyOnLoad(gameObject);
+            observableUser = new ObservableUser();
             m_Matchmaker = new MatchplayMatchmaker();
-            m_MatchplayClientNetPortal = new MatchplayClient();
+            networkClient = new MatchplayNetworkClient();
+            networkClient.OnServerChangedMap += SetMap;
+            networkClient.OnServerChangedMode += SetGameMode;
+            networkClient.OnServerChangedQueue += SetGameQueue;
+            observableUser.AuthId = await AuthenticationWrapper.GetClientId();
         }
 
         public void BeginConnection(string ip, int port)
         {
-            Debug.Log($"Starting Client @ {ip}:{port}");
-            m_MatchplayClientNetPortal.StartClient(ip, port);
+            Debug.Log($"Starting networkClient @ {ip}:{port}\n With : {observableUser}");
+            networkClient.StartClient(ip, port);
         }
 
         public async void Matchmake(Action<MatchResult> onMatchmakerResponse = null)
@@ -69,52 +70,64 @@ namespace Matchplay.Client
             await m_Matchmaker.CancelMatchmaking();
         }
 
-        public void SetGameModes(GameMode gameMode, bool added)
-        {
-            if (added) //Add Flag if True
-                m_GameOptions.gameMode |= gameMode;
-            else
-            {
-                m_GameOptions.gameMode &= ~gameMode;
-            }
-        }
-
-        public void SetGameMaps(Map map, bool added)
-        {
-            if (added) //Add Flag if True
-                m_GameOptions.map |= map;
-            else
-            {
-                m_GameOptions.map &= ~map;
-            }
-        }
-
-        public GameQueue ClientGameQueue
-        {
-            get => m_GameOptions.gameQueue;
-            set => m_GameOptions.gameQueue = value;
-        }
-
         public void ToMainMenu()
         {
             SceneManager.LoadScene("mainMenu", LoadSceneMode.Single);
         }
 
-        public void OnDestroy()
+        public void AddMatchPlayer(Matchplayer player)
         {
-            m_MatchplayClientNetPortal.Dispose();
-            m_Matchmaker.Dispose();
+            MatchPlayerSpawned?.Invoke(player);
+        }
+
+        public void RemoveMatchPlayer(Matchplayer player)
+        {
+            MatchPlayerDespawned?.Invoke(player);
+        }
+
+        public void SetGameModeFlag(GameMode gameMode, bool added)
+        {
+            if (added) //Add Flag if True
+                observableUser.Mode |= gameMode;
+            else
+            {
+                observableUser.Mode &= ~gameMode;
+            }
+
+            Debug.Log($"Set Game Mode {observableUser.Mode} - {added}");
+        }
+
+        void SetGameMode(GameMode mode)
+        {
+            observableUser.Mode = mode;
+        }
+
+        public void SetMapFlag(Map map, bool added)
+        {
+            if (added) //Add Flag if True
+                observableUser.Map |= map;
+            else
+            {
+                observableUser.Map &= ~map;
+            }
+
+            Debug.Log($"Set Game Map {observableUser.Map} - {added}");
+        }
+
+        void SetMap(Map map)
+        {
+            observableUser.Map = map;
+        }
+
+        public void SetGameQueue(GameQueue queue)
+        {
+            observableUser.Queue = queue;
         }
 
         async Task<MatchResult> MatchmakeAsync()
         {
-            var matchOptions = new MatchmakingOption
-            {
-                m_GameInfo = m_GameOptions,
-                playerIds = new List<string> { AuthenticationService.Instance.PlayerId }
-            };
-            Debug.Log($"Beginning Matchmaking with {m_GameOptions}");
-            var matchmakingResult = await m_Matchmaker.Matchmake(matchOptions);
+            Debug.Log($"Beginning Matchmaking with {observableUser}");
+            var matchmakingResult = await m_Matchmaker.Matchmake(observableUser.Data);
 
             if (matchmakingResult.result == MatchResult.Success)
             {
@@ -126,6 +139,19 @@ namespace Matchplay.Client
             }
 
             return matchmakingResult.result;
+        }
+
+        void Start()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
+        public void OnDestroy()
+        {
+            networkClient.OnServerChangedMap -= SetMap;
+            networkClient.OnServerChangedMode -= SetGameMode;
+            networkClient.Dispose();
+            m_Matchmaker.Dispose();
         }
     }
 }

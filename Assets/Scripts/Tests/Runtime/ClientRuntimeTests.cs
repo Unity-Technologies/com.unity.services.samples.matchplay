@@ -15,7 +15,6 @@ namespace Matchplay.Tests
     public class ClientRuntimeTests
     {
         NetworkManager m_NetworkManager;
-        AuthenticationHandler m_AuthenticationHandler;
 
         /// <summary>
         /// Setting up the DIScope for the classes needed to run a client.
@@ -38,7 +37,7 @@ namespace Matchplay.Tests
 
              async Task TestMatchmakingAsync()
              {
-                 await m_AuthenticationHandler.Authenticating();
+                 await m_AuthenticationWrapper.Authenticating();
                  clientGameManager.Matchmake();
 
                  Assert.IsTrue(matchMaker.IsMatchmaking);

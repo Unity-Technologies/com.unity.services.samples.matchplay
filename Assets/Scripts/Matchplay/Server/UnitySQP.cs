@@ -5,6 +5,7 @@ using Unity.Ucg.Usqp;
 using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Infrastructure;
+using Matchplay.Networking;
 
 namespace Matchplay.Server
 {
@@ -13,24 +14,25 @@ namespace Matchplay.Server
         ServerInfo.Data m_SqpServerData;
         UsqpServer m_Server;
         UpdateRunner m_UpdateRunner;
-        NetworkManager m_NetworkManager;
 
-        public void StartSqp(string ip, int port, int sqpPort, MatchplayGameInfo matchplayGameMode)
+        public void StartSqp(string ip, int port, int sqpPort)
         {
-            m_NetworkManager.OnClientConnectedCallback += OnPlayerCountChanged;
-            m_NetworkManager.OnClientDisconnectCallback += OnPlayerCountChanged;
+            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, OnPlayerAdded);
+            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, OnPlayerRemoved);
+            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedMap, OnMapChanged);
+            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedGameMode, OnModeChanged);
+            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedQueue, OnGameQueueChanged);
 
             //m_NetworkManager.SceneManager.OnSceneEvent += OnSceneChanged;
-
             m_SqpServerData = new ServerInfo.Data
             {
                 BuildId = "1",
                 CurrentPlayers = 0,
-                GameType = matchplayGameMode.gameMode.ToString(),
-                Map = matchplayGameMode.map.ToString(),
-                MaxPlayers = (ushort)matchplayGameMode.maxPlayers,
+                GameType = "",
+                Map = "",
+                MaxPlayers = 10,
                 Port = (ushort)port,
-                ServerName = "Matchplay Server"
+                ServerName = "Matchplay networkServer"
             };
 
             var parsedIP = IPAddress.Parse(ip);
@@ -43,34 +45,50 @@ namespace Matchplay.Server
             m_UpdateRunner?.Subscribe(Update, 0.5f);
         }
 
-
-        public UnitySqp ()
-        {
-            m_UpdateRunner = UpdateRunner.Singleton;
-            m_NetworkManager = NetworkManager.Singleton;
-        }
-
         void Update(float deltaTime)
         {
             m_Server?.Update();
         }
 
-        void OnPlayerCountChanged(ulong clientId)
+        void OnPlayerAdded(ulong clientID, FastBufferReader reader)
         {
-            m_SqpServerData.CurrentPlayers = (ushort)m_NetworkManager.ConnectedClients.Count;
+            reader.ReadValueSafe(out ConnectStatus status);
+            if (status == ConnectStatus.Success)
+                m_SqpServerData.CurrentPlayers += 1;
         }
 
-        void OnSceneChanged(SceneEvent sceneEvent)
+        void OnPlayerRemoved(ulong clientID, FastBufferReader reader)
         {
-            m_SqpServerData.Map = sceneEvent.SceneName;
+            reader.ReadValueSafe(out ConnectStatus status);
+            if (status == ConnectStatus.GenericDisconnect)
+                m_SqpServerData.CurrentPlayers -= 1;
+        }
+
+        void OnMapChanged(ulong unused, FastBufferReader reader)
+        {
+            reader.ReadValueSafe(out Map map);
+            m_SqpServerData.Map = map.ToString();
+        }
+
+        void OnModeChanged(ulong unused, FastBufferReader reader)
+        {
+            reader.ReadValueSafe(out GameMode mode);
+            m_SqpServerData.GameType = mode.ToString();
+        }
+
+        void OnGameQueueChanged(ulong unused, FastBufferReader reader)
+        {
+            reader.ReadValueSafe(out GameQueue gameQueue);
+            m_SqpServerData.ServerName = $"{gameQueue.ToString()} Matchplay networkServer";
         }
 
         public void Dispose()
         {
-            if (m_NetworkManager == null)
-                return;
-            m_NetworkManager.OnClientConnectedCallback -= OnPlayerCountChanged;
-            m_NetworkManager.OnClientDisconnectCallback -= OnPlayerCountChanged;
+            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientConnected);
+            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientDisconnected);
+            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedMap);
+            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedGameMode);
+            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedQueue);
             m_UpdateRunner?.Unsubscribe(Update);
             m_Server?.Dispose();
         }

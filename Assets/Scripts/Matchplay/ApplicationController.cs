@@ -1,10 +1,9 @@
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using Matchplay.Client;
 using Matchplay.Server;
-using Matchplay.Infrastructure;
 using UnityEngine;
-using Unity.Netcode;
 
 namespace Matchplay.Shared
 {
@@ -12,17 +11,14 @@ namespace Matchplay.Shared
     {
         //Manager instances to be instantiated.
         [SerializeField]
-        ServerGameManager m_serverPrefab;
+        ServerGameManager m_ServerPrefab;
         [SerializeField]
-        ClientGameManager m_clientPrefab;
-        [SerializeField]
-        List<GameObject> m_sharedManagers = new List<GameObject>();
-        [SerializeField]
-        List<GameObject> m_serverManagers = new List<GameObject>();
-        [SerializeField]
-        List<GameObject> m_clientManagers = new List<GameObject>();
+        ClientGameManager m_ClientPrefab;
 
-        void Start()
+        [SerializeField]
+        List<GameObject> m_ServerManagers = new List<GameObject>();
+
+        async void Start()
         {
             DontDestroyOnLoad(gameObject);
 
@@ -37,18 +33,19 @@ namespace Matchplay.Shared
         /// </summary>
         public void LaunchInMode(bool isServer)
         {
-            InstantiateManagers(m_sharedManagers);
             if (isServer)
             {
-                InstantiateManagers(m_serverManagers);
-                var serverInstance = Instantiate(m_serverPrefab);
+                InstantiateManagers(m_ServerManagers);
+
+                var serverInstance = Instantiate(m_ServerPrefab);
+                serverInstance.Init();
                 serverInstance.BeginServer();
             }
             else
             {
-                InstantiateManagers(m_clientManagers);
-                AuthenticationHandler.Singleton.BeginAuth();
-                var clientInstance = Instantiate(m_clientPrefab);
+                AuthenticationWrapper.BeginAuth();
+                var clientInstance = Instantiate(m_ClientPrefab);
+                clientInstance.Init();
                 clientInstance.ToMainMenu();
             }
         }
