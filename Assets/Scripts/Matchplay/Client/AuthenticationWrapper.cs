@@ -5,20 +5,26 @@ using UnityEngine;
 
 namespace Matchplay.Client
 {
-    public class AuthenticationHandler : MonoBehaviour
+    public static class AuthenticationWrapper
     {
-        public static bool IsAuthenticated => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn;
-        int m_MaxRetries = 5;
+        static bool IsAuthenticated => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn;
 
-        public async void BeginAuth(int tries = 5)
+        public static async void BeginAuth(int tries = 5)
         {
             if (IsAuthenticated)
                 return;
-            m_MaxRetries = tries;
             await UnityServices.InitializeAsync();
-            await SignInAnonymouslyAsync();
+            await SignInAnonymouslyAsync(tries);
         }
 
+        //Awaitable task that will pass the clientID once authentication is done.
+        public static async Task<string> GetClientId()
+        {
+            await Authenticating();
+            return AuthenticationService.Instance.PlayerId;
+        }
+
+        //Awaitable task that will pass once authentication is done.
         public static async Task Authenticating()
         {
             while (!IsAuthenticated)
@@ -27,33 +33,10 @@ namespace Matchplay.Client
             }
         }
 
-        public static AuthenticationHandler Singleton
-        {
-            get
-            {
-                if (s_AuthenticationHandler != null) return s_AuthenticationHandler;
-                s_AuthenticationHandler = FindObjectOfType<AuthenticationHandler>();
-                if (s_AuthenticationHandler == null)
-                {
-                    Debug.LogError("No AuthenticationHandler in scene, did you run this from the bootStrap scene?");
-                    return null;
-                }
-
-                return s_AuthenticationHandler;
-            }
-        }
-
-        static AuthenticationHandler s_AuthenticationHandler;
-
-        void Start()
-        {
-            DontDestroyOnLoad(gameObject);
-        }
-
-        async Task SignInAnonymouslyAsync()
+        static async Task SignInAnonymouslyAsync(int maxRetries)
         {
             var tries = 0;
-            while (!IsAuthenticated && tries < m_MaxRetries)
+            while (!IsAuthenticated && tries < maxRetries)
             {
                 try
                 {

@@ -6,8 +6,8 @@ namespace Matchplay.Server
 {
     public class ServerGameManager : MonoBehaviour
     {
-        public MatchplayServer Server => m_Server;
-        MatchplayServer m_Server;
+        public MatchplayNetworkServer networkServer => m_NetworkServer;
+        MatchplayNetworkServer m_NetworkServer;
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
@@ -35,7 +35,7 @@ namespace Matchplay.Server
 
         public void Init()
         {
-            m_Server = new MatchplayServer();
+            m_NetworkServer = new MatchplayNetworkServer();
         }
 
         public void BeginServer()
@@ -43,10 +43,10 @@ namespace Matchplay.Server
             m_ServerIP = ApplicationData.IP();
             m_ServerPort = ApplicationData.Port();
             m_QueryPort = ApplicationData.QPort();
-            Server.StartServer(m_ServerIP, m_ServerPort);
+            networkServer.StartServer(m_ServerIP, m_ServerPort);
             m_UnitySqp = new UnitySqp();
             m_UnitySqp.StartSqp(m_ServerIP, m_ServerPort, m_QueryPort);
-            Server.ToWaitingScene();
+            networkServer.ToWaitingScene();
         }
 
         void Start()
@@ -57,7 +57,7 @@ namespace Matchplay.Server
         public void OnDestroy()
         {
             m_UnitySqp?.Dispose();
-            Server?.Dispose();
+            networkServer?.Dispose();
         }
     }
 }

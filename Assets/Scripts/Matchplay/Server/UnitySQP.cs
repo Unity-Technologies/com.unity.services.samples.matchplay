@@ -17,8 +17,8 @@ namespace Matchplay.Server
 
         public void StartSqp(string ip, int port, int sqpPort)
         {
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ConnectionResult, OnPlayerAdded);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.DisconnectionResult, OnPlayerRemoved);
+            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, OnPlayerAdded);
+            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, OnPlayerRemoved);
             MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedMap, OnMapChanged);
             MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedGameMode, OnModeChanged);
             MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedQueue, OnGameQueueChanged);
@@ -32,7 +32,7 @@ namespace Matchplay.Server
                 Map = "",
                 MaxPlayers = 10,
                 Port = (ushort)port,
-                ServerName = "Matchplay Server"
+                ServerName = "Matchplay networkServer"
             };
 
             var parsedIP = IPAddress.Parse(ip);
@@ -79,13 +79,13 @@ namespace Matchplay.Server
         void OnGameQueueChanged(ulong unused, FastBufferReader reader)
         {
             reader.ReadValueSafe(out GameQueue gameQueue);
-            m_SqpServerData.ServerName = $"{gameQueue.ToString()} Matchplay Server";
+            m_SqpServerData.ServerName = $"{gameQueue.ToString()} Matchplay networkServer";
         }
 
         public void Dispose()
         {
-            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ConnectionResult);
-            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.DisconnectionResult);
+            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientConnected);
+            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientDisconnected);
             MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedMap);
             MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedGameMode);
             MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedQueue);

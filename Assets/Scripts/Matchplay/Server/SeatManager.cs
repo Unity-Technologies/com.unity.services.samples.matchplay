@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Matchplay.Server
 {
     /// <summary>
-    /// Server Spawns and manages the networked game objects
+    /// networkServer Spawns and manages the networked game objects
     /// </summary>
     public class SeatManager : NetworkBehaviour
     {
@@ -18,12 +18,12 @@ namespace Matchplay.Server
 
         Dictionary<Matchplayer, Seat> m_CurrentSeats = new Dictionary<Matchplayer, Seat>();
 
-        void Start()
+        void Awake()
         {
             if (!IsServer)
                 return;
-            ServerGameManager.Singleton.Server.OnServerPlayerSpawned += JoinSeat;
-            ServerGameManager.Singleton.Server.OnServerPlayerDespawned += LeaveSeat;
+            ServerGameManager.Singleton.networkServer.OnServerPlayerSpawned += JoinSeat;
+            ServerGameManager.Singleton.networkServer.OnServerPlayerDespawned += LeaveSeat;
         }
 
         public override void OnDestroy()
@@ -33,8 +33,8 @@ namespace Matchplay.Server
                 return;
             if (ServerGameManager.Singleton == null)
                 return;
-            ServerGameManager.Singleton.Server.OnServerPlayerSpawned -= JoinSeat;
-            ServerGameManager.Singleton.Server.OnServerPlayerDespawned -= LeaveSeat;
+            ServerGameManager.Singleton.networkServer.OnServerPlayerSpawned -= JoinSeat;
+            ServerGameManager.Singleton.networkServer.OnServerPlayerDespawned -= LeaveSeat;
         }
 
         public void JoinSeat(Matchplayer player)

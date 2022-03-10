@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -19,13 +18,6 @@ namespace Matchplay.Client
         MatchAssignmentError
     }
 
-    [Serializable]
-    public class MatchmakingOption
-    {
-        public List<string> playerIds;
-        public MatchplayGameInfo m_GameInfo;
-    }
-
     public class MatchmakingResult
     {
         public string ip;
@@ -40,14 +32,13 @@ namespace Matchplay.Client
     {
         string m_LastUsedTicket;
         bool m_IsMatchmaking = false;
-        const string k_MapAttribute = "maps";
-        const string k_ModeAttribute = "modes";
+        public const string k_ModeAttribute = "game_mode";
         CancellationTokenSource m_CancelToken = new CancellationTokenSource();
 
-        public async Task<MatchmakingResult> Matchmake(MatchmakingOption option)
+        public async Task<MatchmakingResult> Matchmake(UserData data)
         {
             m_CancelToken = new CancellationTokenSource();
-            var createTicketOptions = MatchmakingToTicketOptions(option);
+            var createTicketOptions = MatchmakingToTicketOptions(data);
             try
             {
                 m_IsMatchmaking = true;
@@ -123,30 +114,20 @@ namespace Matchplay.Client
             if (assignment != null)
             {
                 var parsedIP = assignment.Ip;
-                int parsedPort = -1;
-                if (assignment.Port != null)
-                    parsedPort = (int)assignment.Port;
-
-                if (parsedPort < 1)
-                {
+                var parsedPort = assignment.Port;
+                if (parsedPort == null)
                     return new MatchmakingResult
                     {
                         result = MatchResult.MatchAssignmentError,
-                        resultMessage = $"Port could not be cast? - {assignment.Port}"
+                        resultMessage = $"Port missing? - {assignment.Port}\n-{assignment.Message}"
                     };
-                }
-
-                // Enum.TryParse(checkTicket.QueueName, out map selectedMap);
-                // gameMode selectedMode = (gameMode)checkTicket.Attributes.GetAs<Dictionary<string, object>>()["selectedGameMode"];
 
                 return new MatchmakingResult
                 {
                     result = MatchResult.Success,
                     ip = parsedIP,
-                    port = parsedPort
-
-                    //  map = selectedMap,
-                    // selectedGameMode = selectedMode
+                    port = (int)parsedPort,
+                    resultMessage = assignment.Message
                 };
             }
 
@@ -162,60 +143,25 @@ namespace Matchplay.Client
         /// </summary>
         async void SetProdEnvironment()
         {
-            await AuthenticationHandler.Authenticating();
+            await AuthenticationWrapper.Authenticating();
             var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
             sdkConfiguration.SetBasePath("https://matchmaker.services.api.unity.com");
         }
 
         /// <summary>
-        /// From Game options to matchmaking options
+        /// From Game player to matchmaking player
         /// </summary>
-        CreateTicketOptions MatchmakingToTicketOptions(MatchmakingOption mmOption)
+        CreateTicketOptions MatchmakingToTicketOptions(UserData data)
         {
-            var players = mmOption.playerIds.Select(s => new Player(s)).ToList();
-
+            var players = new List<Player> { new Player(data.clientAuthId, data.gameInfo) };
             var attributes = new Dictionary<string, object>
             {
-                { "gameModePreference", mmOption.m_GameInfo.gameMode },
-                { "mapPreference", mmOption.m_GameInfo.map }
+                { k_ModeAttribute, (double)data.gameInfo.gameMode }
             };
 
-            var qosResults = new List<RuleBasedQoSResult> { new RuleBasedQoSResult("c98f7689-5913-446b-bce5-a3cb9417e906", 0.3, 50) };
-            var queueName = QueueModeToName(mmOption.m_GameInfo.gameQueue);
+            var queueName = data.gameInfo.MultiplayQueue();
 
             return new CreateTicketOptions(queueName, attributes, players);
-        }
-
-        /// <summary>
-        /// Convert queue enums to ticket queue name
-        /// (Same as your queue name in the matchmaker dashboard)
-        /// </summary>
-        string QueueModeToName(GameQueue queue)
-        {
-            return queue switch
-            {
-                GameQueue.Casual => "casual-queue",
-                GameQueue.Competetive => "competetive-queue",
-                _ => "casual-queue"
-            };
-        }
-
-        /// <summary>
-        ///String to Ip:Port
-        /// </summary>
-        (string, int) ConnectionParse(string connectionString)
-        {
-            string ipString = null;
-            int portInt = -1;
-
-            if (string.IsNullOrWhiteSpace(connectionString))
-                return (ipString, portInt);
-
-            var ipPortSplit = connectionString.Split(':');
-
-            ipString = ipPortSplit[0];
-
-            return (ipString, portInt);
         }
 
         public void Dispose()

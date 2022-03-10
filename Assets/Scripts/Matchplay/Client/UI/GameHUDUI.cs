@@ -23,31 +23,35 @@ namespace Matchplay.Client.UI
         Label m_GameModeValue;
         Label m_QueueValue;
         Label m_MapValue;
+        VisualElement m_HudElement;
+        ClientGameManager m_ClientGameManager;
 
         void Start()
         {
+            m_ClientGameManager = ClientGameManager.Singleton;
             var root = gameObject.GetComponent<UIDocument>().rootVisualElement;
             m_GameModeValue = root.Q<Label>("modeValue");
             m_QueueValue = root.Q<Label>("queueValue");
             m_MapValue = root.Q<Label>("mapValue");
+            m_HudElement = root.Q<VisualElement>("mainMenuVisual");
 
-            ClientGameManager.Singleton.Client.MapUpdated += UpdatedMap;
-            ClientGameManager.Singleton.Client.GameModeUpdated += UpdatedMode;
-            ClientGameManager.Singleton.Client.GameQueueUpdated += UpdatedQueue;
-            ClientGameManager.Singleton.Client.MatchPlayerSpawned += AddPlayerLabel;
-            ClientGameManager.Singleton.Client.MatchPlayerDespawned += RemovePlayerLabel;
-            ClientGameManager.Singleton.Client.LocalConnectionFinished += OnLocalConnection;
-            ClientGameManager.Singleton.Client.LocalDisconnectHappened += OnLocalDisconnection;
+            m_ClientGameManager.observableUser.onMapChanged += OnChangedMap;
+            m_ClientGameManager.observableUser.onModeChanged += OnModeChanged;
+            m_ClientGameManager.observableUser.onQueueChanged += OnQueueChanged;
+            m_ClientGameManager.networkClient.OnLocalConnection += OnLocalConnection;
+            m_ClientGameManager.networkClient.OnLocalDisconnection += OnLocalDisconnection;
+            m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;
+            m_ClientGameManager.MatchPlayerDespawned += RemovePlayerLabel;
         }
 
         void OnLocalConnection(ConnectStatus status)
         {
-            gameObject.SetActive(true);
+            m_HudElement.contentContainer.visible = true;
         }
 
         void OnLocalDisconnection(ConnectStatus status)
         {
-            gameObject.SetActive(false);
+            m_HudElement.contentContainer.visible = false;
         }
 
         void AddPlayerLabel(Matchplayer player)
@@ -61,7 +65,7 @@ namespace Matchplay.Client.UI
         {
             if (m_PlayerLabels.ContainsKey(player))
             {
-                Debug.LogError($"No player in list :  {player}");
+                Debug.LogError($"No player in list : {player}");
                 return;
             }
 
@@ -70,28 +74,30 @@ namespace Matchplay.Client.UI
             m_PlayerLabels.Remove(player);
         }
 
-        void UpdatedMap(Map map)
+        void OnChangedMap(Map map)
         {
             m_MapValue.text = map.ToString(); //TODO investigate ways to get the actual flags from the flag map
         }
 
-        void UpdatedMode(GameMode gameMode)
+        void OnModeChanged(GameMode gameMode)
         {
             m_GameModeValue.text = gameMode.ToString();
         }
 
-        void UpdatedQueue(GameQueue mode)
+        void OnQueueChanged(GameQueue mode)
         {
             m_QueueValue.text = mode.ToString();
         }
 
         void OnDestroy()
         {
-            ClientGameManager.Singleton.Client.MapUpdated -= UpdatedMap;
-            ClientGameManager.Singleton.Client.GameModeUpdatd -= UpdatedMode;
-            ClientGameManager.Singleton.Client.GameQueueUpdated -= UpdatedQueue;
-            ClientGameManager.Singleton.Client.MatchPlayerSpawned -= AddPlayerLabel;
-            ClientGameManager.Singleton.Client.MatchPlayerDespawned -= RemovePlayerLabel;
+            m_ClientGameManager.observableUser.onMapChanged -= OnChangedMap;
+            m_ClientGameManager.observableUser.onModeChanged -= OnModeChanged;
+            m_ClientGameManager.observableUser.onQueueChanged -= OnQueueChanged;
+            m_ClientGameManager.networkClient.OnLocalConnection -= OnLocalConnection;
+            m_ClientGameManager.networkClient.OnLocalDisconnection -= OnLocalDisconnection;
+            m_ClientGameManager.MatchPlayerSpawned -= AddPlayerLabel;
+            m_ClientGameManager.MatchPlayerDespawned -= RemovePlayerLabel;
         }
     }
 }

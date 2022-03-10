@@ -19,7 +19,7 @@ namespace Matchplay.Editor
         const string relativeBuildFolder = "Builds";
         const string winClientFolder = "Matchplay-WIN";
         const string osxClientFolder = "Matchplay-OSX";
-        const string linuxServerFolder = "Matchplay-Server";
+        const string linuxServerFolder = "Matchplay-networkServer";
 
         public static string[] AllBuildScenePaths()
         {
@@ -78,14 +78,14 @@ namespace Matchplay.Editor
             ;
         }
 
-        [MenuItem("BuildTools/WIN Client")]
+        [MenuItem("BuildTools/WIN networkClient")]
         public static void BuildWINClient()
         {
             var summary = SquadBuildPlatform(BuildPlatforms.WIN).summary;
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log("Win Client Build succeeded: " + summary.totalTime + " seconds");
+                Debug.Log("Win networkClient Build succeeded: " + summary.totalTime + " seconds");
             }
 
             if (summary.result == BuildResult.Failed)
@@ -94,14 +94,14 @@ namespace Matchplay.Editor
             }
         }
 
-        [MenuItem("BuildTools/Linux Server")]
+        [MenuItem("BuildTools/Linux networkServer")]
         public static void BuildLinuxServer()
         {
             var summary = SquadBuildPlatform(BuildPlatforms.Linux, true).summary;
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log("Linux Server Build succeeded: " + summary.totalTime + " seconds");
+                Debug.Log("Linux networkServer Build succeeded: " + summary.totalTime + " seconds");
             }
 
             if (summary.result == BuildResult.Failed)
@@ -110,14 +110,14 @@ namespace Matchplay.Editor
             }
         }
 
-        [MenuItem("BuildTools/OSX Client")]
+        [MenuItem("BuildTools/OSX networkClient")]
         public static void BuildOSXClient()
         {
             var summary = SquadBuildPlatform(BuildPlatforms.OSX).summary;
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log("OSX Client Build succeeded: " + summary.totalSize + " bytes");
+                Debug.Log("OSX networkClient Build succeeded: " + summary.totalSize + " bytes");
             }
 
             if (summary.result == BuildResult.Failed)

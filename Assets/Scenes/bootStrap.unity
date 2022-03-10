@@ -195,6 +195,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BootStrapper
       objectReference: {fileID: 0}
+    - target: {fileID: 805244812784019366, guid: 234b3de198486ac45a5eba0716554a11, type: 3}
+      propertyPath: m_ClientManagers.Array.size
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 805244812784019367, guid: 234b3de198486ac45a5eba0716554a11, type: 3}
       propertyPath: m_RootOrder
       value: 0

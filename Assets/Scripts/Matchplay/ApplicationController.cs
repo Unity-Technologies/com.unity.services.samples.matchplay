@@ -17,8 +17,6 @@ namespace Matchplay.Shared
 
         [SerializeField]
         List<GameObject> m_ServerManagers = new List<GameObject>();
-        [SerializeField]
-        List<GameObject> m_ClientManagers = new List<GameObject>();
 
         async void Start()
         {
@@ -45,9 +43,7 @@ namespace Matchplay.Shared
             }
             else
             {
-                InstantiateManagers(m_ClientManagers);
-
-                AuthenticationHandler.Singleton.BeginAuth();
+                AuthenticationWrapper.BeginAuth();
                 var clientInstance = Instantiate(m_ClientPrefab);
                 clientInstance.Init();
                 clientInstance.ToMainMenu();

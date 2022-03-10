@@ -4,30 +4,27 @@ using Unity.Netcode;
 using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
+using Unity.Services.Authentication;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
 {
-    public class MatchplayClient : IDisposable
+    public class MatchplayNetworkClient : IDisposable
     {
-        public event Action<Map> MapUpdated;
-        public event Action<GameMode> GameModeUpdated;
-        public event Action<GameQueue> GameQueueUpdated;
+        public event Action<Map> OnServerChangedMap;
+        public event Action<GameMode> OnServerChangedMode;
+        public event Action<GameQueue> OnServerChangedQueue;
 
-        public event Action<ConnectStatus> LocalConnectionFinished;
-        public event Action<ConnectStatus> LocalDisconnectHappened;
+        public event Action<ConnectStatus> OnLocalConnection;
+        public event Action<ConnectStatus> OnLocalDisconnection;
 
-        public event Action<Matchplayer> MatchPlayerSpawned;
-        public event Action<Matchplayer> MatchPlayerDespawned;
-
-        public ulong LocalClientId => m_NetworkManager.LocalClientId;
+        ulong networkClientId => m_NetworkManager.LocalClientId;
 
         /// <summary>
         /// Time in seconds before the client considers a lack of server response a timeout
         /// </summary>
         const int k_TimeoutDuration = 10;
         NetworkManager m_NetworkManager;
-        MatchplayGameInfo m_CurrentGameInfo;
 
         /// <summary>
         /// If a disconnect occurred this will be populated with any contextual information that was available to explain why.
@@ -47,15 +44,8 @@ namespace Matchplay.Client
         public void StartClient(string ipaddress, int port)
         {
             var unityTransport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
-
             unityTransport.SetConnectionData(ipaddress, (ushort)port);
-
             ConnectClient();
-        }
-
-        public void SetClientOptions(MatchplayGameInfo gameInfo)
-        {
-            m_CurrentGameInfo = gameInfo;
         }
 
         /// <summary>
@@ -66,11 +56,11 @@ namespace Matchplay.Client
             if (m_NetworkManager.IsClient)
             {
                 DisconnectReason.SetDisconnectReason(ConnectStatus.UserRequestedDisconnect);
-                m_NetworkManager.DisconnectClient(NetworkManager.Singleton.LocalClientId);
+                m_NetworkManager.DisconnectClient(networkClientId);
             }
         }
 
-        public MatchplayClient()
+        public MatchplayNetworkClient()
         {
             m_NetworkManager = NetworkManager.Singleton;
             m_NetworkManager.OnClientDisconnectCallback += LocalClientDisconnect;
@@ -82,97 +72,78 @@ namespace Matchplay.Client
             return client.GetComponent<Matchplayer>();
         }
 
+        /// <summary>
+        /// Sends some additional data to the server about the client and begins connecting them.
+        /// </summary>
         void ConnectClient()
         {
-            var payload = JsonUtility.ToJson(new ConnectionPayload
-            {
-                clientGUID = ClientPrefs.GetGuid(),
-                playerName = ClientPrefs.PlayerName,
-                clientMatchInfo = m_CurrentGameInfo
-            });
+            var userData = ClientGameManager.Singleton.observableUser.Data;
+            var payload = JsonUtility.ToJson(userData);
 
             var payloadBytes = System.Text.Encoding.UTF8.GetBytes(payload);
 
             m_NetworkManager.NetworkConfig.ConnectionData = payloadBytes;
             m_NetworkManager.NetworkConfig.ClientConnectionBufferTimeout = k_TimeoutDuration;
 
-            //and...we're off! Netcode will establish a socket connection to the host.
-            //  If the socket connection fails, we'll hear back by getting an LocalClientDisconnect callback for ourselves and get a message telling us the reason
-            //  If the socket connection succeeds, we'll get our  LocalConnectionFinished invoked. This is where game-layer failures will be reported.
+            //  If the socket connection fails, we'll hear back by getting an ReceiveLocalClientDisconnectStatus callback for ourselves and get a message telling us the reason
+            //  If the socket connection succeeds, we'll get our  ReceiveLocalClientConnectStatus callback This is where game-layer failures will be reported.
             m_NetworkManager.StartClient();
-
-            // should only do this once BootClient has been called (start client will initialize CustomMessagingManager
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ConnectionResult, ReceiveServerToClientConnectResult_CustomMessage);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.DisconnectionResult, RecieveServerToClientDisconnectResult_CustomMessage);
+            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, ReceiveLocalClientConnectStatus);
+            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, ReceiveLocalClientDisconnectStatus);
             MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedMap, ReceiveServerMap);
             MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedQueue, ReceiveServerMode);
             MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedGameMode, ReceiveServerQueue);
         }
 
-        void ReceiveServerToClientConnectResult_CustomMessage(ulong clientId, FastBufferReader reader)
+        void ReceiveLocalClientConnectStatus(ulong clientId, FastBufferReader reader)
         {
             reader.ReadValueSafe(out ConnectStatus status);
-            OnClientConnected(clientId, status);
-        }
-
-        void RecieveServerToClientDisconnectResult_CustomMessage(ulong clientId, FastBufferReader reader)
-        {
-            reader.ReadValueSafe(out ConnectStatus status);
-            OnClientDisconnected(clientId, status);
-        }
-
-        //These Messages are sent to all clients
-        void ReceiveServerMap(ulong unused, FastBufferReader reader)
-        {
-            reader.ReadValueSafe(out Map map);
-            Debug.Log($"Got Map from server. {map}");
-            MapUpdated?.Invoke(map);
-        }
-
-        void ReceiveServerMode(ulong unused, FastBufferReader reader)
-        {
-            reader.ReadValueSafe(out GameMode gameInfo);
-            Debug.Log($"Got GameInfo from server. {gameInfo}");
-            GameModeUpdated?.Invoke(gameInfo);
-        }
-
-        void ReceiveServerQueue(ulong unused, FastBufferReader reader)
-        {
-            reader.ReadValueSafe(out GameQueue queueMode);
-            Debug.Log($"Got GameQueue from server. {queueMode}");
-            GameQueueUpdated?.Invoke(queueMode);
-        }
-
-        void OnClientConnected(ulong clientId, ConnectStatus status)
-        {
-            //on success, there is nothing to do (the Netcode for GameObjects (Netcode) scene management system will take us to the next scene).
-            //on failure, we must raise an event so that the UI layer can display something.
-            Debug.Log("Recieved LocalConnectionFinished Got status: " + status);
-
-            if (status == ConnectStatus.Success)
-                MatchPlayerSpawned?.Invoke(GetMatchPlayer(clientId));
-
-            if (clientId != LocalClientId)
-                return;
+            Debug.Log("ReceiveLocalClientConnectStatus: " + status);
 
             //this indicates a game level failure, rather than a network failure. See note in ServerGameNetPortal.
             if (status != ConnectStatus.Success)
                 DisconnectReason.SetDisconnectReason(status);
 
-            LocalConnectionFinished?.Invoke(status);
+            OnLocalConnection?.Invoke(status);
         }
 
-        void OnClientDisconnected(ulong clientId, ConnectStatus status)
+        void ReceiveLocalClientDisconnectStatus(ulong clientId, FastBufferReader reader)
         {
-            MatchPlayerDespawned?.Invoke(GetMatchPlayer(clientId));
-            if (clientId == LocalClientId)
-                return;
+            reader.ReadValueSafe(out ConnectStatus status);
+            Debug.Log("ReceiveLocalClientDisconnectStatus: " + status);
             DisconnectReason.SetDisconnectReason(status);
+        }
+
+
+        //TODO RECIEVED MESSAGES FROM SERVER ARE WRONG?!
+        //These Messages are sent to all clients
+        void ReceiveServerMap(ulong unused, FastBufferReader reader)
+        {
+            reader.ReadValueSafe(out int map);
+            var serverMap = (Map)map;
+            Debug.Log($"ReceiveServerMap: {serverMap}");
+            OnServerChangedMap?.Invoke(serverMap);
+        }
+
+        void ReceiveServerMode(ulong unused, FastBufferReader reader)
+        {
+            reader.ReadValueSafe(out int gameInfo);
+            var serverMode = (GameMode)gameInfo;
+            Debug.Log($"ReceiveServerMode: {serverMode}");
+            OnServerChangedMode?.Invoke(serverMode);
+        }
+
+        void ReceiveServerQueue(ulong unused, FastBufferReader reader)
+        {
+            reader.ReadValueSafe(out int gamequeue);
+            var serverGameQueue = (GameQueue)gamequeue;
+            Debug.Log($"ReceiveServerQueue: {serverGameQueue}");
+            OnServerChangedQueue?.Invoke(serverGameQueue);
         }
 
         void LocalClientDisconnect(ulong clientId)
         {
-            if (clientId == LocalClientId)
+            if (clientId == networkClientId)
                 return;
 
             //On a client disconnect we want to take them back to the main menu.
@@ -184,7 +155,7 @@ namespace Matchplay.Client
             // Just shut down networking and switch back to main menu.
             m_NetworkManager.Shutdown();
 
-            LocalDisconnectHappened?.Invoke(DisconnectReason.Reason);
+            OnLocalDisconnection?.Invoke(DisconnectReason.Reason);
 
             SceneManager.LoadScene("mainMenu");
         }
@@ -194,8 +165,8 @@ namespace Matchplay.Client
             if (m_NetworkManager != null && m_NetworkManager.CustomMessagingManager != null)
             {
                 m_NetworkManager.OnClientDisconnectCallback -= LocalClientDisconnect;
-                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ConnectionResult, ReceiveServerToClientConnectResult_CustomMessage);
-                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.DisconnectionResult, RecieveServerToClientDisconnectResult_CustomMessage);
+                MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientConnected);
+                MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientDisconnected);
                 MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedMap);
                 MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedQueue);
                 MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedGameMode);

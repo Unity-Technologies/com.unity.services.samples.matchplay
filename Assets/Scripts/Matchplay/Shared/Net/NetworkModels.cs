@@ -16,34 +16,19 @@ namespace Matchplay.Networking
         LoggedInAgain, //logged in on a separate client, causing this one to be kicked out.
         UserRequestedDisconnect, //Intentional Disconnect triggered by the user.
         GenericDisconnect, //server disconnected, but no specific reason given.
-        Timeout //Client timed out while connecting
+        Timeout //networkClient timed out while connecting
     }
 
-    [Serializable]
-    public class ConnectionPayload
-    {
-        public string clientGUID;
-        public string playerName;
-        public MatchplayGameInfo clientMatchInfo;
-    }
+//
+//    public struct PlayerConnectionPayload
+//    {
+//        public string clientAuthID;
+//        public string playerName;
+//        public GameInfo clientMatchInfo;
+//    }
 
     /// <summary>
     /// Represents a single player on the game server
     /// </summary>
-    public struct UserData
-    {
-        public string playerName; //name of the player
-        public ulong clientId; //the identifying id of the client
-        public MatchplayGameInfo playerGameInfo;//The game info the player thought he was joining with
 
-        public UserData(string playerName, ulong clientId, MatchplayGameInfo gameInfo)
-        {
-            this.playerName = playerName;
-            this.clientId = clientId;
-            playerGameInfo = gameInfo;
-
-        }
-
-
-    }
 }

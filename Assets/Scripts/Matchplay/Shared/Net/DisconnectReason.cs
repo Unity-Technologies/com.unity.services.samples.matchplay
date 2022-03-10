@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Matchplay.Networking
 {
     /// <summary>
-    /// This class provides some additional context for the connection managed by the MatchplayClient. If a disconnect occurrs, or is expected to occur, client
+    /// This class provides some additional context for the connection managed by the MatchplayNetworkClient. If a disconnect occurrs, or is expected to occur, client
     /// code can set the reason why here. Then subsequent code can interrogate this class to get the disconnect reason, and display appropriate information to
     /// the user, even after a scene transition has occurred. The state is set back to Undefined if a new connection is begun.
     /// </summary>
