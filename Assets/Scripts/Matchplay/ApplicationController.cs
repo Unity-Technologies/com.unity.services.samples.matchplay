@@ -18,7 +18,7 @@ namespace Matchplay.Shared
         [SerializeField]
         List<GameObject> m_ServerManagers = new List<GameObject>();
 
-        async void Start()
+        void Start()
         {
             DontDestroyOnLoad(gameObject);
 

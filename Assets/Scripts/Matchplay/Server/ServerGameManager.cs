@@ -13,8 +13,6 @@ namespace Matchplay.Server
         int m_QueryPort = 7787;
         UnitySqp m_UnitySqp;
 
-        bool m_GameSetup = false;
-
         public static ServerGameManager Singleton
         {
             get

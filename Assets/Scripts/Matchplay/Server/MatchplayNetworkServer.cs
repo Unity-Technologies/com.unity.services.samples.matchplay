@@ -286,7 +286,7 @@ namespace Matchplay.Server
         /// </summary>
         /// <param name="networkId"> guid of the client whose data is requested</param>
         /// <returns>Player data struct matching the given ID</returns>
-        UserData? GetPlayerData(ulong networkId)
+        UserData GetPlayerData(ulong networkId)
         {
             //First see if we have a guid matching the clientID given.
             Debug.Log($"Attempting to get player data for: {networkId}");

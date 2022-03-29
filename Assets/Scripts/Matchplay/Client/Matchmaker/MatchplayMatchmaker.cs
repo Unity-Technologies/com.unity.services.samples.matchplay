@@ -154,7 +154,6 @@ namespace Matchplay.Client
         /// </summary>
         CreateTicketOptions MatchmakingToTicketOptions(UserData data)
         {
-
             var attributes = new Dictionary<string, object>
             {
                 { k_ModeAttribute, (double)data.gameInfo.gameMode }

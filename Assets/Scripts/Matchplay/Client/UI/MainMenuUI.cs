@@ -19,7 +19,6 @@ namespace Matchplay.Client.UI
         UIDocument m_Document;
         [SerializeField]
         ClientGameManager m_GameManager;
-        MainMenuPlayState m_PlayState = MainMenuPlayState.Ready;
 
         bool m_LocalLaunchMode;
         string m_LocalIP;
