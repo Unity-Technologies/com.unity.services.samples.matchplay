@@ -49,7 +49,10 @@ namespace Matchplay.Server
 
         public override void OnNetworkDespawn()
         {
-            ClientGameManager.Singleton.RemoveMatchPlayer(this);
+            if (IsClient)
+            {
+                ClientGameManager.Singleton.RemoveMatchPlayer(this);
+            }
         }
     }
 }

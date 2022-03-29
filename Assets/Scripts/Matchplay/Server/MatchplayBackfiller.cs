@@ -14,7 +14,7 @@ namespace Matchplay.Server
 
         public MatchplayBackfiller(string connection, UserData data, MatchProperties properties, List<Player> players)
         {
-            var backfillProperties = new BackfillTicketProperties(properties, players);
+            var backfillProperties = new BackfillTicketProperties(properties);
 
             DoBackfill(connection, data, backfillProperties);
         }
@@ -22,7 +22,7 @@ namespace Matchplay.Server
         public async void DoBackfill(string connection, UserData data, BackfillTicketProperties properties)
         {
             await UnityServices.InitializeAsync();
-            var attributes = new Dictionary<string, double>()
+            var attributes = new Dictionary<string, object>()
             {
                 { MatchplayMatchmaker.k_ModeAttribute, (double)data.gameInfo.gameMode }
             };

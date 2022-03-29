@@ -39,10 +39,11 @@ namespace Matchplay.Client
         {
             m_CancelToken = new CancellationTokenSource();
             var createTicketOptions = MatchmakingToTicketOptions(data);
+            var players = new List<Player> { new Player(data.clientAuthId, data.gameInfo) };
             try
             {
                 m_IsMatchmaking = true;
-                var createResult = await MatchmakerService.Instance.CreateTicketAsync(createTicketOptions);
+                var createResult = await MatchmakerService.Instance.CreateTicketAsync(players, createTicketOptions);
                 m_LastUsedTicket = createResult.Id;
                 try
                 {
@@ -57,11 +58,11 @@ namespace Matchplay.Client
                             var matchAssignment = (MultiplayAssignment)checkTicket.Value;
                             switch (matchAssignment.Status)
                             {
-                                case "Found":
+                                case MultiplayAssignment.StatusOptions.Found:
                                     return ReturnMatchResult(MatchResult.Success, "", matchAssignment);
-                                case "Timeout":
+                                case MultiplayAssignment.StatusOptions.Timeout:
                                     return ReturnMatchResult(MatchResult.MatchAssignmentError, $"Ticket: {m_LastUsedTicket} Timed out.");
-                                case "Failed":
+                                case MultiplayAssignment.StatusOptions.Failed:
                                     return ReturnMatchResult(MatchResult.MatchAssignmentError, $"Failed: {matchAssignment.Message}");
                                 default:
                                     Debug.Log($"Assignment Status: {matchAssignment.Status}");
@@ -153,7 +154,7 @@ namespace Matchplay.Client
         /// </summary>
         CreateTicketOptions MatchmakingToTicketOptions(UserData data)
         {
-            var players = new List<Player> { new Player(data.clientAuthId, data.gameInfo) };
+
             var attributes = new Dictionary<string, object>
             {
                 { k_ModeAttribute, (double)data.gameInfo.gameMode }
@@ -161,7 +162,7 @@ namespace Matchplay.Client
 
             var queueName = data.gameInfo.MultiplayQueue();
 
-            return new CreateTicketOptions(queueName, attributes, players);
+            return new CreateTicketOptions(queueName, attributes);
         }
 
         public void Dispose()
