@@ -39,7 +39,9 @@ namespace Matchplay.Shared
 
                 var serverInstance = Instantiate(m_ServerPrefab);
                 serverInstance.Init();
-                serverInstance.BeginServer();
+#pragma warning disable 4014
+                serverInstance.BeginServerAsync();
+#pragma warning restore 4014
             }
             else
             {

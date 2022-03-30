@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
@@ -23,7 +24,8 @@ namespace Matchplay.Shared
     public enum GameQueue
     {
         Casual,
-        Competetive
+        Competetive,
+        Missing
     }
 
     /// <summary>
@@ -143,7 +145,7 @@ namespace Matchplay.Shared
     }
 
     /// <summary>
-    /// Subset of information that pertains to the setup of a game
+    /// Subset of information that sets up the map and gameplay
     /// </summary>
     [Serializable]
     public class GameInfo
@@ -151,6 +153,15 @@ namespace Matchplay.Shared
         public Map map;
         public GameMode gameMode;
         public GameQueue gameQueue;
+
+        //QueueNames in the dashboard can be different than your local queue definitions (If you want nice names for them)
+        const string k_MultiplayCasualQueue = "casual-queue";
+        const string k_MultiplayCompetetiveQueue = "competetive-queue";
+        static readonly Dictionary<string, GameQueue> k_MultiplayToLocalQueueNames = new Dictionary<string, GameQueue>
+        {
+            { k_MultiplayCasualQueue, GameQueue.Casual },
+            { k_MultiplayCompetetiveQueue, GameQueue.Competetive }
+        };
 
         public override string ToString()
         {
@@ -166,14 +177,25 @@ namespace Matchplay.Shared
         /// Convert queue enums to ticket queue name
         /// (Same as your queue name in the matchmaker dashboard)
         /// </summary>
-        public string MultiplayQueue()
+        public string ToMultiplayQueue()
         {
             return gameQueue switch
             {
-                GameQueue.Casual => "casual-queue",
-                GameQueue.Competetive => "competetive-queue",
+                GameQueue.Casual => k_MultiplayCasualQueue,
+                GameQueue.Competetive => k_MultiplayCompetetiveQueue,
                 _ => "casual-queue"
             };
+        }
+
+        public static GameQueue ToGameQueue(string multiplayQueue)
+        {
+            if (!k_MultiplayToLocalQueueNames.ContainsKey(multiplayQueue))
+            {
+                Debug.LogWarning($"No Queue that maps to {multiplayQueue}");
+                return GameQueue.Missing;
+            }
+
+            return k_MultiplayToLocalQueueNames[multiplayQueue];
         }
     }
 }

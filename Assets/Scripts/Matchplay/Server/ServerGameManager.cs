@@ -1,17 +1,25 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
+using Matchplay.Tools;
+using Unity.Services.Matchmaker.Models;
+using Random = UnityEngine.Random;
 
 namespace Matchplay.Server
 {
     public class ServerGameManager : MonoBehaviour
     {
         public MatchplayNetworkServer networkServer => m_NetworkServer;
+
         MatchplayNetworkServer m_NetworkServer;
+        MatchplayBackfiller m_Backfiller;
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
-        UnitySqp m_UnitySqp;
+
+        MultiplayService m_MultiplayService;
 
         public static ServerGameManager Singleton
         {
@@ -34,17 +42,88 @@ namespace Matchplay.Server
         public void Init()
         {
             m_NetworkServer = new MatchplayNetworkServer();
+            m_MultiplayService = new MultiplayService();
         }
 
-        public void BeginServer()
+        public async Task BeginServerAsync()
         {
             m_ServerIP = ApplicationData.IP();
             m_ServerPort = ApplicationData.Port();
             m_QueryPort = ApplicationData.QPort();
-            networkServer.StartServer(m_ServerIP, m_ServerPort);
-            m_UnitySqp = new UnitySqp();
-            m_UnitySqp.StartSqp(m_ServerIP, m_ServerPort, m_QueryPort);
-            networkServer.ToWaitingScene();
+
+            var mmAllocationPayload = await m_MultiplayService.BeginServerAndAwaitMatchmakerAllocation();
+            var intersectedMatchInfo = PayloadToMatchInfo(mmAllocationPayload);
+
+            await m_MultiplayService.BeginServerCheck(intersectedMatchInfo);
+            m_NetworkServer.StartServer(m_ServerIP, m_ServerPort); //Use Network transforms on the chairs/players to sync positions
+            m_NetworkServer.SetMap(intersectedMatchInfo.map);
+            m_NetworkServer.SetGameMode(intersectedMatchInfo.gameMode);
+            m_NetworkServer.SetQueueMode(intersectedMatchInfo.gameQueue);
+        }
+
+        /// <summary>
+        /// Take the list of players and find the most popular game preferences and run the server with those
+        /// </summary>
+        GameInfo PayloadToMatchInfo(MatchmakerAllocationPayload mmAllocation)
+        {
+            var mapCounter = new Dictionary<Map, int>();
+            var modeCounter = new Dictionary<GameMode, int>();
+
+            //Gather all the modes all the players have selected
+            foreach (var player in mmAllocation.MatchProperties.Players)
+            {
+                var playerGameInfo = player.CustomData.GetAs<GameInfo>();
+
+                //Since we are using flags, each player might have more than one map selected.
+                foreach (var flag in playerGameInfo.map.GetUniqueFlags())
+                    mapCounter[flag] += 1;
+                foreach (var mode in playerGameInfo.gameMode.GetUniqueFlags())
+                    modeCounter[mode] += 1;
+            }
+
+            Map mostPopularMap = Map.None;
+            int highestCount = 0;
+
+            foreach (var (map, count) in mapCounter)
+            {
+                //Flip a coin for equally popular maps
+                if (count == highestCount)
+                {
+                    if (Random.Range(0, 2) != 0)
+                        mostPopularMap = map;
+                    continue;
+                }
+
+                if (count > highestCount)
+                {
+                    mostPopularMap = map;
+                    highestCount = count;
+                }
+            }
+
+            GameMode mostPopularMode = GameMode.None;
+            highestCount = 0;
+            foreach (var (gameMode, count) in modeCounter)
+            {
+                //Flip a coin for equally popular maps
+                if (count == highestCount)
+                {
+                    if (Random.Range(0, 2) != 0)
+                        mostPopularMode = gameMode;
+                    continue;
+                }
+
+                if (count > highestCount)
+                {
+                    mostPopularMode = gameMode;
+                    highestCount = count;
+                }
+            }
+
+            //Convert from the multiplay queue values to local enums
+            var queue = GameInfo.ToGameQueue(mmAllocation.QueueName);
+
+            return new GameInfo { map = mostPopularMap, gameMode = mostPopularMode, gameQueue = queue };
         }
 
         void Start()
@@ -54,7 +133,7 @@ namespace Matchplay.Server
 
         public void OnDestroy()
         {
-            m_UnitySqp?.Dispose();
+            //  MultiplayService?.Dispose();
             networkServer?.Dispose();
         }
     }

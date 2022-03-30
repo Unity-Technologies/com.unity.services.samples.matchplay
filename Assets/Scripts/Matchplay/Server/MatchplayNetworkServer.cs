@@ -66,7 +66,6 @@ namespace Matchplay.Server
 
         void OnNetworkReady()
         {
-            m_NetworkManager.OnClientConnectedCallback += OnClientConnected;
             m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
         }
 
@@ -126,27 +125,6 @@ namespace Matchplay.Server
 
             // connection approval will create a player object for you
             SetupPlayerPrefab(networkId, userData.userName);
-        }
-
-        void OnClientConnected(ulong networkId)
-        {
-            var player = GetPlayerData(networkId);
-            if (player != null && m_InitializedServer == false)
-            {
-                FirstPlayerJoinedSetup(player.gameInfo);
-                m_InitializedServer = true;
-            }
-        }
-
-        /// <summary>
-        /// First player that joins the server sets the map info
-        /// </summary>
-        void FirstPlayerJoinedSetup(GameInfo gameInfo)
-        {
-            Debug.Log($"Setting Server to first user : {gameInfo}");
-            UpdateMap(gameInfo.map);
-            UpdateMode(gameInfo.gameMode);
-            UpdateQueueMode(gameInfo.gameQueue);
         }
 
         /// <summary>
@@ -238,7 +216,7 @@ namespace Matchplay.Server
             MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedQueue, writer);
         }
 
-        void UpdateMap(Map newMap)
+        public void SetMap(Map newMap)
         {
             m_ServerGameInfo.map = newMap;
             var sceneString = ToMap(m_ServerGameInfo.map);
@@ -252,13 +230,13 @@ namespace Matchplay.Server
             SendServerChangedMap(newMap);
         }
 
-        void UpdateMode(GameMode mode)
+        public void SetGameMode(GameMode mode)
         {
             m_ServerGameInfo.gameMode = mode;
             SendServerChangedGameMode(mode);
         }
 
-        void UpdateQueueMode(GameQueue queueMode)
+        public void SetQueueMode(GameQueue queueMode)
         {
             m_ServerGameInfo.gameQueue = queueMode;
             SendServerChangedQueueMode(queueMode);
@@ -281,36 +259,36 @@ namespace Matchplay.Server
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="networkId"> guid of the client whose data is requested</param>
-        /// <returns>Player data struct matching the given ID</returns>
-        UserData GetPlayerData(ulong networkId)
-        {
-            //First see if we have a guid matching the clientID given.
-            Debug.Log($"Attempting to get player data for: {networkId}");
-            if (m_NetworkIdToAuth.TryGetValue(networkId, out var clientAuth))
-            {
-                if (m_ClientData.TryGetValue(clientAuth, out var playerData))
-                    return playerData;
-
-                Debug.LogError($"No UserData of matching GUID found: {clientAuth}");
-            }
-            else
-            {
-                Debug.LogError($"No client GUID found mapped to the given client Network ID: {networkId}");
-            }
-
-            return null;
-        }
+//
+//        /// <summary>
+//        ///
+//        /// </summary>
+//        /// <param name="networkId"> guid of the client whose data is requested</param>
+//        /// <returns>Player data struct matching the given ID</returns>
+//        UserData GetPlayerData(ulong networkId)
+//        {
+//            //First see if we have a guid matching the clientID given.
+//            Debug.Log($"Attempting to get player data for: {networkId}");
+//            if (m_NetworkIdToAuth.TryGetValue(networkId, out var clientAuth))
+//            {
+//                if (m_ClientData.TryGetValue(clientAuth, out var playerData))
+//                    return playerData;
+//
+//                Debug.LogError($"No UserData of matching GUID found: {clientAuth}");
+//            }
+//            else
+//            {
+//                Debug.LogError($"No client GUID found mapped to the given client Network ID: {networkId}");
+//            }
+//
+//            return null;
+//        }
 
         public void Dispose()
         {
             if (m_NetworkManager == null)
                 return;
             m_NetworkManager.ConnectionApprovalCallback -= ApprovalCheck;
-            m_NetworkManager.OnClientConnectedCallback -= OnClientConnected;
             m_NetworkManager.OnClientDisconnectCallback -= OnClientDisconnect;
             m_NetworkManager.OnServerStarted -= OnNetworkReady;
         }

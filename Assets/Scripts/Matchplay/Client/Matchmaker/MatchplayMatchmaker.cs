@@ -159,7 +159,7 @@ namespace Matchplay.Client
                 { k_ModeAttribute, (double)data.gameInfo.gameMode }
             };
 
-            var queueName = data.gameInfo.MultiplayQueue();
+            var queueName = data.gameInfo.ToMultiplayQueue();
 
             return new CreateTicketOptions(queueName, attributes);
         }

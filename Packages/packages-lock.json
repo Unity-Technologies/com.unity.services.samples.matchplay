@@ -125,7 +125,7 @@
     },
     "com.unity.nuget.newtonsoft-json": {
       "version": "3.0.1",
-      "depth": 2,
+      "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -199,6 +199,33 @@
         "com.unity.modules.unitywebrequesttexture": "1.0.0",
         "com.unity.modules.unitywebrequestwww": "1.0.0",
         "com.unity.nuget.newtonsoft-json": "2.0.0",
+        "com.unity.services.authentication": "1.0.0-pre.37"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.services.multiplay": {
+      "version": "1.0.0-pre.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.services.core": "1.2.0",
+        "com.unity.services.wire": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
+        "com.unity.modules.unitywebrequestassetbundle": "1.0.0",
+        "com.unity.modules.unitywebrequestaudio": "1.0.0",
+        "com.unity.modules.unitywebrequesttexture": "1.0.0",
+        "com.unity.modules.unitywebrequestwww": "1.0.0",
+        "com.unity.nuget.newtonsoft-json": "3.0.1"
+      },
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
+    },
+    "com.unity.services.wire": {
+      "version": "1.0.0",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.services.core": "1.2.0",
+        "com.unity.nuget.newtonsoft-json": "3.0.1",
         "com.unity.services.authentication": "1.0.0-pre.37"
       },
       "url": "https://packages.unity.com"

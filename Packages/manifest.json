@@ -13,6 +13,7 @@
     "com.unity.render-pipelines.universal": "12.1.4",
     "com.unity.services.authentication": "1.0.0-pre.37",
     "com.unity.services.matchmaker": "1.0.0-pre.8",
+    "com.unity.services.multiplay": "1.0.0-pre.1",
     "com.unity.test-framework": "1.1.30",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.toolchain.win-x86_64-linux-x86_64": "1.0.0",
@@ -50,5 +51,14 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
-  }
+  },
+  "scopedRegistries": [
+    {
+      "name": "Artifactory",
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates",
+      "scopes": [
+        "com.unity.services.multiplay"
+      ]
+    }
+  ]
 }
