@@ -1,14 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using Unity.Netcode;
-using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Infrastructure;
-using Matchplay.Networking;
 using Newtonsoft.Json;
 using Unity.Services.Matchmaker.Models;
 using Unity.Services.Multiplay;
 using UnityEngine.Networking;
+using Debug = UnityEngine.Debug;
 
 namespace Matchplay.Server
 {
@@ -20,50 +18,51 @@ namespace Matchplay.Server
         IServerCheckManager m_ServerCheckManager;
         IServerEvents m_ServerEvents;
         MultiplayAllocation m_Allocation;
+
         const string k_PayloadProxyUrl = "http://localhost:8086";
+        const int k_AllocationTimeout = 10000;
 
         public async Task<MatchmakerAllocationPayload> BeginServerAndAwaitMatchmakerAllocation()
         {
             m_Allocation = null;
             m_MultiplayService = Unity.Services.Multiplay.MultiplayService.Instance;
-
             m_Servercallbacks = new MultiplayEventCallbacks();
             m_Servercallbacks.Allocate += OnMultiplayAllocation;
             m_Servercallbacks.Deallocate += OnMultiplayDeAllocation;
 
             m_ServerEvents = await m_MultiplayService.SubscribeToServerEventsAsync(m_Servercallbacks);
-            var mmPayload = await AwaitMatchmakerPayload();
-            await m_MultiplayService.ServerReadyForPlayersAsync();
-            return mmPayload;
+            Debug.Log("Awaiting Multiplay Allocation");
+
+            var mmPayloadTask = AwaitMatchmakerPayload();
+            if (await Task.WhenAny(mmPayloadTask, Task.Delay(k_AllocationTimeout)) == mmPayloadTask)
+            {
+                await m_MultiplayService.ServerReadyForPlayersAsync();
+                return mmPayloadTask.Result;
+            }
+
+            Debug.LogWarning("Allocation Timed out!");
+            return null;
         }
 
         public async Task BeginServerCheck(GameInfo info)
         {
             m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync(8, "Matchplay Server", info.gameMode.ToString(), "0", info.map.ToString());
-            RegisterNetworkListenrers();
         }
 
         //The networked server is our source of truth for what is going on, so we update our multiplay check server with values from there.
-        void RegisterNetworkListenrers()
-        {
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, OnPlayerAdded);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, OnPlayerRemoved);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedMap, OnMapChanged);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedGameMode, OnModeChanged);
-        }
 
         //Wait for the allocation to be called back before continuing
         async Task<MatchmakerAllocationPayload> AwaitMatchmakerPayload()
         {
             while (m_Allocation == null)
             {
-                await Task.Delay(500);
+                await Task.Delay(100);
             }
 
             return await GetMatchmakerAllocationPayloadAsync(m_Allocation.AllocationId);
         }
 
-        async void OnMultiplayAllocation(MultiplayAllocation allocation)
+        void OnMultiplayAllocation(MultiplayAllocation allocation)
         {
             m_Allocation = allocation;
         }
@@ -108,51 +107,33 @@ namespace Matchplay.Server
             }
         }
 
-        void OnPlayerAdded(ulong clientID, FastBufferReader reader)
+        public void SetPlayerCount(ushort count)
         {
-            if (m_ServerCheckManager == null)
-                return;
-            reader.ReadValueSafe(out ConnectStatus status);
-            if (status == ConnectStatus.Success)
-            {
-                m_ServerCheckManager.CurrentPlayers += 1;
-            }
+            m_ServerCheckManager.CurrentPlayers = count;
         }
 
-        void OnPlayerRemoved(ulong clientID, FastBufferReader reader)
+        public void AddPlayer()
         {
-            if (m_ServerCheckManager == null)
-                return;
-            reader.ReadValueSafe(out ConnectStatus status);
-            if (status == ConnectStatus.GenericDisconnect || status == ConnectStatus.UserRequestedDisconnect)
-            {
-                m_ServerCheckManager.CurrentPlayers -= 1;
-            }
+            m_ServerCheckManager.CurrentPlayers += 1;
         }
 
-        void OnMapChanged(ulong unused, FastBufferReader reader)
+        public void RemovePlayer()
         {
-            if (m_ServerCheckManager == null)
-                return;
-            reader.ReadValueSafe(out Map map);
-            m_ServerCheckManager.Map = map.ToString();
+            m_ServerCheckManager.CurrentPlayers -= 1;
         }
 
-        void OnModeChanged(ulong unused, FastBufferReader reader)
+        public void ChangedMap(Map oldMap, Map newMap)
         {
-            if (m_ServerCheckManager == null)
-                return;
-            reader.ReadValueSafe(out GameMode mode);
+            m_ServerCheckManager.Map = newMap.ToString();
+        }
 
+        public void ChangedMode(GameMode mode)
+        {
             m_ServerCheckManager.GameType = mode.ToString();
         }
 
         public void Dispose()
         {
-            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientConnected);
-            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientDisconnected);
-            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedMap);
-            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedGameMode);
             m_Servercallbacks.Allocate -= OnMultiplayAllocation;
             m_Servercallbacks.Deallocate -= OnMultiplayDeAllocation;
             m_ServerEvents.UnsubscribeAsync();

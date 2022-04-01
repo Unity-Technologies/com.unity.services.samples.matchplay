@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Tools;
-using Unity.Services.Matchmaker.Models;
+using Unity.Services.Core;
 using Random = UnityEngine.Random;
 
 namespace Matchplay.Server
@@ -18,6 +18,7 @@ namespace Matchplay.Server
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
+        int m_matchmakerInfoTimeout = 12000;
 
         MultiplayService m_MultiplayService;
 
@@ -51,14 +52,54 @@ namespace Matchplay.Server
             m_ServerPort = ApplicationData.Port();
             m_QueryPort = ApplicationData.QPort();
 
-            var mmAllocationPayload = await m_MultiplayService.BeginServerAndAwaitMatchmakerAllocation();
-            var intersectedMatchInfo = PayloadToMatchInfo(mmAllocationPayload);
+            GameInfo startingGameInfo = new GameInfo
+            {
+                gameMode = GameMode.Staring,
+                map = Map.Lab,
+                gameQueue = GameQueue.Casual
+            };
 
-            await m_MultiplayService.BeginServerCheck(intersectedMatchInfo);
-            m_NetworkServer.StartServer(m_ServerIP, m_ServerPort); //Use Network transforms on the chairs/players to sync positions
-            m_NetworkServer.SetMap(intersectedMatchInfo.map);
-            m_NetworkServer.SetGameMode(intersectedMatchInfo.gameMode);
-            m_NetworkServer.SetQueueMode(intersectedMatchInfo.gameQueue);
+            var getMatchInfoTask = GetMatchInfoAsync();
+            if (await Task.WhenAny(getMatchInfoTask, Task.Delay(m_matchmakerInfoTimeout)) == getMatchInfoTask)
+            {
+                if (getMatchInfoTask.Result != null)
+                {
+                    startingGameInfo = getMatchInfoTask.Result;
+                    await m_MultiplayService.BeginServerCheck(startingGameInfo);
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Connecting to Multiplay Timed out, starting with defaults.");
+            }
+
+            m_NetworkServer.StartServer(m_ServerIP, m_ServerPort, startingGameInfo); //Use Network transforms on the chairs/players to sync positions
+        }
+
+        async Task<GameInfo> GetMatchInfoAsync()
+        {
+            try
+            {
+                await UnityServices.InitializeAsync();
+
+                var mmAllocationPayload = await m_MultiplayService.BeginServerAndAwaitMatchmakerAllocation();
+                if (mmAllocationPayload != null)
+                {
+                    Debug.Log("Got Matchmaker Payload.");
+                    var intersectedMatchInfo = PayloadToMatchInfo(mmAllocationPayload);
+
+                    return intersectedMatchInfo;
+                }
+                else
+                    Debug.LogWarning("No Matchmaker payload, Starting with defaults.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"Unable to Set up the Multiplay Service: {ex}");
+                return null;
+            }
+
+            return null;
         }
 
         /// <summary>

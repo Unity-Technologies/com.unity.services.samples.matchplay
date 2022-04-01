@@ -15,13 +15,7 @@ namespace Matchplay.Server
         public Action<Matchplayer> OnServerPlayerSpawned;
         public Action<Matchplayer> OnServerPlayerDespawned;
 
-        GameInfo m_ServerGameInfo = new GameInfo
-        {
-            gameMode = GameMode.Staring,
-            map = Map.Lab,
-            gameQueue = GameQueue.Casual
-        };
-
+        SynchedServerData m_SynchedServerData;
         bool m_InitializedServer;
         NetworkManager m_NetworkManager;
 
@@ -46,14 +40,20 @@ namespace Matchplay.Server
             // warning: "No ConnectionApproval callback defined. Connection approval will timeout"
             m_NetworkManager.ConnectionApprovalCallback += ApprovalCheck;
             m_NetworkManager.OnServerStarted += OnNetworkReady;
+            m_SynchedServerData = SynchedServerData.Singleton;
         }
 
-        public void StartServer(string ip, int port)
+        public void StartServer(string ip, int port, GameInfo startingGameInfo)
         {
             var unityTransport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
             m_NetworkManager.NetworkConfig.NetworkTransport = unityTransport;
             unityTransport.SetConnectionData(ip, (ushort)port);
+            Debug.Log($"Starting server at {ip}:{port}\nWith: {startingGameInfo}");
+
             m_NetworkManager.StartServer();
+            ChangeMap(startingGameInfo.map);
+            ChangeGameMode(startingGameInfo.gameMode);
+            ChangeQueueMode(startingGameInfo.gameQueue);
         }
 
         /// <summary>
@@ -194,32 +194,22 @@ namespace Matchplay.Server
 
         void SendServerChangedGameMode(GameMode gameMode)
         {
-            var writer = new FastBufferWriter(sizeof(GameMode), Allocator.Temp);
-            writer.WriteValueSafe((int)gameMode);
-            Debug.Log($"Sending networkServer Changed GameMode to : {gameMode}");
-            MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedGameMode, writer);
+            m_SynchedServerData.gameMode.Value = gameMode;
         }
 
         void SendServerChangedMap(Map gameMap)
         {
-            var writer = new FastBufferWriter(sizeof(Map), Allocator.Temp);
-            writer.WriteValueSafe((int)gameMap);
-            Debug.Log($"Sending networkServer Changed Map to : {gameMap}");
-            MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedMap, writer);
+            m_SynchedServerData.map.Value = gameMap;
         }
 
         void SendServerChangedQueueMode(GameQueue queueMode)
         {
-            var writer = new FastBufferWriter(sizeof(GameQueue), Allocator.Temp);
-            writer.WriteValueSafe((int)queueMode);
-            Debug.Log($"Sending networkServer Changed QueueMode to : {queueMode}");
-            MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedQueue, writer);
+            m_SynchedServerData.gameQueue.Value = queueMode;
         }
 
-        public void SetMap(Map newMap)
+        public void ChangeMap(Map newMap)
         {
-            m_ServerGameInfo.map = newMap;
-            var sceneString = ToMap(m_ServerGameInfo.map);
+            var sceneString = ToMap(newMap);
             if (string.IsNullOrEmpty(sceneString))
             {
                 Debug.LogError($"Cant Change map, no valid map selection in {newMap}.");
@@ -230,15 +220,13 @@ namespace Matchplay.Server
             SendServerChangedMap(newMap);
         }
 
-        public void SetGameMode(GameMode mode)
+        public void ChangeGameMode(GameMode mode)
         {
-            m_ServerGameInfo.gameMode = mode;
             SendServerChangedGameMode(mode);
         }
 
-        public void SetQueueMode(GameQueue queueMode)
+        public void ChangeQueueMode(GameQueue queueMode)
         {
-            m_ServerGameInfo.gameQueue = queueMode;
             SendServerChangedQueueMode(queueMode);
         }
 
