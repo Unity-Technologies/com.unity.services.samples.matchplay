@@ -166,7 +166,9 @@ namespace Matchplay.Client
 
         public void Dispose()
         {
+#pragma warning disable 4014
             CancelMatchmaking();
+#pragma warning restore 4014
             m_CancelToken?.Dispose();
         }
     }

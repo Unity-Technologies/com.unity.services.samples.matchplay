@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
-using PlasticGui.Help;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Label = UnityEngine.UIElements.Label;
