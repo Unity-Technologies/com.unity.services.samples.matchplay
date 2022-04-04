@@ -11,10 +11,6 @@ namespace Matchplay.Client
 {
     public class MatchplayNetworkClient : IDisposable
     {
-        public event Action<Map> OnServerChangedMap;
-        public event Action<GameMode> OnServerChangedMode;
-        public event Action<GameQueue> OnServerChangedQueue;
-
         public event Action<ConnectStatus> OnLocalConnection;
         public event Action<ConnectStatus> OnLocalDisconnection;
 
@@ -90,9 +86,6 @@ namespace Matchplay.Client
             m_NetworkManager.StartClient();
             MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, ReceiveLocalClientConnectStatus);
             MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, ReceiveLocalClientDisconnectStatus);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedMap, ReceiveServerMap);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedQueue, ReceiveServerMode);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.ServerChangedGameMode, ReceiveServerQueue);
         }
 
         void ReceiveLocalClientConnectStatus(ulong clientId, FastBufferReader reader)
@@ -112,33 +105,6 @@ namespace Matchplay.Client
             reader.ReadValueSafe(out ConnectStatus status);
             Debug.Log("ReceiveLocalClientDisconnectStatus: " + status);
             DisconnectReason.SetDisconnectReason(status);
-        }
-
-
-        //TODO RECIEVED MESSAGES FROM SERVER ARE WRONG?!
-        //These Messages are sent to all clients
-        void ReceiveServerMap(ulong unused, FastBufferReader reader)
-        {
-            reader.ReadValueSafe(out int map);
-            var serverMap = (Map)map;
-            Debug.Log($"ReceiveServerMap: {serverMap}");
-            OnServerChangedMap?.Invoke(serverMap);
-        }
-
-        void ReceiveServerMode(ulong unused, FastBufferReader reader)
-        {
-            reader.ReadValueSafe(out int gameInfo);
-            var serverMode = (GameMode)gameInfo;
-            Debug.Log($"ReceiveServerMode: {serverMode}");
-            OnServerChangedMode?.Invoke(serverMode);
-        }
-
-        void ReceiveServerQueue(ulong unused, FastBufferReader reader)
-        {
-            reader.ReadValueSafe(out int gamequeue);
-            var serverGameQueue = (GameQueue)gamequeue;
-            Debug.Log($"ReceiveServerQueue: {serverGameQueue}");
-            OnServerChangedQueue?.Invoke(serverGameQueue);
         }
 
         void LocalClientDisconnect(ulong clientId)
@@ -167,9 +133,6 @@ namespace Matchplay.Client
                 m_NetworkManager.OnClientDisconnectCallback -= LocalClientDisconnect;
                 MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientConnected);
                 MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientDisconnected);
-                MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedMap);
-                MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedQueue);
-                MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.ServerChangedGameMode);
             }
         }
     }

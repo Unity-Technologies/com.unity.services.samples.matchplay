@@ -102,10 +102,10 @@ namespace Matchplay.Client.UI
             m_GameManager = ClientGameManager.Singleton;
 
             //Set the game manager casual gameMode defaults to whatever the UI starts with
-            m_GameManager.SetGameModeFlag(GameMode.Meditating, m_MeditationMode.value);
-            m_GameManager.SetGameModeFlag(GameMode.Staring, m_StaringMode.value);
-            m_GameManager.SetMapFlag(Map.Space, m_SpaceMap.value);
-            m_GameManager.SetMapFlag(Map.Lab, m_LabMap.value);
+            m_GameManager.SetGameModePreferencesFlag(GameMode.Meditating, m_MeditationMode.value);
+            m_GameManager.SetGameModePreferencesFlag(GameMode.Staring, m_StaringMode.value);
+            m_GameManager.SetMapPreferencesFlag(Map.Space, m_SpaceMap.value);
+            m_GameManager.SetMapPreferencesFlag(Map.Lab, m_LabMap.value);
 
             SetMatchmakerMode();
 
@@ -133,7 +133,7 @@ namespace Matchplay.Client.UI
             m_LocalLaunchMode = false;
             m_QueueGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.None;
-            if (m_GameManager.observableUser.Queue == GameQueue.Competetive)
+            if (m_GameManager.observableUser.QueuePreference == GameQueue.Competetive)
                 m_GameSettings.contentContainer.style.display = DisplayStyle.None;
             else
                 m_GameSettings.contentContainer.style.display = DisplayStyle.Flex;
@@ -144,7 +144,7 @@ namespace Matchplay.Client.UI
             m_LocalLaunchMode = true;
             m_QueueGroup.contentContainer.style.display = DisplayStyle.None;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.Flex;
-            m_GameSettings.contentContainer.style.display = DisplayStyle.Flex;
+            m_GameSettings.contentContainer.style.display = DisplayStyle.None;
         }
 
         void PlayButtonPressed()
@@ -216,22 +216,22 @@ namespace Matchplay.Client.UI
 
         void MeditationChanged(ChangeEvent<bool> meditationEvent)
         {
-            m_GameManager.SetGameModeFlag(GameMode.Meditating, meditationEvent.newValue);
+            m_GameManager.SetGameModePreferencesFlag(GameMode.Meditating, meditationEvent.newValue);
         }
 
         void StaringChanged(ChangeEvent<bool> staringEvent)
         {
-            m_GameManager.SetGameModeFlag(GameMode.Staring, staringEvent.newValue);
+            m_GameManager.SetGameModePreferencesFlag(GameMode.Staring, staringEvent.newValue);
         }
 
         void SpaceSelection(ChangeEvent<bool> spaceEvent)
         {
-            m_GameManager.SetMapFlag(Map.Space, spaceEvent.newValue);
+            m_GameManager.SetMapPreferencesFlag(Map.Space, spaceEvent.newValue);
         }
 
         void LabSelection(ChangeEvent<bool> labEvent)
         {
-            m_GameManager.SetMapFlag(Map.Lab, labEvent.newValue);
+            m_GameManager.SetMapPreferencesFlag(Map.Lab, labEvent.newValue);
         }
 
         void IPField(ChangeEvent<string> changedTo)

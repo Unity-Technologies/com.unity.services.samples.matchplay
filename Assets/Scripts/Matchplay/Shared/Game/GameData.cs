@@ -70,41 +70,41 @@ namespace Matchplay.Shared
             set => Data.networkId = value;
         }
 
-        public Map Map
+        public Map MapPreferences
         {
             get => Data.gameInfo.map;
             set
             {
                 Data.gameInfo.map = value;
-                onMapChanged?.Invoke(Data.gameInfo.map);
+                onMapPreferencesChanged?.Invoke(Data.gameInfo.map);
             }
         }
 
-        public Action<Map> onMapChanged;
+        public Action<Map> onMapPreferencesChanged;
 
-        public GameMode Mode
+        public GameMode GameModePreferences
         {
             get => Data.gameInfo.gameMode;
             set
             {
                 Data.gameInfo.gameMode = value;
-                onModeChanged?.Invoke(Data.gameInfo.gameMode);
+                onModePreferencesChanged?.Invoke(Data.gameInfo.gameMode);
             }
         }
 
-        public Action<GameMode> onModeChanged;
+        public Action<GameMode> onModePreferencesChanged;
 
-        public GameQueue Queue
+        public GameQueue QueuePreference
         {
             get => Data.gameInfo.gameQueue;
             set
             {
                 Data.gameInfo.gameQueue = value;
-                onQueueChanged?.Invoke(Data.gameInfo.gameQueue);
+                onQueuePreferenceChanged?.Invoke(Data.gameInfo.gameQueue);
             }
         }
 
-        public Action<GameQueue> onQueueChanged;
+        public Action<GameQueue> onQueuePreferenceChanged;
 
         public override string ToString()
         {
@@ -191,7 +191,7 @@ namespace Matchplay.Shared
         {
             if (!k_MultiplayToLocalQueueNames.ContainsKey(multiplayQueue))
             {
-                Debug.LogWarning($"No Queue that maps to {multiplayQueue}");
+                Debug.LogWarning($"No QueuePreference that maps to {multiplayQueue}");
                 return GameQueue.Missing;
             }
 
