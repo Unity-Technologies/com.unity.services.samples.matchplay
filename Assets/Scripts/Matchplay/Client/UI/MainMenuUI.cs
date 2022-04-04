@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Matchplay.Shared;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 namespace Matchplay.Client.UI
@@ -17,8 +18,7 @@ namespace Matchplay.Client.UI
     public class MainMenuUI : MonoBehaviour
     {
         UIDocument m_Document;
-        [SerializeField]
-        ClientGameManager m_GameManager;
+        ClientGameManager gameManager;
 
         bool m_LocalLaunchMode;
         string m_LocalIP;
@@ -30,7 +30,7 @@ namespace Matchplay.Client.UI
         Button m_PlayButton;
 
         DropdownField m_QueueDropDown;
-        VisualElement m_buttonGroup;
+        VisualElement m_ButtonGroup;
         VisualElement m_GameSettings;
         VisualElement m_IPPortGroup;
         VisualElement m_QueueGroup;
@@ -50,7 +50,7 @@ namespace Matchplay.Client.UI
 
             #region visual_groups
 
-            m_buttonGroup = root.Q<VisualElement>("play_button_group");
+            m_ButtonGroup = root.Q<VisualElement>("play_button_group");
             m_QueueGroup = root.Q<VisualElement>("queue_group");
             m_GameSettings = root.Q<VisualElement>("game_settings");
             m_IPPortGroup = root.Q<VisualElement>("ip_port_group");
@@ -99,18 +99,18 @@ namespace Matchplay.Client.UI
 
             #region initial_state_setup
 
-            m_GameManager = ClientGameManager.Singleton;
+            gameManager = ClientGameManager.Singleton;
 
             //Set the game manager casual gameMode defaults to whatever the UI starts with
-            m_GameManager.SetGameModePreferencesFlag(GameMode.Meditating, m_MeditationMode.value);
-            m_GameManager.SetGameModePreferencesFlag(GameMode.Staring, m_StaringMode.value);
-            m_GameManager.SetMapPreferencesFlag(Map.Space, m_SpaceMap.value);
-            m_GameManager.SetMapPreferencesFlag(Map.Lab, m_LabMap.value);
+            gameManager.SetGameModePreferencesFlag(GameMode.Meditating, m_MeditationMode.value);
+            gameManager.SetGameModePreferencesFlag(GameMode.Staring, m_StaringMode.value);
+            gameManager.SetMapPreferencesFlag(Map.Space, m_SpaceMap.value);
+            gameManager.SetMapPreferencesFlag(Map.Lab, m_LabMap.value);
 
             SetMatchmakerMode();
 
             //We can't click play until the auth is set up.
-            m_buttonGroup.SetEnabled(false);
+            m_ButtonGroup.SetEnabled(false);
             await AuthenticationWrapper.Authenticating();
             SetMenuState(MainMenuPlayState.Ready);
 
@@ -133,7 +133,7 @@ namespace Matchplay.Client.UI
             m_LocalLaunchMode = false;
             m_QueueGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.None;
-            if (m_GameManager.observableUser.QueuePreference == GameQueue.Competetive)
+            if (gameManager.observableUser.QueuePreference == GameQueue.Competetive)
                 m_GameSettings.contentContainer.style.display = DisplayStyle.None;
             else
                 m_GameSettings.contentContainer.style.display = DisplayStyle.Flex;
@@ -152,21 +152,30 @@ namespace Matchplay.Client.UI
             if (m_LocalLaunchMode)
             {
                 if (int.TryParse(m_LocalPort, out var localIntPort))
-                    m_GameManager.BeginConnection(m_LocalIP, localIntPort);
+                    gameManager.BeginConnection(m_LocalIP, localIntPort);
                 else
                     Debug.LogError("No valid port in Port Field");
             }
             else
-                m_GameManager.Matchmake(OnMatchmade);
+                gameManager.Matchmake(OnMatchmade);
 
             SetMenuState(MainMenuPlayState.Playing);
         }
 
         async void CancelButtonPressed()
         {
-            SetMenuState(MainMenuPlayState.Cancelling);
-            await m_GameManager.CancelMatchmaking();
-            SetMenuState(MainMenuPlayState.Ready);
+            if (m_LocalLaunchMode)
+            {
+                gameManager.EndConnection();
+                SetMenuState(MainMenuPlayState.Ready);
+            }
+            else
+            {
+                SetMenuState(MainMenuPlayState.Cancelling);
+                await gameManager.CancelMatchmaking();
+                SetMenuState(MainMenuPlayState.Ready);
+            }
+
         }
 
         void OnMatchmade(MatchResult result)
@@ -180,7 +189,7 @@ namespace Matchplay.Client.UI
             {
                 case MainMenuPlayState.Ready:
                     m_PlayButton.contentContainer.style.display = DisplayStyle.Flex;
-                    m_buttonGroup.contentContainer.SetEnabled(true);
+                    m_ButtonGroup.contentContainer.SetEnabled(true);
                     m_CancelButton.contentContainer.style.display = DisplayStyle.None;
                     break;
                 case MainMenuPlayState.Playing:
@@ -188,7 +197,7 @@ namespace Matchplay.Client.UI
                     m_CancelButton.contentContainer.style.display = DisplayStyle.Flex;
                     break;
                 case MainMenuPlayState.Cancelling:
-                    m_buttonGroup.contentContainer.SetEnabled(false);
+                    m_ButtonGroup.contentContainer.SetEnabled(false);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(state), state, null);
@@ -203,7 +212,7 @@ namespace Matchplay.Client.UI
         {
             if (!Enum.TryParse(queueEvent.newValue, out GameQueue selectedQueue))
                 return;
-            m_GameManager.SetGameQueue(selectedQueue);
+            gameManager.SetGameQueue(selectedQueue);
             if (selectedQueue == GameQueue.Competetive)
             {
                 m_GameSettings.contentContainer.SetEnabled(false);
@@ -216,22 +225,22 @@ namespace Matchplay.Client.UI
 
         void MeditationChanged(ChangeEvent<bool> meditationEvent)
         {
-            m_GameManager.SetGameModePreferencesFlag(GameMode.Meditating, meditationEvent.newValue);
+            gameManager.SetGameModePreferencesFlag(GameMode.Meditating, meditationEvent.newValue);
         }
 
         void StaringChanged(ChangeEvent<bool> staringEvent)
         {
-            m_GameManager.SetGameModePreferencesFlag(GameMode.Staring, staringEvent.newValue);
+            gameManager.SetGameModePreferencesFlag(GameMode.Staring, staringEvent.newValue);
         }
 
         void SpaceSelection(ChangeEvent<bool> spaceEvent)
         {
-            m_GameManager.SetMapPreferencesFlag(Map.Space, spaceEvent.newValue);
+            gameManager.SetMapPreferencesFlag(Map.Space, spaceEvent.newValue);
         }
 
         void LabSelection(ChangeEvent<bool> labEvent)
         {
-            m_GameManager.SetMapPreferencesFlag(Map.Lab, labEvent.newValue);
+            gameManager.SetMapPreferencesFlag(Map.Lab, labEvent.newValue);
         }
 
         void IPField(ChangeEvent<string> changedTo)

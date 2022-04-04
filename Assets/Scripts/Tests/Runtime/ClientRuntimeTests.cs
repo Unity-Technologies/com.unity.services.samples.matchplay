@@ -21,7 +21,7 @@ namespace Matchplay.Tests
         /// This behaviour is encapsulated in the ApplicationController.cs for regular runs.
         /// </summary>
         [OneTimeSetUp]
-        public async void ClientSetup() { }
+        public void ClientSetup() { }
 
         [OneTimeTearDown]
         public void ClientTearDown() { }

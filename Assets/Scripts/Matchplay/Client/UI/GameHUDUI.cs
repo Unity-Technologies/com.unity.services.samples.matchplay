@@ -29,17 +29,21 @@ namespace Matchplay.Client.UI
 
         void Start()
         {
-            m_ClientGameManager = ClientGameManager.Singleton;
+            //NetworkDataHolder
+            m_SynchedServerData = SynchedServerData.Singleton;
+            m_SynchedServerData.map.OnValueChanged += OnChangedMap;
+            m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
+            m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
+
+            //UIDocument setup
             var root = gameObject.GetComponent<UIDocument>().rootVisualElement;
             m_GameModeValue = root.Q<Label>("modeValue");
             m_QueueValue = root.Q<Label>("queueValue");
             m_MapValue = root.Q<Label>("mapValue");
             m_HudElement = root.Q<VisualElement>("mainMenuVisual");
-            m_SynchedServerData = SynchedServerData.Singleton;
 
-            m_SynchedServerData.map.OnValueChanged = OnChangedMap;
-            m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
-            m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
+            //GameManagerCallbacks
+            m_ClientGameManager = ClientGameManager.Singleton;
             m_ClientGameManager.networkClient.OnLocalConnection += OnLocalConnection;
             m_ClientGameManager.networkClient.OnLocalDisconnection += OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;
@@ -78,7 +82,7 @@ namespace Matchplay.Client.UI
 
         void OnChangedMap(Map oldMap, Map newMap)
         {
-            m_MapValue.text = newMap.ToString(); //TODO investigate ways to get the actual flags from the flag map
+            m_MapValue.text = newMap.ToString();
         }
 
         void OnModeChanged(GameMode oldGameMode, GameMode newGameMode)
@@ -97,6 +101,9 @@ namespace Matchplay.Client.UI
             m_ClientGameManager.networkClient.OnLocalDisconnection -= OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned -= AddPlayerLabel;
             m_ClientGameManager.MatchPlayerDespawned -= RemovePlayerLabel;
+            m_SynchedServerData.map.OnValueChanged -= OnChangedMap;
+            m_SynchedServerData.gameMode.OnValueChanged -= OnModeChanged;
+            m_SynchedServerData.gameQueue.OnValueChanged -= OnQueueChanged;
         }
     }
 }

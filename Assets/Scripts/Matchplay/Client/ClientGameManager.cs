@@ -46,8 +46,13 @@ namespace Matchplay.Client
 
         public void BeginConnection(string ip, int port)
         {
-            Debug.Log($"Starting networkClient @ {ip}:{port}\n With : {observableUser}");
+            Debug.Log($"Starting networkClient @ {ip}:{port}\nWith : {observableUser}");
             networkClient.StartClient(ip, port);
+        }
+
+        public void EndConnection()
+        {
+            networkClient.StopClient();
         }
 
         public async void Matchmake(Action<MatchResult> onMatchmakerResponse = null)

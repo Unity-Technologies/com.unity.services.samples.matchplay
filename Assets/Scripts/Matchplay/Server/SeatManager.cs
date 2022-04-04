@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Matchplay.Server
 {
@@ -11,12 +12,9 @@ namespace Matchplay.Server
     public class SeatManager : NetworkBehaviour
     {
         [SerializeField]
-        float m_SeatCircleRadius = 2;
+        float seatCircleRadius = 3;
 
-        [SerializeField]
-        Seat m_SeatGraphic;
-
-        Dictionary<Matchplayer, Seat> m_CurrentSeats = new Dictionary<Matchplayer, Seat>();
+        List<Matchplayer> m_CurrentSeats = new List<Matchplayer>();
 
         void Awake()
         {
@@ -39,35 +37,27 @@ namespace Matchplay.Server
 
         public void JoinSeat(Matchplayer player)
         {
-            var seatInstance = Instantiate(m_SeatGraphic);
-            seatInstance.GetComponent<NetworkObject>().Spawn();
+            m_CurrentSeats.Add(player);
             RearrangeSeats();
-            seatInstance.SeatPlayer(player);
-            m_CurrentSeats[player] = seatInstance;
         }
 
         void RearrangeSeats()
         {
             var i = 0;
-            foreach (var seat in m_CurrentSeats.Values)
+            foreach (var matchPlayer in m_CurrentSeats)
             {
                 var angle = i * Mathf.PI * 2f / m_CurrentSeats.Count;
-                var seatPosition = new Vector3(Mathf.Cos(angle) * m_SeatCircleRadius, 0, Mathf.Sin(angle) * m_SeatCircleRadius);
+                var seatPosition = new Vector3(Mathf.Cos(angle) * seatCircleRadius, 0, Mathf.Sin(angle) * seatCircleRadius);
                 var facingCenter = Quaternion.LookRotation((transform.position - seatPosition), Vector3.up);
-                seat.UpdatePos(seatPosition, facingCenter);
+                matchPlayer.transform.position = seatPosition;
+                matchPlayer.transform.rotation = facingCenter;
                 i++;
             }
         }
 
         void LeaveSeat(Matchplayer player)
         {
-            if (m_CurrentSeats.ContainsKey(player))
-            {
-                var playerSeat = m_CurrentSeats[player];
-                m_CurrentSeats.Remove(player);
-                playerSeat.GetComponent<NetworkObject>().Despawn();
-                RearrangeSeats();
-            }
+            m_CurrentSeats.Remove(player);
         }
     }
 }

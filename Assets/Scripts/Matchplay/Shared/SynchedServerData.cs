@@ -4,11 +4,14 @@ using Unity.Netcode;
 
 namespace Matchplay.Shared
 {
+    /// <summary>
+    /// The Shared Network Server State
+    /// </summary>
     public class SynchedServerData : NetworkBehaviour
     {
-        public NetworkVariable<Map> map = new NetworkVariable<Map>(NetworkVariableReadPermission.OwnerOnly);
-        public NetworkVariable<GameMode> gameMode = new NetworkVariable<GameMode>(NetworkVariableReadPermission.OwnerOnly);
-        public NetworkVariable<GameQueue> gameQueue = new NetworkVariable<GameQueue>(NetworkVariableReadPermission.OwnerOnly);
+        public NetworkVariable<Map> map = new NetworkVariable<Map>(NetworkVariableReadPermission.Everyone);
+        public NetworkVariable<GameMode> gameMode = new NetworkVariable<GameMode>(NetworkVariableReadPermission.Everyone);
+        public NetworkVariable<GameQueue> gameQueue = new NetworkVariable<GameQueue>(NetworkVariableReadPermission.Everyone);
 
         public static SynchedServerData Singleton
         {

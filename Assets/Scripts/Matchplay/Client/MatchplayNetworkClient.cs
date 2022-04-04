@@ -27,14 +27,15 @@ namespace Matchplay.Client
         /// </summary>
         DisconnectReason DisconnectReason { get; } = new DisconnectReason();
 
+        public MatchplayNetworkClient()
+        {
+            m_NetworkManager = NetworkManager.Singleton;
+            m_NetworkManager.OnClientDisconnectCallback += LocalClientDisconnect;
+        }
+
         /// <summary>
         /// Wraps the invocation of NetworkManager.BootClient, including our GUID as the payload.
         /// </summary>
-        /// <remarks>
-        /// This method must be static because, when it is invoked, the client still doesn't know it's a client yet, and in particular, GameNetPortal hasn't
-        /// yet initialized its client and server GNP-Logic objects yet (which it does in OnNetworkSpawn, based on the role that the current player is performing).
-        /// </remarks>
-        /// <param name="portal"> </param>
         /// <param name="ipaddress">the IP address of the host to connect to. (currently IPV4 only)</param>
         /// <param name="port">The port of the host to connect to. </param>
         public void StartClient(string ipaddress, int port)
@@ -42,6 +43,13 @@ namespace Matchplay.Client
             var unityTransport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
             unityTransport.SetConnectionData(ipaddress, (ushort)port);
             ConnectClient();
+        }
+
+        public void StopClient()
+        {
+            if (m_NetworkManager.IsConnectedClient)
+                OnUserDisconnectRequest();
+            m_NetworkManager.Shutdown(true);
         }
 
         /// <summary>
@@ -56,11 +64,6 @@ namespace Matchplay.Client
             }
         }
 
-        public MatchplayNetworkClient()
-        {
-            m_NetworkManager = NetworkManager.Singleton;
-            m_NetworkManager.OnClientDisconnectCallback += LocalClientDisconnect;
-        }
 
         Matchplayer GetMatchPlayer(ulong clientId)
         {

@@ -62,8 +62,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   map:
-    m_InternalValue: 1
+    m_InternalValue: 0
   gameMode:
     m_InternalValue: 0
   gameQueue:
-    m_InternalValue: 0
+    m_InternalValue: 2
