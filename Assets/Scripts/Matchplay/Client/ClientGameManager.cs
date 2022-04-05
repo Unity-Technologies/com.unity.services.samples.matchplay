@@ -89,7 +89,7 @@ namespace Matchplay.Client
 
         public void SetGameModePreferencesFlag(GameMode gameMode, bool added)
         {
-            if (added) //Add Flag if True
+            if (added) //Add Flag if True, remove if not.
                 observableUser.GameModePreferences |= gameMode;
             else
             {
@@ -101,7 +101,7 @@ namespace Matchplay.Client
 
         public void SetMapPreferencesFlag(Map map, bool added)
         {
-            if (added) //Add Flag if True
+            if (added) //Add Flag if True ,remove if not.
                 observableUser.MapPreferences |= map;
             else
             {

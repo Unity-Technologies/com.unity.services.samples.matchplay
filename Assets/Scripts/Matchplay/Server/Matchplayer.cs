@@ -16,10 +16,9 @@ namespace Matchplay.Server
 
         public override void OnNetworkSpawn()
         {
-            if (IsClient)
-            {
-                ClientGameManager.Singleton.AddMatchPlayer(this);
-            }
+            if (IsServer && !IsHost)
+                return;
+            ClientGameManager.Singleton.AddMatchPlayer(this);
         }
 
 
@@ -30,10 +29,10 @@ namespace Matchplay.Server
 
         public override void OnNetworkDespawn()
         {
-            if (IsClient)
-            {
-                ClientGameManager.Singleton.RemoveMatchPlayer(this);
-            }
+            if (IsServer && !IsHost)
+                return;
+
+            ClientGameManager.Singleton.RemoveMatchPlayer(this);
         }
     }
 }

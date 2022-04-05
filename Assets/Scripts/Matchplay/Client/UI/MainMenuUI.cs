@@ -106,7 +106,7 @@ namespace Matchplay.Client.UI
             gameManager.SetGameModePreferencesFlag(GameMode.Staring, m_StaringMode.value);
             gameManager.SetMapPreferencesFlag(Map.Space, m_SpaceMap.value);
             gameManager.SetMapPreferencesFlag(Map.Lab, m_LabMap.value);
-
+            gameManager.SetGameQueue(Enum.Parse<GameQueue>(m_QueueDropDown.value));
             SetMatchmakerMode();
 
             //We can't click play until the auth is set up.

@@ -36,7 +36,7 @@ namespace Matchplay.Shared
     {
         public ObservableUser()
         {
-            Data = new UserData("player", "", 0, new GameInfo());
+            Data = new UserData("Player", "", 0, new GameInfo());
         }
 
         public UserData Data { get; }

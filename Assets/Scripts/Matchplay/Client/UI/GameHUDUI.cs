@@ -3,7 +3,6 @@ using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 using Label = UnityEngine.UIElements.Label;
 
@@ -80,7 +79,7 @@ namespace Matchplay.Client.UI
         {
             var newLabel = Instantiate(playerLabelUI, transform);
             m_PlayerLabels[player] = newLabel;
-            newLabel.SetLabel(player.PlayerName.Value.ToString(), player.transform);
+            newLabel.SetPlayerLabel(player);
         }
 
         void RemovePlayerLabel(Matchplayer player)
