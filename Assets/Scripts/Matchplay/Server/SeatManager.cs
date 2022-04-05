@@ -7,7 +7,7 @@ using UnityEngine.Serialization;
 namespace Matchplay.Server
 {
     /// <summary>
-    /// networkServer Spawns and manages the networked game objects
+    /// Server spawns and manages the player positions.
     /// </summary>
     public class SeatManager : NetworkBehaviour
     {
@@ -38,6 +38,7 @@ namespace Matchplay.Server
         public void JoinSeat(Matchplayer player)
         {
             m_CurrentSeats.Add(player);
+            Debug.Log($"Added Player: {player} - {m_CurrentSeats}");
             RearrangeSeats();
         }
 
@@ -46,6 +47,8 @@ namespace Matchplay.Server
             var i = 0;
             foreach (var matchPlayer in m_CurrentSeats)
             {
+                if (matchPlayer == null)
+                    return;
                 var angle = i * Mathf.PI * 2f / m_CurrentSeats.Count;
                 var seatPosition = new Vector3(Mathf.Cos(angle) * seatCircleRadius, 0, Mathf.Sin(angle) * seatCircleRadius);
                 var facingCenter = Quaternion.LookRotation((transform.position - seatPosition), Vector3.up);
@@ -57,6 +60,7 @@ namespace Matchplay.Server
 
         void LeaveSeat(Matchplayer player)
         {
+            Debug.Log($"Removing Player: {player}");
             m_CurrentSeats.Remove(player);
         }
     }

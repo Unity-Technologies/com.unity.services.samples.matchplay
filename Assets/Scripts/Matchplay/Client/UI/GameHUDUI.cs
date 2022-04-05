@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 using Label = UnityEngine.UIElements.Label;
 
@@ -29,11 +27,6 @@ namespace Matchplay.Client.UI
 
         void Start()
         {
-            //NetworkDataHolder
-            m_SynchedServerData = SynchedServerData.Singleton;
-            m_SynchedServerData.map.OnValueChanged += OnChangedMap;
-            m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
-            m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
 
             //UIDocument setup
             var root = gameObject.GetComponent<UIDocument>().rootVisualElement;
@@ -48,10 +41,27 @@ namespace Matchplay.Client.UI
             m_ClientGameManager.networkClient.OnLocalDisconnection += OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;
             m_ClientGameManager.MatchPlayerDespawned += RemovePlayerLabel;
+            //Synched Variables
+            m_SynchedServerData = SynchedServerData.Singleton;
+            m_SynchedServerData.OnInitialSynch += OnSynched;
+            m_SynchedServerData.map.OnValueChanged += OnMapChanged;
+            m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
+            m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
+
+        }
+
+        void OnSynched()
+        {
+            OnMapChanged( Map.None,  m_SynchedServerData.map.Value);
+            OnModeChanged( GameMode.None,  m_SynchedServerData.gameMode.Value);
+            OnQueueChanged( GameQueue.Missing,  m_SynchedServerData.gameQueue.Value);
         }
 
         void OnLocalConnection(ConnectStatus status)
         {
+            if (status != ConnectStatus.Success)
+                return;
+
             m_HudElement.contentContainer.visible = true;
         }
 
@@ -71,7 +81,7 @@ namespace Matchplay.Client.UI
         {
             if (m_PlayerLabels.ContainsKey(player))
             {
-                Debug.LogError($"No player in list : {player}");
+                Debug.LogWarning($"No player in list : {player}");
                 return;
             }
 
@@ -80,18 +90,21 @@ namespace Matchplay.Client.UI
             m_PlayerLabels.Remove(player);
         }
 
-        void OnChangedMap(Map oldMap, Map newMap)
+        void OnMapChanged(Map oldMap, Map newMap)
         {
+            Debug.Log($"setting UI MAP: {newMap}");
             m_MapValue.text = newMap.ToString();
         }
 
         void OnModeChanged(GameMode oldGameMode, GameMode newGameMode)
         {
+            Debug.Log($"Setting UI GameMode: {newGameMode}");
             m_GameModeValue.text = newGameMode.ToString();
         }
 
         void OnQueueChanged(GameQueue oldQueue, GameQueue newQueue)
         {
+            Debug.Log($"Setting UI GameQueue: {newQueue}");
             m_QueueValue.text = newQueue.ToString();
         }
 
@@ -101,9 +114,11 @@ namespace Matchplay.Client.UI
             m_ClientGameManager.networkClient.OnLocalDisconnection -= OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned -= AddPlayerLabel;
             m_ClientGameManager.MatchPlayerDespawned -= RemovePlayerLabel;
-            m_SynchedServerData.map.OnValueChanged -= OnChangedMap;
+            m_SynchedServerData.OnInitialSynch -= OnSynched;
+            m_SynchedServerData.map.OnValueChanged -= OnMapChanged;
             m_SynchedServerData.gameMode.OnValueChanged -= OnModeChanged;
             m_SynchedServerData.gameQueue.OnValueChanged -= OnQueueChanged;
+
         }
     }
 }

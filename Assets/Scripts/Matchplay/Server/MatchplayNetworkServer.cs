@@ -73,13 +73,6 @@ namespace Matchplay.Server
         /// This logic plugs into the "ConnectionApprovalCallback" exposed by Netcode.NetworkManager, and is run every time a client connects to us.
         /// See MatchplayNetworkClient.BootClient for the complementary logic that runs when the client starts its connection.
         /// </summary>
-        /// <remarks>
-        /// Since our game doesn't have to interact with some third party authentication service to validate the identity of the new connection, our ApprovalCheck
-        /// method is simple, and runs synchronously, invoking "callback" to signal approval at the end of the method. Netcode currently doesn't support the ability
-        /// to send back more than a "true/false", which means we have to work a little harder to provide a useful error return to the client. To do that, we invoke a
-        /// custom message in the same channel that Netcode uses for its connection callback. Since the delivery is NetworkDelivery.ReliableSequenced, we can be
-        /// confident that our login result message will execute before any disconnect message.
-        /// </remarks>
         /// <param name="connectionData">binary data passed into BootClient. In our case this is the client's GUID, which is a unique identifier for their install of the game that persists across app restarts. </param>
         /// <param name="networkId">This is the networkId that Netcode assigned us on login. It does not persist across multiple logins from the same client. </param>
         /// <param name="connectionApprovedCallback">The delegate we must invoke to signal that the connection was approved or not. </param>
@@ -97,17 +90,17 @@ namespace Matchplay.Server
             Debug.Log("Host ApprovalCheck: connecting client: " + userData);
 
             //Test for Duplicate Login.
-            if (m_ClientData.ContainsKey(userData.clientAuthId))
+            if (m_ClientData.ContainsKey(userData.userAuthId))
             {
                 if (Debug.isDebugBuild)
                 {
-                    Debug.Log($"networkClient GUID {userData.clientAuthId} already exists. Because this is a debug build, we will still accept the connection");
-                    while (m_ClientData.ContainsKey(userData.clientAuthId)) { userData.clientAuthId += "_Secondary"; }
+                    Debug.Log($"networkClient GUID {userData.userAuthId} already exists. Because this is a debug build, we will still accept the connection");
+                    while (m_ClientData.ContainsKey(userData.userAuthId)) { userData.userAuthId += "_Secondary"; }
                 }
                 else
                 {
-                    ulong oldClientId = m_ClientData[userData.clientAuthId].networkId;
-                    Debug.Log($"Duplicate ID Found : {userData.clientAuthId}, Disconnecting user.");
+                    ulong oldClientId = m_ClientData[userData.userAuthId].networkId;
+                    Debug.Log($"Duplicate ID Found : {userData.userAuthId}, Disconnecting user.");
 
                     // kicking old client to leave only current
                     SendClientDisconnected(oldClientId, ConnectStatus.LoggedInAgain);
@@ -119,8 +112,8 @@ namespace Matchplay.Server
             SendClientConnected(networkId, ConnectStatus.Success);
 
             //Populate our dictionaries with the playerData
-            m_NetworkIdToAuth[networkId] = userData.clientAuthId;
-            m_ClientData[userData.clientAuthId] = userData;
+            m_NetworkIdToAuth[networkId] = userData.userAuthId;
+            m_ClientData[userData.userAuthId] = userData;
             connectionApprovedCallback(true, null, true, Vector3.zero, Quaternion.identity);
 
             // connection approval will create a player object for you
@@ -140,9 +133,10 @@ namespace Matchplay.Server
 
                 if (m_ClientData[authId].networkId == networkId)
                 {
-                    OnServerPlayerDespawned.Invoke(GetNetworkedMatchPlayer(networkId));
                     m_ClientData.Remove(authId);
                 }
+                OnServerPlayerDespawned.Invoke(GetNetworkedMatchPlayer(networkId));
+
             }
         }
 
