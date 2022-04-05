@@ -3,6 +3,7 @@ using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 using Label = UnityEngine.UIElements.Label;
 
@@ -15,15 +16,16 @@ namespace Matchplay.Client.UI
     public class GameHUDUI : MonoBehaviour
     {
         [SerializeField]
-        PlayerNameUI m_PlayerLabelUI;
+        PlayerNameUI playerLabelUI;
 
         Dictionary<Matchplayer, PlayerNameUI> m_PlayerLabels = new Dictionary<Matchplayer, PlayerNameUI>();
         Label m_GameModeValue;
         Label m_QueueValue;
         Label m_MapValue;
-        VisualElement m_HudElement;
+        VisualElement m_ClientUIGroup;
         ClientGameManager m_ClientGameManager;
         SynchedServerData m_SynchedServerData;
+        Button m_DisconnectButton;
 
         void Start()
         {
@@ -33,7 +35,9 @@ namespace Matchplay.Client.UI
             m_GameModeValue = root.Q<Label>("modeValue");
             m_QueueValue = root.Q<Label>("queueValue");
             m_MapValue = root.Q<Label>("mapValue");
-            m_HudElement = root.Q<VisualElement>("mainMenuVisual");
+            m_ClientUIGroup = root.Q<VisualElement>("clientUIGroup");
+            m_DisconnectButton = root.Q<Button>("button_disconnect");
+            m_DisconnectButton.clicked += DisconnectPressed;
 
             //GameManagerCallbacks
             m_ClientGameManager = ClientGameManager.Singleton;
@@ -47,6 +51,8 @@ namespace Matchplay.Client.UI
             m_SynchedServerData.map.OnValueChanged += OnMapChanged;
             m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
             m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
+
+
 
         }
 
@@ -62,17 +68,17 @@ namespace Matchplay.Client.UI
             if (status != ConnectStatus.Success)
                 return;
 
-            m_HudElement.contentContainer.visible = true;
+            m_ClientUIGroup.contentContainer.visible = true;
         }
 
         void OnLocalDisconnection(ConnectStatus status)
         {
-            m_HudElement.contentContainer.visible = false;
+            m_ClientUIGroup.contentContainer.visible = false;
         }
 
         void AddPlayerLabel(Matchplayer player)
         {
-            var newLabel = Instantiate(m_PlayerLabelUI, transform);
+            var newLabel = Instantiate(playerLabelUI, transform);
             m_PlayerLabels[player] = newLabel;
             newLabel.SetLabel(player.PlayerName.Value.ToString(), player.transform);
         }
@@ -106,6 +112,12 @@ namespace Matchplay.Client.UI
         {
             Debug.Log($"Setting UI GameQueue: {newQueue}");
             m_QueueValue.text = newQueue.ToString();
+        }
+
+        void DisconnectPressed()
+        {
+            m_ClientGameManager.Disconnect();
+
         }
 
         void OnDestroy()

@@ -50,9 +50,9 @@ namespace Matchplay.Client
             networkClient.StartClient(ip, port);
         }
 
-        public void EndConnection()
+        public void Disconnect()
         {
-            networkClient.StopClient();
+            networkClient.DisconnectClient();
         }
 
         public async void Matchmake(Action<MatchResult> onMatchmakerResponse = null)

@@ -166,7 +166,7 @@ namespace Matchplay.Client.UI
         {
             if (m_LocalLaunchMode)
             {
-                gameManager.EndConnection();
+                gameManager.Disconnect();
                 SetMenuState(MainMenuPlayState.Ready);
             }
             else

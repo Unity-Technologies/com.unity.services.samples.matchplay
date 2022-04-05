@@ -16,7 +16,6 @@ namespace Matchplay.Shared
         /// NetworkedVariables have no built-in callback for the initial client-server synch.
         /// This lets non-networked classes know when we are ready to read the values.
         /// </summary>
-        /// 
         public Action OnInitialSynch;
         public static SynchedServerData Singleton
         {

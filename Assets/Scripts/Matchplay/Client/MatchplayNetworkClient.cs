@@ -3,8 +3,6 @@ using UnityEngine;
 using Unity.Netcode;
 using Matchplay.Networking;
 using Matchplay.Server;
-using Matchplay.Shared;
-using Unity.Services.Authentication;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
@@ -14,7 +12,6 @@ namespace Matchplay.Client
         public event Action<ConnectStatus> OnLocalConnection;
         public event Action<ConnectStatus> OnLocalDisconnection;
 
-        ulong networkClientId => m_NetworkManager.LocalClientId;
 
         /// <summary>
         /// Time in seconds before the client considers a lack of server response a timeout
@@ -45,25 +42,11 @@ namespace Matchplay.Client
             ConnectClient();
         }
 
-        public void StopClient()
+        public void DisconnectClient()
         {
-            if (m_NetworkManager.IsConnectedClient)
-                OnUserDisconnectRequest();
-            m_NetworkManager.Shutdown(true);
+            DisconnectReason.SetDisconnectReason(ConnectStatus.UserRequestedDisconnect);
+            m_NetworkManager.Shutdown(false);
         }
-
-        /// <summary>
-        /// Invoked when the user has requested a disconnect via the UI, e.g. when hitting "Return to Main Menu" in the post-game scene.
-        /// </summary>
-        public void OnUserDisconnectRequest()
-        {
-            if (m_NetworkManager.IsClient)
-            {
-                DisconnectReason.SetDisconnectReason(ConnectStatus.UserRequestedDisconnect);
-                m_NetworkManager.DisconnectClient(networkClientId);
-            }
-        }
-
 
         Matchplayer GetMatchPlayer(ulong clientId)
         {
@@ -112,7 +95,7 @@ namespace Matchplay.Client
 
         void LocalClientDisconnect(ulong clientId)
         {
-            if (clientId == networkClientId)
+            if (clientId ==  m_NetworkManager.LocalClientId)
                 return;
 
             //On a client disconnect we want to take them back to the main menu.
