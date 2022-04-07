@@ -48,9 +48,9 @@ namespace Matchplay.Server
 
         public async Task BeginServerAsync()
         {
-            m_ServerIP = ApplicationData.IP();
-            m_ServerPort = ApplicationData.Port();
-            m_QueryPort = ApplicationData.QPort();
+            m_ServerIP = CommandParser.IP();
+            m_ServerPort = CommandParser.Port();
+            m_QueryPort = CommandParser.QPort();
 
             GameInfo startingGameInfo = new GameInfo
             {

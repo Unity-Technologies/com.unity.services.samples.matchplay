@@ -1,5 +1,6 @@
-using System;
+using Matchplay.Server;
 using TMPro;
+using Unity.Collections;
 using UnityEngine;
 
 namespace Matchplay.Client.UI
@@ -12,19 +13,37 @@ namespace Matchplay.Client.UI
         [SerializeField]
         TMP_Text m_TextLabel;
 
-        Transform m_PlayerTransform;
+        Matchplayer m_player;
 
-        public void SetLabel(string text, Transform playerToFollow)
+
+        Camera m_Camera;
+
+        public void SetPlayerLabel(Matchplayer matchPlayer)
         {
-            m_PlayerTransform = playerToFollow;
-            m_TextLabel.SetText(text);
+            m_player = matchPlayer;
+            m_player.PlayerName.OnValueChanged += ChangeLabelName;
+        }
+
+        void ChangeLabelName(FixedString64Bytes oldLabel, FixedString64Bytes newLabel)
+        {
+            m_TextLabel.SetText(newLabel.ToString());
         }
 
         void Update()
         {
-            if (m_PlayerTransform == null)
+            if (m_player == null)
                 return;
-            transform.position = m_PlayerTransform.position;
+
+            if(m_Camera==null)
+                m_Camera = Camera.main;
+            if(m_Camera!=null)
+                m_TextLabel.transform.LookAt(m_TextLabel.transform.position+m_Camera.transform.rotation*transform.forward, m_Camera.transform.rotation* Vector3.up);
+            transform.position = m_player.transform.position;
+        }
+
+        void OnDestroy()
+        {
+            m_player.PlayerName.OnValueChanged -= ChangeLabelName;
         }
     }
 }

@@ -46,8 +46,13 @@ namespace Matchplay.Client
 
         public void BeginConnection(string ip, int port)
         {
-            Debug.Log($"Starting networkClient @ {ip}:{port}\n With : {observableUser}");
+            Debug.Log($"Starting networkClient @ {ip}:{port}\nWith : {observableUser}");
             networkClient.StartClient(ip, port);
+        }
+
+        public void Disconnect()
+        {
+            networkClient.DisconnectClient();
         }
 
         public async void Matchmake(Action<MatchResult> onMatchmakerResponse = null)
@@ -84,7 +89,7 @@ namespace Matchplay.Client
 
         public void SetGameModePreferencesFlag(GameMode gameMode, bool added)
         {
-            if (added) //Add Flag if True
+            if (added) //Add Flag if True, remove if not.
                 observableUser.GameModePreferences |= gameMode;
             else
             {
@@ -96,7 +101,7 @@ namespace Matchplay.Client
 
         public void SetMapPreferencesFlag(Map map, bool added)
         {
-            if (added) //Add Flag if True
+            if (added) //Add Flag if True ,remove if not.
                 observableUser.MapPreferences |= map;
             else
             {

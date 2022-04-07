@@ -39,7 +39,7 @@ namespace Matchplay.Client
         {
             m_CancelToken = new CancellationTokenSource();
             var createTicketOptions = MatchmakingToTicketOptions(data);
-            var players = new List<Player> { new Player(data.clientAuthId, data.gameInfo) };
+            var players = new List<Player> { new Player(data.userAuthId, data.userGamePreferences) };
             try
             {
                 m_IsMatchmaking = true;
@@ -156,10 +156,10 @@ namespace Matchplay.Client
         {
             var attributes = new Dictionary<string, object>
             {
-                { k_ModeAttribute, (double)data.gameInfo.gameMode }
+                { k_ModeAttribute, (double)data.userGamePreferences.gameMode }
             };
 
-            var queueName = data.gameInfo.ToMultiplayQueue();
+            var queueName = data.userGamePreferences.ToMultiplayQueue();
 
             return new CreateTicketOptions(queueName, attributes);
         }

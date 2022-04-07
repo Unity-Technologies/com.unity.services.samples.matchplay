@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Matchplay.Shared
 {
@@ -35,7 +36,7 @@ namespace Matchplay.Shared
     {
         public ObservableUser()
         {
-            Data = new UserData("player", "", 0, new GameInfo());
+            Data = new UserData("Player", "", 0, new GameInfo());
         }
 
         public UserData Data { get; }
@@ -54,11 +55,11 @@ namespace Matchplay.Shared
 
         public string AuthId
         {
-            get => Data.clientAuthId;
+            get => Data.userAuthId;
             set
             {
-                Data.clientAuthId = value;
-                onAuthChanged?.Invoke(Data.clientAuthId);
+                Data.userAuthId = value;
+                onAuthChanged?.Invoke(Data.userAuthId);
             }
         }
 
@@ -72,11 +73,11 @@ namespace Matchplay.Shared
 
         public Map MapPreferences
         {
-            get => Data.gameInfo.map;
+            get => Data.userGamePreferences.map;
             set
             {
-                Data.gameInfo.map = value;
-                onMapPreferencesChanged?.Invoke(Data.gameInfo.map);
+                Data.userGamePreferences.map = value;
+                onMapPreferencesChanged?.Invoke(Data.userGamePreferences.map);
             }
         }
 
@@ -84,11 +85,11 @@ namespace Matchplay.Shared
 
         public GameMode GameModePreferences
         {
-            get => Data.gameInfo.gameMode;
+            get => Data.userGamePreferences.gameMode;
             set
             {
-                Data.gameInfo.gameMode = value;
-                onModePreferencesChanged?.Invoke(Data.gameInfo.gameMode);
+                Data.userGamePreferences.gameMode = value;
+                onModePreferencesChanged?.Invoke(Data.userGamePreferences.gameMode);
             }
         }
 
@@ -96,11 +97,11 @@ namespace Matchplay.Shared
 
         public GameQueue QueuePreference
         {
-            get => Data.gameInfo.gameQueue;
+            get => Data.userGamePreferences.gameQueue;
             set
             {
-                Data.gameInfo.gameQueue = value;
-                onQueuePreferenceChanged?.Invoke(Data.gameInfo.gameQueue);
+                Data.userGamePreferences.gameQueue = value;
+                onQueuePreferenceChanged?.Invoke(Data.userGamePreferences.gameQueue);
             }
         }
 
@@ -121,25 +122,25 @@ namespace Matchplay.Shared
     public class UserData
     {
         public string userName; //name of the player
-        public string clientAuthId; //Auth Player ID
+        [FormerlySerializedAs("clientAuthId")] public string userAuthId; //Auth Player ID
         public ulong networkId;
-        public GameInfo gameInfo; //The game info the player thought he was joining with
+        [FormerlySerializedAs("gamePreferences")] [FormerlySerializedAs("modePreferences")] public GameInfo userGamePreferences; //The game info the player thought he was joining with
 
-        public UserData(string userName, string clientAuthId, ulong networkId, GameInfo gameInfo)
+        public UserData(string userName, string userAuthId, ulong networkId, GameInfo userGamePreferences)
         {
             this.userName = userName;
-            this.clientAuthId = clientAuthId;
+            this.userAuthId = userAuthId;
             this.networkId = networkId;
-            this.gameInfo = gameInfo;
+            this.userGamePreferences = userGamePreferences;
         }
 
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("UserData: ");
-            sb.AppendLine($"- userName:       {userName}");
-            sb.AppendLine($"- clientAuthId:   {clientAuthId}");
-            sb.AppendLine($"- {gameInfo}");
+            sb.AppendLine($"- User Name:       {userName}");
+            sb.AppendLine($"- User Auth Id:   {userAuthId}");
+            sb.AppendLine($"- User Game Preferences: {userGamePreferences}");
             return sb.ToString();
         }
     }
@@ -150,9 +151,9 @@ namespace Matchplay.Shared
     [Serializable]
     public class GameInfo
     {
-        public Map map;
-        public GameMode gameMode;
-        public GameQueue gameQueue;
+        public Map map = Map.None;
+        public GameMode gameMode = GameMode.None;
+        public GameQueue gameQueue = GameQueue.Missing;
 
         //QueueNames in the dashboard can be different than your local queue definitions (If you want nice names for them)
         const string k_MultiplayCasualQueue = "casual-queue";
@@ -169,7 +170,7 @@ namespace Matchplay.Shared
             sb.AppendLine("GameInfo: ");
             sb.AppendLine($"- map:        {map}");
             sb.AppendLine($"- gameMode:   {gameMode}");
-            sb.AppendLine($"- GameQueue:  {gameQueue}");
+            sb.AppendLine($"- gameQueue:  {gameQueue}");
             return sb.ToString();
         }
 

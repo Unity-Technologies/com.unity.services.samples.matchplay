@@ -14,10 +14,10 @@ namespace Matchplay.Shared
         ServerGameManager m_ServerPrefab;
         [SerializeField]
         ClientGameManager m_ClientPrefab;
-
         [SerializeField]
         List<GameObject> m_ServerManagers = new List<GameObject>();
 
+        CommandParser m_Parser;
         void Start()
         {
             DontDestroyOnLoad(gameObject);
@@ -25,7 +25,7 @@ namespace Matchplay.Shared
             //We use EditorApplicationController for Editor launching.
             if (Application.isEditor)
                 return;
-            LaunchInMode(ApplicationData.IsServerMode());
+            LaunchInMode(CommandParser.IsServerMode());
         }
 
         /// <summary>
@@ -33,6 +33,9 @@ namespace Matchplay.Shared
         /// </summary>
         public void LaunchInMode(bool isServer)
         {
+            //init the command parser, get launch args
+            m_Parser = new CommandParser();
+
             if (isServer)
             {
                 InstantiateManagers(m_ServerManagers);

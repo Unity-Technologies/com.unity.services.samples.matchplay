@@ -6,19 +6,18 @@ using UnityEngine;
 namespace Matchplay.Shared
 {
     /// <summary>
-    /// Class for storing and fetching game-wide data, like a blackboard.
-    /// Also handles arguments via commandline
+    /// Basic launch command processor (Multiplay prefers passing IP and port along)
     /// </summary>
-    public class ApplicationData
+    public class CommandParser
     {
         /// <summary>
         /// Commands Dictionary
         /// Supports flags and single variable args (eg. '-argument', '-variableArg variable')
         /// </summary>
         Dictionary<string, Action<string>> m_CommandDictionary = new Dictionary<string, Action<string>>();
-        const string k_ipCmd = "ip";
+        const string k_IPCmd = "ip";
         const string k_PortCmd = "port";
-        const string k_queryPortCmd = "queryPort";
+        const string k_QueryPortCmd = "queryPort";
 
         public static bool IsServerMode()
         {
@@ -27,7 +26,7 @@ namespace Matchplay.Shared
 
         public static string IP()
         {
-            return PlayerPrefs.GetString(k_ipCmd);
+            return PlayerPrefs.GetString(k_IPCmd);
         }
 
         public static int Port()
@@ -37,17 +36,18 @@ namespace Matchplay.Shared
 
         public static int QPort()
         {
-            return PlayerPrefs.GetInt(k_queryPortCmd);
+            return PlayerPrefs.GetInt(k_QueryPortCmd);
         }
 
-        public ApplicationData()
+        //Ensure this gets instantiated Early on
+        public CommandParser()
         {
             SetIP("127.0.0.1");
             SetPort("7777");
             SetQueryPort("7787");
-            m_CommandDictionary["-" + k_ipCmd] = SetIP;
+            m_CommandDictionary["-" + k_IPCmd] = SetIP;
             m_CommandDictionary["-" + k_PortCmd] = SetPort;
-            m_CommandDictionary["-" + k_queryPortCmd] = SetQueryPort;
+            m_CommandDictionary["-" + k_QueryPortCmd] = SetQueryPort;
 
             ProcessCommandLinearguments(Environment.GetCommandLineArgs());
         }
@@ -96,7 +96,7 @@ namespace Matchplay.Shared
 
         void SetIP(string ipArgument)
         {
-            PlayerPrefs.SetString(k_ipCmd, ipArgument);
+            PlayerPrefs.SetString(k_IPCmd, ipArgument);
         }
 
         void SetPort(string portArgument)
@@ -115,7 +115,7 @@ namespace Matchplay.Shared
         {
             if (int.TryParse(qPortArgument, out int parsedQPort))
             {
-                PlayerPrefs.SetInt(k_queryPortCmd, parsedQPort);
+                PlayerPrefs.SetInt(k_QueryPortCmd, parsedQPort);
             }
             else
             {

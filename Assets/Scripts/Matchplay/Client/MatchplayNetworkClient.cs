@@ -3,8 +3,6 @@ using UnityEngine;
 using Unity.Netcode;
 using Matchplay.Networking;
 using Matchplay.Server;
-using Matchplay.Shared;
-using Unity.Services.Authentication;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
@@ -14,7 +12,6 @@ namespace Matchplay.Client
         public event Action<ConnectStatus> OnLocalConnection;
         public event Action<ConnectStatus> OnLocalDisconnection;
 
-        ulong networkClientId => m_NetworkManager.LocalClientId;
 
         /// <summary>
         /// Time in seconds before the client considers a lack of server response a timeout
@@ -27,14 +24,15 @@ namespace Matchplay.Client
         /// </summary>
         DisconnectReason DisconnectReason { get; } = new DisconnectReason();
 
+        public MatchplayNetworkClient()
+        {
+            m_NetworkManager = NetworkManager.Singleton;
+            m_NetworkManager.OnClientDisconnectCallback += LocalClientDisconnect;
+        }
+
         /// <summary>
         /// Wraps the invocation of NetworkManager.BootClient, including our GUID as the payload.
         /// </summary>
-        /// <remarks>
-        /// This method must be static because, when it is invoked, the client still doesn't know it's a client yet, and in particular, GameNetPortal hasn't
-        /// yet initialized its client and server GNP-Logic objects yet (which it does in OnNetworkSpawn, based on the role that the current player is performing).
-        /// </remarks>
-        /// <param name="portal"> </param>
         /// <param name="ipaddress">the IP address of the host to connect to. (currently IPV4 only)</param>
         /// <param name="port">The port of the host to connect to. </param>
         public void StartClient(string ipaddress, int port)
@@ -44,22 +42,10 @@ namespace Matchplay.Client
             ConnectClient();
         }
 
-        /// <summary>
-        /// Invoked when the user has requested a disconnect via the UI, e.g. when hitting "Return to Main Menu" in the post-game scene.
-        /// </summary>
-        public void OnUserDisconnectRequest()
+        public void DisconnectClient()
         {
-            if (m_NetworkManager.IsClient)
-            {
-                DisconnectReason.SetDisconnectReason(ConnectStatus.UserRequestedDisconnect);
-                m_NetworkManager.DisconnectClient(networkClientId);
-            }
-        }
-
-        public MatchplayNetworkClient()
-        {
-            m_NetworkManager = NetworkManager.Singleton;
-            m_NetworkManager.OnClientDisconnectCallback += LocalClientDisconnect;
+            DisconnectReason.SetDisconnectReason(ConnectStatus.UserRequestedDisconnect);
+            m_NetworkManager.Shutdown(false);
         }
 
         Matchplayer GetMatchPlayer(ulong clientId)
@@ -109,7 +95,7 @@ namespace Matchplay.Client
 
         void LocalClientDisconnect(ulong clientId)
         {
-            if (clientId == networkClientId)
+            if (clientId ==  m_NetworkManager.LocalClientId)
                 return;
 
             //On a client disconnect we want to take them back to the main menu.

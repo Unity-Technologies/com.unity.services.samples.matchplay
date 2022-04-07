@@ -61,4 +61,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bf132059672b164da7a3f1ca9812125, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_PlayerLabelUI: {fileID: 5482846907606265424, guid: 01baba44b0314634294a8d0f1e8ba767, type: 3}
+  playerLabelUI: {fileID: 5482846907606265424, guid: 01baba44b0314634294a8d0f1e8ba767, type: 3}
