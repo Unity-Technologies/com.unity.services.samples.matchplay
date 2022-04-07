@@ -41,9 +41,6 @@ namespace Matchplay.Client
             observableUser = new ObservableUser();
             m_Matchmaker = new MatchplayMatchmaker();
             networkClient = new MatchplayNetworkClient();
-            networkClient.OnServerChangedMap += SetMap;
-            networkClient.OnServerChangedMode += SetGameMode;
-            networkClient.OnServerChangedQueue += SetGameQueue;
             observableUser.AuthId = await AuthenticationWrapper.GetClientId();
         }
 
@@ -85,43 +82,33 @@ namespace Matchplay.Client
             MatchPlayerDespawned?.Invoke(player);
         }
 
-        public void SetGameModeFlag(GameMode gameMode, bool added)
+        public void SetGameModePreferencesFlag(GameMode gameMode, bool added)
         {
             if (added) //Add Flag if True
-                observableUser.Mode |= gameMode;
+                observableUser.GameModePreferences |= gameMode;
             else
             {
-                observableUser.Mode &= ~gameMode;
+                observableUser.GameModePreferences &= ~gameMode;
             }
 
-            Debug.Log($"Set Game Mode {observableUser.Mode} - {added}");
+            Debug.Log($"Set Game GameModePreferences {observableUser.GameModePreferences} - {added}");
         }
 
-        void SetGameMode(GameMode mode)
-        {
-            observableUser.Mode = mode;
-        }
-
-        public void SetMapFlag(Map map, bool added)
+        public void SetMapPreferencesFlag(Map map, bool added)
         {
             if (added) //Add Flag if True
-                observableUser.Map |= map;
+                observableUser.MapPreferences |= map;
             else
             {
-                observableUser.Map &= ~map;
+                observableUser.MapPreferences &= ~map;
             }
 
-            Debug.Log($"Set Game Map {observableUser.Map} - {added}");
-        }
-
-        void SetMap(Map map)
-        {
-            observableUser.Map = map;
+            Debug.Log($"Set Game MapPreferences {observableUser.MapPreferences} - {added}");
         }
 
         public void SetGameQueue(GameQueue queue)
         {
-            observableUser.Queue = queue;
+            observableUser.QueuePreference = queue;
         }
 
         async Task<MatchResult> MatchmakeAsync()
@@ -148,8 +135,6 @@ namespace Matchplay.Client
 
         public void OnDestroy()
         {
-            networkClient.OnServerChangedMap -= SetMap;
-            networkClient.OnServerChangedMode -= SetGameMode;
             networkClient.Dispose();
             m_Matchmaker.Dispose();
         }

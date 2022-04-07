@@ -12,30 +12,24 @@ namespace Matchplay.Server
     {
         BackfillTicketProperties m_ServerProperties;
 
-        public MatchplayBackfiller(string connection, UserData data, MatchProperties properties, List<Player> players)
+        public MatchplayBackfiller(string connection, string queueName, MatchProperties properties)
         {
-            var backfillProperties = new BackfillTicketProperties(properties, players);
+            var backfillProperties = new BackfillTicketProperties(properties);
 
-            DoBackfill(connection, data, backfillProperties);
+            DoBackfill(connection, queueName, backfillProperties);
         }
 
-        public async void DoBackfill(string connection, UserData data, BackfillTicketProperties properties)
+        public async void DoBackfill(string connection, string queueName, BackfillTicketProperties properties)
         {
             await UnityServices.InitializeAsync();
-            var attributes = new Dictionary<string, double>()
-            {
-                { MatchplayMatchmaker.k_ModeAttribute, (double)data.gameInfo.gameMode }
-            };
-
-            var queueName = data.gameInfo.MultiplayQueue();
 
             var backfillOptions = new CreateBackfillTicketOptions
             {
                 Connection = connection,
-                Attributes = attributes,
                 QueueName = queueName,
                 Properties = properties
             };
+
             await MatchmakerService.Instance.CreateBackfillTicketAsync(backfillOptions);
         }
     }

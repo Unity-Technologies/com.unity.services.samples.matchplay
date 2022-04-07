@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
-using PlasticGui.Help;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 using Label = UnityEngine.UIElements.Label;
 
@@ -17,7 +17,7 @@ namespace Matchplay.Client.UI
     public class GameHUDUI : MonoBehaviour
     {
         [SerializeField]
-        PlayerNameUI m_playerLabelUI;
+        PlayerNameUI m_PlayerLabelUI;
 
         Dictionary<Matchplayer, PlayerNameUI> m_PlayerLabels = new Dictionary<Matchplayer, PlayerNameUI>();
         Label m_GameModeValue;
@@ -25,6 +25,7 @@ namespace Matchplay.Client.UI
         Label m_MapValue;
         VisualElement m_HudElement;
         ClientGameManager m_ClientGameManager;
+        SynchedServerData m_SynchedServerData;
 
         void Start()
         {
@@ -34,10 +35,11 @@ namespace Matchplay.Client.UI
             m_QueueValue = root.Q<Label>("queueValue");
             m_MapValue = root.Q<Label>("mapValue");
             m_HudElement = root.Q<VisualElement>("mainMenuVisual");
+            m_SynchedServerData = SynchedServerData.Singleton;
 
-            m_ClientGameManager.observableUser.onMapChanged += OnChangedMap;
-            m_ClientGameManager.observableUser.onModeChanged += OnModeChanged;
-            m_ClientGameManager.observableUser.onQueueChanged += OnQueueChanged;
+            m_SynchedServerData.map.OnValueChanged = OnChangedMap;
+            m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
+            m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
             m_ClientGameManager.networkClient.OnLocalConnection += OnLocalConnection;
             m_ClientGameManager.networkClient.OnLocalDisconnection += OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;
@@ -56,7 +58,7 @@ namespace Matchplay.Client.UI
 
         void AddPlayerLabel(Matchplayer player)
         {
-            var newLabel = Instantiate(m_playerLabelUI, transform);
+            var newLabel = Instantiate(m_PlayerLabelUI, transform);
             m_PlayerLabels[player] = newLabel;
             newLabel.SetLabel(player.PlayerName.Value.ToString(), player.transform);
         }
@@ -74,26 +76,23 @@ namespace Matchplay.Client.UI
             m_PlayerLabels.Remove(player);
         }
 
-        void OnChangedMap(Map map)
+        void OnChangedMap(Map oldMap, Map newMap)
         {
-            m_MapValue.text = map.ToString(); //TODO investigate ways to get the actual flags from the flag map
+            m_MapValue.text = newMap.ToString(); //TODO investigate ways to get the actual flags from the flag map
         }
 
-        void OnModeChanged(GameMode gameMode)
+        void OnModeChanged(GameMode oldGameMode, GameMode newGameMode)
         {
-            m_GameModeValue.text = gameMode.ToString();
+            m_GameModeValue.text = newGameMode.ToString();
         }
 
-        void OnQueueChanged(GameQueue mode)
+        void OnQueueChanged(GameQueue oldQueue, GameQueue newQueue)
         {
-            m_QueueValue.text = mode.ToString();
+            m_QueueValue.text = newQueue.ToString();
         }
 
         void OnDestroy()
         {
-            m_ClientGameManager.observableUser.onMapChanged -= OnChangedMap;
-            m_ClientGameManager.observableUser.onModeChanged -= OnModeChanged;
-            m_ClientGameManager.observableUser.onQueueChanged -= OnQueueChanged;
             m_ClientGameManager.networkClient.OnLocalConnection -= OnLocalConnection;
             m_ClientGameManager.networkClient.OnLocalDisconnection -= OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned -= AddPlayerLabel;

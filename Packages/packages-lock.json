@@ -27,12 +27,12 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.collections": {
-      "version": "1.1.0",
-      "depth": 1,
+      "version": "1.2.3",
+      "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.burst": "1.5.4",
-        "com.unity.test-framework": "1.1.29"
+        "com.unity.burst": "1.6.4",
+        "com.unity.test-framework": "1.1.31"
       },
       "url": "https://packages.unity.com"
     },
@@ -125,7 +125,7 @@
     },
     "com.unity.nuget.newtonsoft-json": {
       "version": "3.0.1",
-      "depth": 2,
+      "depth": 1,
       "source": "registry",
       "dependencies": {},
       "url": "https://packages.unity.com"
@@ -188,7 +188,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.services.matchmaker": {
-      "version": "1.0.0-pre.7",
+      "version": "1.0.0-pre.8",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -199,6 +199,33 @@
         "com.unity.modules.unitywebrequesttexture": "1.0.0",
         "com.unity.modules.unitywebrequestwww": "1.0.0",
         "com.unity.nuget.newtonsoft-json": "2.0.0",
+        "com.unity.services.authentication": "1.0.0-pre.37"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.services.multiplay": {
+      "version": "1.0.0-pre.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.services.core": "1.2.0",
+        "com.unity.services.wire": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
+        "com.unity.modules.unitywebrequestassetbundle": "1.0.0",
+        "com.unity.modules.unitywebrequestaudio": "1.0.0",
+        "com.unity.modules.unitywebrequesttexture": "1.0.0",
+        "com.unity.modules.unitywebrequestwww": "1.0.0",
+        "com.unity.nuget.newtonsoft-json": "3.0.1"
+      },
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
+    },
+    "com.unity.services.wire": {
+      "version": "1.0.0",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.services.core": "1.2.0",
+        "com.unity.nuget.newtonsoft-json": "3.0.1",
         "com.unity.services.authentication": "1.0.0-pre.37"
       },
       "url": "https://packages.unity.com"
@@ -229,8 +256,8 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
-      "version": "1.1.30",
-      "depth": 0,
+      "version": "1.1.31",
+      "depth": 1,
       "source": "registry",
       "dependencies": {
         "com.unity.ext.nunit": "1.0.6",

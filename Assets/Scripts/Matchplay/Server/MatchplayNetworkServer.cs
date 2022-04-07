@@ -15,13 +15,7 @@ namespace Matchplay.Server
         public Action<Matchplayer> OnServerPlayerSpawned;
         public Action<Matchplayer> OnServerPlayerDespawned;
 
-        GameInfo m_ServerGameInfo = new GameInfo
-        {
-            gameMode = GameMode.Staring,
-            map = Map.Lab,
-            gameQueue = GameQueue.Casual
-        };
-
+        SynchedServerData m_SynchedServerData;
         bool m_InitializedServer;
         NetworkManager m_NetworkManager;
 
@@ -46,14 +40,20 @@ namespace Matchplay.Server
             // warning: "No ConnectionApproval callback defined. Connection approval will timeout"
             m_NetworkManager.ConnectionApprovalCallback += ApprovalCheck;
             m_NetworkManager.OnServerStarted += OnNetworkReady;
+            m_SynchedServerData = SynchedServerData.Singleton;
         }
 
-        public void StartServer(string ip, int port)
+        public void StartServer(string ip, int port, GameInfo startingGameInfo)
         {
             var unityTransport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
             m_NetworkManager.NetworkConfig.NetworkTransport = unityTransport;
             unityTransport.SetConnectionData(ip, (ushort)port);
+            Debug.Log($"Starting server at {ip}:{port}\nWith: {startingGameInfo}");
+
             m_NetworkManager.StartServer();
+            ChangeMap(startingGameInfo.map);
+            ChangeGameMode(startingGameInfo.gameMode);
+            ChangeQueueMode(startingGameInfo.gameQueue);
         }
 
         /// <summary>
@@ -66,7 +66,6 @@ namespace Matchplay.Server
 
         void OnNetworkReady()
         {
-            m_NetworkManager.OnClientConnectedCallback += OnClientConnected;
             m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
         }
 
@@ -126,27 +125,6 @@ namespace Matchplay.Server
 
             // connection approval will create a player object for you
             SetupPlayerPrefab(networkId, userData.userName);
-        }
-
-        void OnClientConnected(ulong networkId)
-        {
-            var player = GetPlayerData(networkId);
-            if (player != null && m_InitializedServer == false)
-            {
-                FirstPlayerJoinedSetup(player.gameInfo);
-                m_InitializedServer = true;
-            }
-        }
-
-        /// <summary>
-        /// First player that joins the server sets the map info
-        /// </summary>
-        void FirstPlayerJoinedSetup(GameInfo gameInfo)
-        {
-            Debug.Log($"Setting Server to first user : {gameInfo}");
-            UpdateMap(gameInfo.map);
-            UpdateMode(gameInfo.gameMode);
-            UpdateQueueMode(gameInfo.gameQueue);
         }
 
         /// <summary>
@@ -216,32 +194,22 @@ namespace Matchplay.Server
 
         void SendServerChangedGameMode(GameMode gameMode)
         {
-            var writer = new FastBufferWriter(sizeof(GameMode), Allocator.Temp);
-            writer.WriteValueSafe((int)gameMode);
-            Debug.Log($"Sending networkServer Changed GameMode to : {gameMode}");
-            MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedGameMode, writer);
+            m_SynchedServerData.gameMode.Value = gameMode;
         }
 
         void SendServerChangedMap(Map gameMap)
         {
-            var writer = new FastBufferWriter(sizeof(Map), Allocator.Temp);
-            writer.WriteValueSafe((int)gameMap);
-            Debug.Log($"Sending networkServer Changed Map to : {gameMap}");
-            MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedMap, writer);
+            m_SynchedServerData.map.Value = gameMap;
         }
 
         void SendServerChangedQueueMode(GameQueue queueMode)
         {
-            var writer = new FastBufferWriter(sizeof(GameQueue), Allocator.Temp);
-            writer.WriteValueSafe((int)queueMode);
-            Debug.Log($"Sending networkServer Changed QueueMode to : {queueMode}");
-            MatchplayNetworkMessenger.SendMessageToAll(NetworkMessage.ServerChangedQueue, writer);
+            m_SynchedServerData.gameQueue.Value = queueMode;
         }
 
-        void UpdateMap(Map newMap)
+        public void ChangeMap(Map newMap)
         {
-            m_ServerGameInfo.map = newMap;
-            var sceneString = ToMap(m_ServerGameInfo.map);
+            var sceneString = ToMap(newMap);
             if (string.IsNullOrEmpty(sceneString))
             {
                 Debug.LogError($"Cant Change map, no valid map selection in {newMap}.");
@@ -252,15 +220,13 @@ namespace Matchplay.Server
             SendServerChangedMap(newMap);
         }
 
-        void UpdateMode(GameMode mode)
+        public void ChangeGameMode(GameMode mode)
         {
-            m_ServerGameInfo.gameMode = mode;
             SendServerChangedGameMode(mode);
         }
 
-        void UpdateQueueMode(GameQueue queueMode)
+        public void ChangeQueueMode(GameQueue queueMode)
         {
-            m_ServerGameInfo.gameQueue = queueMode;
             SendServerChangedQueueMode(queueMode);
         }
 
@@ -281,36 +247,36 @@ namespace Matchplay.Server
             }
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="networkId"> guid of the client whose data is requested</param>
-        /// <returns>Player data struct matching the given ID</returns>
-        UserData? GetPlayerData(ulong networkId)
-        {
-            //First see if we have a guid matching the clientID given.
-            Debug.Log($"Attempting to get player data for: {networkId}");
-            if (m_NetworkIdToAuth.TryGetValue(networkId, out var clientAuth))
-            {
-                if (m_ClientData.TryGetValue(clientAuth, out var playerData))
-                    return playerData;
-
-                Debug.LogError($"No UserData of matching GUID found: {clientAuth}");
-            }
-            else
-            {
-                Debug.LogError($"No client GUID found mapped to the given client Network ID: {networkId}");
-            }
-
-            return null;
-        }
+//
+//        /// <summary>
+//        ///
+//        /// </summary>
+//        /// <param name="networkId"> guid of the client whose data is requested</param>
+//        /// <returns>Player data struct matching the given ID</returns>
+//        UserData GetPlayerData(ulong networkId)
+//        {
+//            //First see if we have a guid matching the clientID given.
+//            Debug.Log($"Attempting to get player data for: {networkId}");
+//            if (m_NetworkIdToAuth.TryGetValue(networkId, out var clientAuth))
+//            {
+//                if (m_ClientData.TryGetValue(clientAuth, out var playerData))
+//                    return playerData;
+//
+//                Debug.LogError($"No UserData of matching GUID found: {clientAuth}");
+//            }
+//            else
+//            {
+//                Debug.LogError($"No client GUID found mapped to the given client Network ID: {networkId}");
+//            }
+//
+//            return null;
+//        }
 
         public void Dispose()
         {
             if (m_NetworkManager == null)
                 return;
             m_NetworkManager.ConnectionApprovalCallback -= ApprovalCheck;
-            m_NetworkManager.OnClientConnectedCallback -= OnClientConnected;
             m_NetworkManager.OnClientDisconnectCallback -= OnClientDisconnect;
             m_NetworkManager.OnServerStarted -= OnNetworkReady;
         }

@@ -18,7 +18,7 @@ namespace Matchplay.Shared
         [SerializeField]
         List<GameObject> m_ServerManagers = new List<GameObject>();
 
-        async void Start()
+        void Start()
         {
             DontDestroyOnLoad(gameObject);
 
@@ -39,7 +39,9 @@ namespace Matchplay.Shared
 
                 var serverInstance = Instantiate(m_ServerPrefab);
                 serverInstance.Init();
-                serverInstance.BeginServer();
+#pragma warning disable 4014
+                serverInstance.BeginServerAsync();
+#pragma warning restore 4014
             }
             else
             {

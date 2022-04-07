@@ -8,9 +8,6 @@ namespace Matchplay.Networking
     {
         LocalClientConnected,
         LocalClientDisconnected,
-        ServerChangedMap,
-        ServerChangedGameMode,
-        ServerChangedQueue
     }
 
     /// <summary>

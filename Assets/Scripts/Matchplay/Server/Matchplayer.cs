@@ -29,18 +29,18 @@ namespace Matchplay.Server
         {
             transform.position = pos;
             transform.rotation = rot;
-            UpdatePlayerPos_ClientRpc(pos, rot);
+           // UpdatePlayerPos_ClientRpc(pos, rot);
         }
 
-        /// <summary>
-        /// Pass the values to the player
-        /// </summary>
-        [ClientRpc]
-        void UpdatePlayerPos_ClientRpc(Vector3 pos, Quaternion rot)
-        {
-            transform.position = pos;
-            transform.rotation = rot;
-        }
+//        /// <summary>
+//        /// Pass the values to the player
+//        /// </summary>
+//        [ClientRpc]
+//        void UpdatePlayerPos_ClientRpc(Vector3 pos, Quaternion rot)
+//        {
+//            transform.position = pos;
+//            transform.rotation = rot;
+//        }
 
         public void ServerSetName(string name)
         {
@@ -49,7 +49,10 @@ namespace Matchplay.Server
 
         public override void OnNetworkDespawn()
         {
-            ClientGameManager.Singleton.RemoveMatchPlayer(this);
+            if (IsClient)
+            {
+                ClientGameManager.Singleton.RemoveMatchPlayer(this);
+            }
         }
     }
 }
