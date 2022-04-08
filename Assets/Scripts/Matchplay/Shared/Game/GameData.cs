@@ -122,9 +122,9 @@ namespace Matchplay.Shared
     public class UserData
     {
         public string userName; //name of the player
-        [FormerlySerializedAs("clientAuthId")] public string userAuthId; //Auth Player ID
+        public string userAuthId; //Auth Player ID
         public ulong networkId;
-        [FormerlySerializedAs("gamePreferences")] [FormerlySerializedAs("modePreferences")] public GameInfo userGamePreferences; //The game info the player thought he was joining with
+        public GameInfo userGamePreferences; //The game info the player thought he was joining with
 
         public UserData(string userName, string userAuthId, ulong networkId, GameInfo userGamePreferences)
         {
@@ -154,6 +154,9 @@ namespace Matchplay.Shared
         public Map map = Map.None;
         public GameMode gameMode = GameMode.None;
         public GameQueue gameQueue = GameQueue.Missing;
+
+        //TODO YAGNI if we had different maxPlayers per gameMode i'd expand this to change with the mode type
+        public int MaxUsers = 10;
 
         //QueueNames in the dashboard can be different than your local queue definitions (If you want nice names for them)
         const string k_MultiplayCasualQueue = "casual-queue";

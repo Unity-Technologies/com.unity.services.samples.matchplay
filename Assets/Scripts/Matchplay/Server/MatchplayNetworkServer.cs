@@ -15,6 +15,9 @@ namespace Matchplay.Server
         public Action<Matchplayer> OnServerPlayerSpawned;
         public Action<Matchplayer> OnServerPlayerDespawned;
 
+        public Action<UserData> OnPlayerLeft;
+        public Action<UserData> OnPlayerJoined;
+
         SynchedServerData m_SynchedServerData;
         bool m_InitializedServer;
         NetworkManager m_NetworkManager;
@@ -56,14 +59,6 @@ namespace Matchplay.Server
             ChangeQueueMode(startingGameInfo.gameQueue);
         }
 
-        /// <summary>
-        /// TEMP: Since we can't receive the info from the server allocation before the client joins, we need to make sure we are in an empty scene to avoid duplicating our bootstrap objects.
-        /// </summary>
-        public void ToWaitingScene()
-        {
-            m_NetworkManager.SceneManager.LoadScene("server_waitScene", LoadSceneMode.Single);
-        }
-
         void OnNetworkReady()
         {
             m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
@@ -86,7 +81,7 @@ namespace Matchplay.Server
 
             var payload = System.Text.Encoding.UTF8.GetString(connectionData);
             var userData = JsonUtility.FromJson<UserData>(payload); // https://docs.unity3d.com/2020.2/Documentation/Manual/JSONSerialization.html
-
+            userData.networkId = networkId;
             Debug.Log("Host ApprovalCheck: connecting client: " + userData);
 
             //Test for Duplicate Login.
@@ -114,6 +109,7 @@ namespace Matchplay.Server
             //Populate our dictionaries with the playerData
             m_NetworkIdToAuth[networkId] = userData.userAuthId;
             m_ClientData[userData.userAuthId] = userData;
+            OnPlayerJoined?.Invoke(userData);
             connectionApprovedCallback(true, null, true, Vector3.zero, Quaternion.identity);
 
             // connection approval will create a player object for you
@@ -135,8 +131,10 @@ namespace Matchplay.Server
                 {
                     m_ClientData.Remove(authId);
                 }
-                OnServerPlayerDespawned.Invoke(GetNetworkedMatchPlayer(networkId));
 
+                OnPlayerLeft?.Invoke(m_ClientData[authId]);
+
+                OnServerPlayerDespawned.Invoke(GetNetworkedMatchPlayer(networkId));
             }
         }
 

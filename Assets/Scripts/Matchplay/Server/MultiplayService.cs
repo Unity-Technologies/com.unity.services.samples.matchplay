@@ -46,7 +46,7 @@ namespace Matchplay.Server
 
         public async Task BeginServerCheck(GameInfo info)
         {
-            m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync(8, "Matchplay Server", info.gameMode.ToString(), "0", info.map.ToString());
+            m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync((ushort)info.MaxUsers, "Matchplay Server", info.gameMode.ToString(), "0", info.map.ToString());
         }
 
         //The networked server is our source of truth for what is going on, so we update our multiplay check server with values from there.
