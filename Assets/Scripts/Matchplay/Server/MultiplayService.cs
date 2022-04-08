@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Matchplay.Shared;
-using Matchplay.Infrastructure;
 using Newtonsoft.Json;
 using Unity.Services.Matchmaker.Models;
 using Unity.Services.Multiplay;
@@ -12,15 +11,13 @@ namespace Matchplay.Server
 {
     public class MultiplayService : IDisposable
     {
-        UpdateRunner m_UpdateRunner;
         IMultiplayService m_MultiplayService;
-        MultiplayEventCallbacks m_Servercallbacks = new MultiplayEventCallbacks();
+        MultiplayEventCallbacks m_Servercallbacks;
         IServerCheckManager m_ServerCheckManager;
         IServerEvents m_ServerEvents;
         MultiplayAllocation m_Allocation;
 
         const string k_PayloadProxyUrl = "http://localhost:8086";
-        const int k_AllocationTimeout = 10000;
 
         public async Task<MatchmakerAllocationPayload> BeginServerAndAwaitMatchmakerAllocation()
         {
@@ -29,19 +26,16 @@ namespace Matchplay.Server
             m_Servercallbacks = new MultiplayEventCallbacks();
             m_Servercallbacks.Allocate += OnMultiplayAllocation;
             m_Servercallbacks.Deallocate += OnMultiplayDeAllocation;
+            m_Servercallbacks.Error += OnMultiplayError;
 
+            Debug.Log("Starting Multiplay Event Listener");
             m_ServerEvents = await m_MultiplayService.SubscribeToServerEventsAsync(m_Servercallbacks);
-            Debug.Log("Awaiting Multiplay Allocation");
 
-            var mmPayloadTask = AwaitMatchmakerPayload();
-            if (await Task.WhenAny(mmPayloadTask, Task.Delay(k_AllocationTimeout)) == mmPayloadTask)
-            {
-                await m_MultiplayService.ServerReadyForPlayersAsync();
-                return mmPayloadTask.Result;
-            }
+            Debug.Log("Starting Multiplay Allocation");
+            var mmPayloadTask = await AwaitMatchmakerPayload();
 
-            Debug.LogWarning("Allocation Timed out!");
-            return null;
+            await m_MultiplayService.ServerReadyForPlayersAsync();
+            return mmPayloadTask;
         }
 
         public async Task BeginServerCheck(GameInfo info)
@@ -69,7 +63,10 @@ namespace Matchplay.Server
 
         void OnMultiplayDeAllocation(MultiplayDeallocation deallocation) { }
 
-        void OnMultiplayError(MultiplayError error) { }
+        void OnMultiplayError(MultiplayError error)
+        {
+            Debug.Log($"MultiplayError : {error.Reason}\n{error.Detail}");
+        }
 
         /// <summary>
         /// This should be in the SDK but we can use web-requests to get access to the MatchmakerAllocationPayload
@@ -122,7 +119,7 @@ namespace Matchplay.Server
             m_ServerCheckManager.CurrentPlayers -= 1;
         }
 
-        public void ChangedMap(Map oldMap, Map newMap)
+        public void ChangedMap(Map newMap)
         {
             m_ServerCheckManager.Map = newMap.ToString();
         }
@@ -134,9 +131,14 @@ namespace Matchplay.Server
 
         public void Dispose()
         {
-            m_Servercallbacks.Allocate -= OnMultiplayAllocation;
-            m_Servercallbacks.Deallocate -= OnMultiplayDeAllocation;
-            m_ServerEvents.UnsubscribeAsync();
+            if (m_Servercallbacks != null)
+            {
+                m_Servercallbacks.Allocate -= OnMultiplayAllocation;
+                m_Servercallbacks.Deallocate -= OnMultiplayDeAllocation;
+                m_Servercallbacks.Error -= OnMultiplayError;
+            }
+
+            m_ServerEvents?.UnsubscribeAsync();
         }
     }
 

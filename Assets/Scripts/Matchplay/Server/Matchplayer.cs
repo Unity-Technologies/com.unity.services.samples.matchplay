@@ -21,13 +21,12 @@ namespace Matchplay.Server
             ClientGameManager.Singleton.AddMatchPlayer(this);
         }
 
-
         public void ServerSetName(string name)
         {
             PlayerName.Value = name;
         }
 
-        public override void OnNetworkDespawn()
+        public override void OnDestroy()
         {
             if (IsServer && !IsHost)
                 return;

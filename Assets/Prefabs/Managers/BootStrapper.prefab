@@ -49,8 +49,6 @@ MonoBehaviour:
   m_ClientPrefab: {fileID: 2538532228289365691, guid: cf023b2898aba4648bce121a5fb8418d, type: 3}
   m_ServerManagers:
   - {fileID: 4356242913966855994, guid: a54a1ff90787fa54c925f8aa3372e48c, type: 3}
-  m_ClientManagers:
-  - {fileID: 1425957770012601827, guid: a98445284d744f04196265a8e3497859, type: 3}
 --- !u!114 &805244812784019361
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -68,7 +66,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 805244812784019366}
         m_TargetAssemblyTypeName: Matchplay.Shared.ApplicationController, Matchplay
-        m_MethodName: LaunchInMode
+        m_MethodName: OnParrelSyncStarted
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -83,7 +81,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 805244812784019366}
         m_TargetAssemblyTypeName: Matchplay.Shared.ApplicationController, Matchplay
-        m_MethodName: LaunchInMode
+        m_MethodName: OnParrelSyncStarted
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

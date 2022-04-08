@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Tools;
+using Unity.Services.Core;
 using Random = UnityEngine.Random;
 
 namespace Matchplay.Server
@@ -18,8 +19,8 @@ namespace Matchplay.Server
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
-        int m_matchmakerInfoTimeout = 12000;
-
+        const int k_MultiplayServiceTimeout = 5000;
+        bool m_LocalServer;
         MultiplayService m_MultiplayService;
 
         public static ServerGameManager Singleton
@@ -40,17 +41,13 @@ namespace Matchplay.Server
 
         static ServerGameManager s_ServerGameManager;
 
-        public void Init()
-        {
-            m_NetworkServer = new MatchplayNetworkServer();
-            m_MultiplayService = new MultiplayService();
-        }
-
         /// <summary>
         /// Attempts to initialize the server with services (If we are on Multiplay) and if we time out, we move on to default setup for local testing.
         /// </summary>
         public async Task BeginServerAsync()
         {
+            m_NetworkServer = new MatchplayNetworkServer();
+            m_MultiplayService = new MultiplayService();
             m_ServerIP = CommandParser.IP();
             m_ServerPort = CommandParser.Port();
             m_QueryPort = CommandParser.QPort();
@@ -64,38 +61,63 @@ namespace Matchplay.Server
 
             var matchmakerPayloadTask = m_MultiplayService.BeginServerAndAwaitMatchmakerAllocation();
 
-            //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
-            if (await Task.WhenAny(matchmakerPayloadTask, Task.Delay(m_matchmakerInfoTimeout)) == matchmakerPayloadTask)
+            Debug.Log("Starting Multiplay & Matchmaker Services");
+            try
             {
-                if (matchmakerPayloadTask.Result != null)
+
+                //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
+                if (await Task.WhenAny(matchmakerPayloadTask, Task.Delay(k_MultiplayServiceTimeout)) == matchmakerPayloadTask)
                 {
-                    var matchmakerPayload = matchmakerPayloadTask.Result;
-                    startingGameInfo = PayloadToMatchInfo(matchmakerPayload);
-
-                    await m_MultiplayService.BeginServerCheck(startingGameInfo);
-
-                    m_NetworkServer.OnPlayerJoined += UserJoinedServer;
-                    m_NetworkServer.OnPlayerLeft += UserLeft;
-
-                    m_Backfiller = new MatchplayBackfiller(m_ConnectionString, matchmakerPayload.QueueName, matchmakerPayload.MatchProperties, startingGameInfo.MaxUsers);
-
-                    if (m_Backfiller.NeedsPlayers())
+                    Debug.Log($"Got allocation: {matchmakerPayloadTask.Result}");
+                    if (matchmakerPayloadTask.Result != null)
                     {
-                        await m_Backfiller.CreateNewbackfillTicket();
+                        var matchmakerPayload = matchmakerPayloadTask.Result;
+                        startingGameInfo = PayloadToMatchInfo(matchmakerPayload);
+
+                        await m_MultiplayService.BeginServerCheck(startingGameInfo);
+                        m_MultiplayService.SetPlayerCount((ushort)matchmakerPayload.MatchProperties.Players.Count);
+
+                        m_NetworkServer.OnPlayerJoined += UserJoinedServer;
+                        m_NetworkServer.OnPlayerLeft += UserLeft;
+                        SynchedServerData.Singleton.map.OnValueChanged += OnServerChangedMap;
+                        SynchedServerData.Singleton.gameMode.OnValueChanged += OnServerChangedMode;
+
+                        m_Backfiller = new MatchplayBackfiller(m_ConnectionString, matchmakerPayload.QueueName, matchmakerPayload.MatchProperties, startingGameInfo.MaxUsers);
+
+                        if (m_Backfiller.NeedsPlayers())
+                        {
+                            await m_Backfiller.CreateNewbackfillTicket();
+                        }
                     }
                 }
+                else
+                {
+                    Debug.LogWarning("Connecting to Multiplay Timed out, starting with defaults.");
+                    m_LocalServer = true;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.LogWarning("Connecting to Multiplay Timed out, starting with defaults.");
+                Debug.LogWarning($"Something went wrong trying to set up the Services. {ex} ");
             }
 
             m_NetworkServer.StartServer(m_ServerIP, m_ServerPort, startingGameInfo); //Use Network transforms on the chairs/players to sync positions
         }
 
+        void OnServerChangedMap(Map oldMap, Map newMap)
+        {
+            m_MultiplayService.ChangedMap(newMap);
+        }
+
+        void OnServerChangedMode(GameMode oldMode, GameMode newMode)
+        {
+            m_MultiplayService.ChangedMode(newMode);
+        }
+
         void UserJoinedServer(UserData joinedUser)
         {
             m_Backfiller.AddPlayerToMatch(joinedUser);
+            m_MultiplayService.AddPlayer();
             if (!m_Backfiller.NeedsPlayers() && m_Backfiller.Backfilling)
                 Task.Run(() => m_Backfiller.StopBackfill());
         }
@@ -103,6 +125,7 @@ namespace Matchplay.Server
         void UserLeft(UserData leftUser)
         {
             m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
+            m_MultiplayService.RemovePlayer();
             if (m_Backfiller.NeedsPlayers() && !m_Backfiller.Backfilling)
                 Task.Run(() => m_Backfiller.CreateNewbackfillTicket());
         }
@@ -179,8 +202,12 @@ namespace Matchplay.Server
 
         public void OnDestroy()
         {
-            if (m_NetworkServer.OnPlayerJoined != null) m_NetworkServer.OnPlayerJoined -= UserJoinedServer;
-            if (m_NetworkServer.OnPlayerLeft != null) m_NetworkServer.OnPlayerLeft -= UserLeft;
+            if (!m_LocalServer)
+            {
+                if (m_NetworkServer.OnPlayerJoined != null) m_NetworkServer.OnPlayerJoined -= UserJoinedServer;
+                if (m_NetworkServer.OnPlayerLeft != null) m_NetworkServer.OnPlayerLeft -= UserLeft;
+            }
+
             m_Backfiller?.Dispose();
             m_MultiplayService?.Dispose();
             networkServer?.Dispose();

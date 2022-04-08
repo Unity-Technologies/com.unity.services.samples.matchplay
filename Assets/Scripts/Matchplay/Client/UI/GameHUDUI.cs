@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
@@ -17,7 +18,7 @@ namespace Matchplay.Client.UI
         [SerializeField]
         PlayerNameUI playerLabelUI;
 
-        Dictionary<Matchplayer, PlayerNameUI> m_PlayerLabels = new Dictionary<Matchplayer, PlayerNameUI>();
+        Dictionary<int, PlayerNameUI> m_PlayerLabels = new Dictionary<int, PlayerNameUI>();
         Label m_GameModeValue;
         Label m_QueueValue;
         Label m_MapValue;
@@ -28,7 +29,6 @@ namespace Matchplay.Client.UI
 
         void Start()
         {
-
             //UIDocument setup
             var root = gameObject.GetComponent<UIDocument>().rootVisualElement;
             m_GameModeValue = root.Q<Label>("modeValue");
@@ -44,22 +44,20 @@ namespace Matchplay.Client.UI
             m_ClientGameManager.networkClient.OnLocalDisconnection += OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;
             m_ClientGameManager.MatchPlayerDespawned += RemovePlayerLabel;
+
             //Synched Variables
             m_SynchedServerData = SynchedServerData.Singleton;
             m_SynchedServerData.OnInitialSynch += OnSynched;
             m_SynchedServerData.map.OnValueChanged += OnMapChanged;
             m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
             m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
-
-
-
         }
 
         void OnSynched()
         {
-            OnMapChanged( Map.None,  m_SynchedServerData.map.Value);
-            OnModeChanged( GameMode.None,  m_SynchedServerData.gameMode.Value);
-            OnQueueChanged( GameQueue.Missing,  m_SynchedServerData.gameQueue.Value);
+            OnMapChanged(Map.None, m_SynchedServerData.map.Value);
+            OnModeChanged(GameMode.None, m_SynchedServerData.gameMode.Value);
+            OnQueueChanged(GameQueue.Missing, m_SynchedServerData.gameQueue.Value);
         }
 
         void OnLocalConnection(ConnectStatus status)
@@ -78,21 +76,24 @@ namespace Matchplay.Client.UI
         void AddPlayerLabel(Matchplayer player)
         {
             var newLabel = Instantiate(playerLabelUI, transform);
-            m_PlayerLabels[player] = newLabel;
+            m_PlayerLabels[player.GetInstanceID()] = newLabel;
+
             newLabel.SetPlayerLabel(player);
         }
 
         void RemovePlayerLabel(Matchplayer player)
         {
-            if (m_PlayerLabels.ContainsKey(player))
+            var instanceId = player.GetInstanceID();
+            if (!m_PlayerLabels.ContainsKey(instanceId))
             {
-                Debug.LogWarning($"No player in list : {player}");
+                Debug.LogWarning($"{instanceId} not in label dictionary.");
                 return;
             }
 
-            var playerLabel = m_PlayerLabels[player];
-            Destroy(playerLabel);
-            m_PlayerLabels.Remove(player);
+            var playerLabel = m_PlayerLabels[instanceId];
+            Debug.Log($"Removing {playerLabel} - {instanceId}.");
+            Destroy(playerLabel.gameObject);
+            m_PlayerLabels.Remove(instanceId);
         }
 
         void OnMapChanged(Map oldMap, Map newMap)
@@ -116,7 +117,6 @@ namespace Matchplay.Client.UI
         void DisconnectPressed()
         {
             m_ClientGameManager.Disconnect();
-
         }
 
         void OnDestroy()
@@ -129,7 +129,6 @@ namespace Matchplay.Client.UI
             m_SynchedServerData.map.OnValueChanged -= OnMapChanged;
             m_SynchedServerData.gameMode.OnValueChanged -= OnModeChanged;
             m_SynchedServerData.gameQueue.OnValueChanged -= OnQueueChanged;
-
         }
     }
 }

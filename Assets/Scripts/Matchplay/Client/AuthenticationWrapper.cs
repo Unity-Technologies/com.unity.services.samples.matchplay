@@ -13,7 +13,6 @@ namespace Matchplay.Client
         {
             if (IsAuthenticated)
                 return;
-            await UnityServices.InitializeAsync();
             await SignInAnonymouslyAsync(tries);
         }
 

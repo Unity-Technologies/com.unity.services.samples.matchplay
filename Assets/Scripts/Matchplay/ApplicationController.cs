@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Matchplay.Client;
 using Matchplay.Server;
+using Unity.Services.Core;
 using UnityEngine;
 
 namespace Matchplay.Shared
@@ -14,37 +15,41 @@ namespace Matchplay.Shared
         ServerGameManager m_ServerPrefab;
         [SerializeField]
         ClientGameManager m_ClientPrefab;
-        [SerializeField]
-        List<GameObject> m_ServerManagers = new List<GameObject>();
 
         CommandParser m_Parser;
-        void Start()
+
+        async void Start()
         {
             DontDestroyOnLoad(gameObject);
 
             //We use EditorApplicationController for Editor launching.
             if (Application.isEditor)
                 return;
-            LaunchInMode(CommandParser.IsServerMode());
+            await LaunchInMode(CommandParser.IsServerMode());
+        }
+
+        public void OnParrelSyncStarted(bool isServer)
+        {
+#pragma warning disable 4014
+            LaunchInMode(isServer);
+#pragma warning restore 4014
         }
 
         /// <summary>
         /// Main project launcher, launched in Awake() for builds, and via the EditorApplicationController in-editor
         /// </summary>
-        public void LaunchInMode(bool isServer)
+        async Task LaunchInMode(bool isServer)
         {
             //init the command parser, get launch args
             m_Parser = new CommandParser();
 
+            await UnityServices.InitializeAsync();
+
             if (isServer)
             {
-                InstantiateManagers(m_ServerManagers);
-
                 var serverInstance = Instantiate(m_ServerPrefab);
-                serverInstance.Init();
-#pragma warning disable 4014
-                serverInstance.BeginServerAsync();
-#pragma warning restore 4014
+
+                await serverInstance.BeginServerAsync();
             }
             else
             {
