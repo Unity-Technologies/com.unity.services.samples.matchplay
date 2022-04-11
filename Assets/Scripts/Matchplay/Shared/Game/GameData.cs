@@ -24,9 +24,10 @@ namespace Matchplay.Shared
 
     public enum GameQueue
     {
+        None,
         Casual,
-        Competetive,
-        Missing
+        Competetive
+
     }
 
     /// <summary>
@@ -153,7 +154,7 @@ namespace Matchplay.Shared
     {
         public Map map = Map.None;
         public GameMode gameMode = GameMode.None;
-        public GameQueue gameQueue = GameQueue.Missing;
+        public GameQueue gameQueue = GameQueue.None;
 
         //TODO YAGNI if we had different maxPlayers per gameMode i'd expand this to change with the mode type
         public int MaxUsers = 10;
@@ -196,7 +197,7 @@ namespace Matchplay.Shared
             if (!k_MultiplayToLocalQueueNames.ContainsKey(multiplayQueue))
             {
                 Debug.LogWarning($"No QueuePreference that maps to {multiplayQueue}");
-                return GameQueue.Missing;
+                return GameQueue.None;
             }
 
             return k_MultiplayToLocalQueueNames[multiplayQueue];

@@ -141,7 +141,9 @@ namespace Matchplay.Server
 
         public void Dispose()
         {
+#pragma warning disable 4014
             StopBackfill();
+#pragma warning restore 4014
         }
     }
 }

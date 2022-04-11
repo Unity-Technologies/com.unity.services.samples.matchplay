@@ -121,11 +121,15 @@ namespace Matchplay.Server
 
         public void ChangedMap(Map newMap)
         {
+            if (m_ServerCheckManager?.Map == null)
+                return;
             m_ServerCheckManager.Map = newMap.ToString();
         }
 
         public void ChangedMode(GameMode mode)
         {
+            if (m_ServerCheckManager?.GameType == null)
+                return;
             m_ServerCheckManager.GameType = mode.ToString();
         }
 

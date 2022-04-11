@@ -26,7 +26,6 @@ namespace Matchplay.Server
 
         public override void OnDestroy()
         {
-            base.OnDestroy();
             if (!IsServer)
                 return;
             if (ServerGameManager.Singleton == null)
@@ -38,7 +37,6 @@ namespace Matchplay.Server
         public void JoinSeat(Matchplayer player)
         {
             m_CurrentSeats.Add(player);
-            Debug.Log($"Added Player: {player} - {m_CurrentSeats}");
             RearrangeSeats();
         }
 
@@ -60,8 +58,8 @@ namespace Matchplay.Server
 
         void LeaveSeat(Matchplayer player)
         {
-            Debug.Log($"Removing Player: {player}");
             m_CurrentSeats.Remove(player);
+            RearrangeSeats();
         }
     }
 }

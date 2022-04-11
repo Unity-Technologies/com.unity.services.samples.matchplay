@@ -36,7 +36,7 @@ namespace Matchplay.Client
 
         static ClientGameManager s_ClientGameManager;
 
-        public async void Init()
+        public async Task Init()
         {
             observableUser = new ObservableUser();
             m_Matchmaker = new MatchplayMatchmaker();
@@ -95,8 +95,6 @@ namespace Matchplay.Client
             {
                 observableUser.GameModePreferences &= ~gameMode;
             }
-
-            Debug.Log($"Set Game GameModePreferences {observableUser.GameModePreferences} - {added}");
         }
 
         public void SetMapPreferencesFlag(Map map, bool added)
@@ -107,8 +105,6 @@ namespace Matchplay.Client
             {
                 observableUser.MapPreferences &= ~map;
             }
-
-            Debug.Log($"Set Game MapPreferences {observableUser.MapPreferences} - {added}");
         }
 
         public void SetGameQueue(GameQueue queue)

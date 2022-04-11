@@ -3,6 +3,7 @@ using UnityEngine;
 using Unity.Netcode;
 using Matchplay.Networking;
 using Matchplay.Server;
+using Matchplay.Shared;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
@@ -11,7 +12,6 @@ namespace Matchplay.Client
     {
         public event Action<ConnectStatus> OnLocalConnection;
         public event Action<ConnectStatus> OnLocalDisconnection;
-
 
         /// <summary>
         /// Time in seconds before the client considers a lack of server response a timeout
@@ -46,12 +46,6 @@ namespace Matchplay.Client
         {
             DisconnectReason.SetDisconnectReason(ConnectStatus.UserRequestedDisconnect);
             m_NetworkManager.Shutdown(false);
-        }
-
-        Matchplayer GetMatchPlayer(ulong clientId)
-        {
-            var client = m_NetworkManager.ConnectedClients[clientId].PlayerObject;
-            return client.GetComponent<Matchplayer>();
         }
 
         /// <summary>
@@ -95,7 +89,7 @@ namespace Matchplay.Client
 
         void LocalClientDisconnect(ulong clientId)
         {
-            if (clientId ==  m_NetworkManager.LocalClientId)
+            if (clientId == m_NetworkManager.LocalClientId)
                 return;
 
             //On a client disconnect we want to take them back to the main menu.
@@ -105,10 +99,11 @@ namespace Matchplay.Client
 
             // We're not at the main menu, so we obviously had a connection before... thus, we aren't in a timeout scenario.
             // Just shut down networking and switch back to main menu.
-            m_NetworkManager.Shutdown();
-
+            if (m_NetworkManager.IsConnectedClient)
+                m_NetworkManager.Shutdown(true);
             OnLocalDisconnection?.Invoke(DisconnectReason.Reason);
-
+            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientConnected);
+            MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientDisconnected);
             SceneManager.LoadScene("mainMenu");
         }
 
@@ -117,8 +112,6 @@ namespace Matchplay.Client
             if (m_NetworkManager != null && m_NetworkManager.CustomMessagingManager != null)
             {
                 m_NetworkManager.OnClientDisconnectCallback -= LocalClientDisconnect;
-                MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientConnected);
-                MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientDisconnected);
             }
         }
     }

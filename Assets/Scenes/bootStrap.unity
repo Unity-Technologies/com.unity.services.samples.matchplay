@@ -130,6 +130,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 6052207803524585809, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
+      propertyPath: NetworkConfig.ForceSamePrefabs
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6052207803524585809, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
+      propertyPath: NetworkConfig.EnsureNetworkVariableLengthSafety
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6052207803524585809, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
+      propertyPath: NetworkConfig.NetworkPrefabs.Array.data[0].Override
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6052207803524585809, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
+      propertyPath: NetworkConfig.NetworkPrefabs.Array.data[1].Override
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6052207803524585809, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
+      propertyPath: NetworkConfig.NetworkPrefabs.Array.data[0].SourcePrefabToOverride
+      value: 
+      objectReference: {fileID: 3439633038736912633, guid: 398aad09d8b2a47eba664a076763cdcc, type: 3}
+    - target: {fileID: 6052207803524585809, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
+      propertyPath: NetworkConfig.NetworkPrefabs.Array.data[1].SourcePrefabToOverride
+      value: 
+      objectReference: {fileID: 2004524346269018207, guid: 3db265d2f6a5da94aa08ca082eae9094, type: 3}
     - target: {fileID: 6052207803524585811, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
       propertyPath: m_Name
       value: NetworkManager
@@ -237,64 +261,3 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 234b3de198486ac45a5eba0716554a11, type: 3}
---- !u!1001 &7697826308760494885
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_RootOrder
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.8078003
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 6.0832944
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -0.58633614
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829108, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829109, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: m_Name
-      value: SynchedServerData
-      objectReference: {fileID: 0}
-    - target: {fileID: 7697826309394829111, guid: fdddb954c22b442458426023cd31253d, type: 3}
-      propertyPath: GlobalObjectIdHash
-      value: 1049168601
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: fdddb954c22b442458426023cd31253d, type: 3}

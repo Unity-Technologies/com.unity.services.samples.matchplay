@@ -22,6 +22,7 @@ namespace Matchplay.Server
         const int k_MultiplayServiceTimeout = 5000;
         bool m_LocalServer;
         MultiplayService m_MultiplayService;
+        SynchedServerData m_SynchedServerData;
 
         public static ServerGameManager Singleton
         {
@@ -48,9 +49,9 @@ namespace Matchplay.Server
         {
             m_NetworkServer = new MatchplayNetworkServer();
             m_MultiplayService = new MultiplayService();
-            m_ServerIP = CommandParser.IP();
-            m_ServerPort = CommandParser.Port();
-            m_QueryPort = CommandParser.QPort();
+            m_ServerIP = ApplicationData.IP();
+            m_ServerPort = ApplicationData.Port();
+            m_QueryPort = ApplicationData.QPort();
 
             var startingGameInfo = new GameInfo
             {
@@ -64,7 +65,6 @@ namespace Matchplay.Server
             Debug.Log("Starting Multiplay & Matchmaker Services");
             try
             {
-
                 //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
                 if (await Task.WhenAny(matchmakerPayloadTask, Task.Delay(k_MultiplayServiceTimeout)) == matchmakerPayloadTask)
                 {
@@ -79,8 +79,6 @@ namespace Matchplay.Server
 
                         m_NetworkServer.OnPlayerJoined += UserJoinedServer;
                         m_NetworkServer.OnPlayerLeft += UserLeft;
-                        SynchedServerData.Singleton.map.OnValueChanged += OnServerChangedMap;
-                        SynchedServerData.Singleton.gameMode.OnValueChanged += OnServerChangedMode;
 
                         m_Backfiller = new MatchplayBackfiller(m_ConnectionString, matchmakerPayload.QueueName, matchmakerPayload.MatchProperties, startingGameInfo.MaxUsers);
 
@@ -101,7 +99,9 @@ namespace Matchplay.Server
                 Debug.LogWarning($"Something went wrong trying to set up the Services. {ex} ");
             }
 
-            m_NetworkServer.StartServer(m_ServerIP, m_ServerPort, startingGameInfo); //Use Network transforms on the chairs/players to sync positions
+            m_SynchedServerData = await m_NetworkServer.StartServer(m_ServerIP, m_ServerPort, startingGameInfo); //Use Network transforms on the chairs/players to sync positions
+            m_SynchedServerData.map.OnValueChanged += OnServerChangedMap;
+            m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
         }
 
         void OnServerChangedMap(Map oldMap, Map newMap)
@@ -206,6 +206,12 @@ namespace Matchplay.Server
             {
                 if (m_NetworkServer.OnPlayerJoined != null) m_NetworkServer.OnPlayerJoined -= UserJoinedServer;
                 if (m_NetworkServer.OnPlayerLeft != null) m_NetworkServer.OnPlayerLeft -= UserLeft;
+            }
+
+            if (m_SynchedServerData != null)
+            {
+                if (m_SynchedServerData.map.OnValueChanged != null) m_SynchedServerData.map.OnValueChanged -= OnServerChangedMap;
+                if (m_SynchedServerData.gameMode.OnValueChanged != null) m_SynchedServerData.gameMode.OnValueChanged -= OnServerChangedMode;
             }
 
             m_Backfiller?.Dispose();

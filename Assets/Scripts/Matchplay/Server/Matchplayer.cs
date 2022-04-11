@@ -26,7 +26,7 @@ namespace Matchplay.Server
             PlayerName.Value = name;
         }
 
-        public override void OnDestroy()
+        public override void OnNetworkDespawn()
         {
             if (IsServer && !IsHost)
                 return;

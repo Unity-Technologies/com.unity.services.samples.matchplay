@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using Matchplay.Client;
 using Matchplay.Server;
 using Unity.Services.Core;
@@ -16,7 +15,7 @@ namespace Matchplay.Shared
         [SerializeField]
         ClientGameManager m_ClientPrefab;
 
-        CommandParser m_Parser;
+        ApplicationData m_AppData;
 
         async void Start()
         {
@@ -25,7 +24,9 @@ namespace Matchplay.Shared
             //We use EditorApplicationController for Editor launching.
             if (Application.isEditor)
                 return;
-            await LaunchInMode(CommandParser.IsServerMode());
+
+            //If this is a build and we are headless, we are a server
+            await LaunchInMode(SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null);
         }
 
         public void OnParrelSyncStarted(bool isServer)
@@ -41,7 +42,7 @@ namespace Matchplay.Shared
         async Task LaunchInMode(bool isServer)
         {
             //init the command parser, get launch args
-            m_Parser = new CommandParser();
+            m_AppData = new ApplicationData(isServer);
 
             await UnityServices.InitializeAsync();
 
@@ -55,16 +56,12 @@ namespace Matchplay.Shared
             {
                 AuthenticationWrapper.BeginAuth();
                 var clientInstance = Instantiate(m_ClientPrefab);
-                clientInstance.Init();
-                clientInstance.ToMainMenu();
-            }
-        }
 
-        void InstantiateManagers(List<GameObject> managers)
-        {
-            foreach (var go in managers)
-            {
-                Instantiate(go);
+                //We want to load the main menu while the auth is still fetching over the next few frames to feel snappy.
+#pragma warning disable 4014
+                clientInstance.Init();
+#pragma warning restore 4014
+                clientInstance.ToMainMenu();
             }
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace Matchplay.Shared
 {
@@ -15,30 +16,18 @@ namespace Matchplay.Shared
         /// NetworkedVariables have no built-in callback for the initial client-server synch.
         /// This lets non-networked classes know when we are ready to read the values.
         /// </summary>
-        public Action OnInitialSynch;
-        public static SynchedServerData Singleton
-        {
-            get
-            {
-                if (s_Singleton != null) return s_Singleton;
-                return s_Singleton = FindObjectOfType<SynchedServerData>();
-            }
-        }
-
-        static SynchedServerData s_Singleton;
-
-        void Awake()
-        {
-            if (s_Singleton != null)
-                Destroy(gameObject);
-            DontDestroyOnLoad(gameObject);
-        }
-
+        public Action OnNetworkSpawned;
 
         public override void OnNetworkSpawn()
         {
-            base.OnNetworkSpawn();
-            OnInitialSynch?.Invoke();
+            OnNetworkSpawned?.Invoke();
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            map.Value = Map.None;
+            gameMode.Value = GameMode.None;
+            gameQueue.Value = GameQueue.None;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Matchplay.Shared
     /// <summary>
     /// Basic launch command processor (Multiplay prefers passing IP and port along)
     /// </summary>
-    public class CommandParser
+    public class ApplicationData
     {
         /// <summary>
         /// Commands Dictionary
@@ -18,10 +18,11 @@ namespace Matchplay.Shared
         const string k_IPCmd = "ip";
         const string k_PortCmd = "port";
         const string k_QueryPortCmd = "queryPort";
+        static bool s_IsServerMode;
 
-        public static bool IsServerMode()
+        public static bool IsBuildServerMode()
         {
-            return SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null;
+            return s_IsServerMode;
         }
 
         public static string IP()
@@ -40,7 +41,7 @@ namespace Matchplay.Shared
         }
 
         //Ensure this gets instantiated Early on
-        public CommandParser()
+        public ApplicationData(bool isServerMode)
         {
             SetIP("127.0.0.1");
             SetPort("7777");
@@ -48,7 +49,7 @@ namespace Matchplay.Shared
             m_CommandDictionary["-" + k_IPCmd] = SetIP;
             m_CommandDictionary["-" + k_PortCmd] = SetPort;
             m_CommandDictionary["-" + k_QueryPortCmd] = SetQueryPort;
-
+            s_IsServerMode = isServerMode;
             ProcessCommandLinearguments(Environment.GetCommandLineArgs());
         }
 

@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
+  AlwaysReplicateAsRoot: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
 --- !u!114 &7137697522663392195
@@ -66,4 +66,4 @@ MonoBehaviour:
   gameMode:
     m_InternalValue: 0
   gameQueue:
-    m_InternalValue: 2
+    m_InternalValue: 0
