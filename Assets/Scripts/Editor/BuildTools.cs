@@ -16,10 +16,10 @@ namespace Matchplay.Editor
 
     public class BuildTools
     {
-        const string relativeBuildFolder = "Builds";
-        const string winClientFolder = "Matchplay-WIN";
-        const string osxClientFolder = "Matchplay-OSX";
-        const string linuxServerFolder = "Matchplay-networkServer";
+        const string k_RelativeBuildFolder = "Builds";
+        const string k_WinClientFolder = "Matchplay-WIN";
+        const string k_OSXClientFolder = "Matchplay-OSX";
+        const string k_LinuxServerFolder = "Matchplay-networkServer";
 
         public static string[] AllBuildScenePaths()
         {
@@ -42,28 +42,28 @@ namespace Matchplay.Editor
             BuildOSXClient();
         }
 
-        static BuildReport SquadBuildPlatform(BuildPlatforms platform, bool server = false)
+        static BuildReport BuildForPlatform(BuildPlatforms platform, bool server = false)
         {
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.scenes = AllBuildScenePaths();
-            var locationPath = relativeBuildFolder;
+            var locationPath = k_RelativeBuildFolder;
             var timeStamp = DateTime.Now.ToFileTimeUtc();
             switch (platform)
             {
                 case BuildPlatforms.WIN:
                 {
-                    locationPath = Path.Combine(locationPath, winClientFolder + $"_{timeStamp}", "Matchplay.exe");
+                    locationPath = Path.Combine(locationPath, k_WinClientFolder + $"_{timeStamp}", "Matchplay.exe");
                     buildPlayerOptions.target = BuildTarget.StandaloneWindows64;
                     break;
                 }
                 case BuildPlatforms.Linux:
                 {
-                    locationPath = Path.Combine(locationPath, linuxServerFolder + $"_{timeStamp}", "Matchplay.x86_64");
+                    locationPath = Path.Combine(locationPath, k_LinuxServerFolder + $"_{timeStamp}", "Matchplay.x86_64");
                     buildPlayerOptions.target = BuildTarget.StandaloneLinux64;
                     break;
                 }
                 case BuildPlatforms.OSX:
-                    locationPath = Path.Combine(locationPath, osxClientFolder + $"_{timeStamp}", "Matchplay.app");
+                    locationPath = Path.Combine(locationPath, k_OSXClientFolder + $"_{timeStamp}", "Matchplay.app");
                     buildPlayerOptions.target = BuildTarget.StandaloneOSX;
                     break;
             }
@@ -78,10 +78,10 @@ namespace Matchplay.Editor
             ;
         }
 
-        [MenuItem("BuildTools/WIN networkClient")]
+        [MenuItem("BuildTools/WIN Client")]
         public static void BuildWINClient()
         {
-            var summary = SquadBuildPlatform(BuildPlatforms.WIN).summary;
+            var summary = BuildForPlatform(BuildPlatforms.WIN).summary;
 
             if (summary.result == BuildResult.Succeeded)
             {
@@ -94,10 +94,10 @@ namespace Matchplay.Editor
             }
         }
 
-        [MenuItem("BuildTools/Linux networkServer")]
+        [MenuItem("BuildTools/Linux Server")]
         public static void BuildLinuxServer()
         {
-            var summary = SquadBuildPlatform(BuildPlatforms.Linux, true).summary;
+            var summary = BuildForPlatform(BuildPlatforms.Linux, true).summary;
 
             if (summary.result == BuildResult.Succeeded)
             {
@@ -106,14 +106,14 @@ namespace Matchplay.Editor
 
             if (summary.result == BuildResult.Failed)
             {
-                Debug.Log("Build failed");
+                Debug.LogError($"Build failed for {summary.platformGroup} @ {summary.outputPath}");
             }
         }
 
-        [MenuItem("BuildTools/OSX networkClient")]
+        [MenuItem("BuildTools/OSX Client")]
         public static void BuildOSXClient()
         {
-            var summary = SquadBuildPlatform(BuildPlatforms.OSX).summary;
+            var summary = BuildForPlatform(BuildPlatforms.OSX).summary;
 
             if (summary.result == BuildResult.Succeeded)
             {

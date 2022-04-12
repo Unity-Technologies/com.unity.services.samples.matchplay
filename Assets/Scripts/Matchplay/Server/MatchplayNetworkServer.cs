@@ -57,11 +57,11 @@ namespace Matchplay.Server
             ChangeMap(startingGameInfo.map);
             try
             {
-                var synchObjectTries = 3;
-                while (synchObjectTries > 0 && m_SynchedServerData == null)
+                var getServerDataTries = 3;
+                while (getServerDataTries > 0 && m_SynchedServerData == null)
                 {
                     m_SynchedServerData = Object.FindObjectOfType<SynchedServerData>();
-                    synchObjectTries--;
+                    getServerDataTries--;
                     await Task.Delay(50);
                 }
 
