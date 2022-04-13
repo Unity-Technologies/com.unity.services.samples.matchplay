@@ -21,6 +21,7 @@ namespace Matchplay.Server
 
         public MatchplayBackfiller(string connection, string queueName, MatchProperties matchmakerPayloadProperties, int maxPlayers)
         {
+            SetStagingEnvironment();
             m_MaxPlayers = maxPlayers;
             var backfillProperties = new BackfillTicketProperties(matchmakerPayloadProperties);
             m_LocalBackfillData = new BackfillTicket { Properties = backfillProperties };
@@ -106,6 +107,12 @@ namespace Matchplay.Server
         public bool NeedsPlayers()
         {
             return MatchPlayerCount < m_MaxPlayers;
+        }
+
+        void SetStagingEnvironment()
+        {
+            var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
+            sdkConfiguration.SetBasePath("https://matchmaker-stg.services.api.unity.com");
         }
 
         Player GetPlayerById(string userID)

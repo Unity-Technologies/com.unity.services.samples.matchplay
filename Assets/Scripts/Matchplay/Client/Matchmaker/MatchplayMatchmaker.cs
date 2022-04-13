@@ -90,7 +90,7 @@ namespace Matchplay.Client
 
         public MatchplayMatchmaker()
         {
-            SetProdEnvironment();
+            SetStagingEnvironment();
         }
 
         public async Task CancelMatchmaking()
@@ -139,14 +139,15 @@ namespace Matchplay.Client
             };
         }
 
+
         /// <summary>
         /// Testing environment
         /// </summary>
-        async void SetProdEnvironment()
+        async void SetStagingEnvironment()
         {
             await AuthenticationWrapper.Authenticating();
             var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
-            sdkConfiguration.SetBasePath("https://matchmaker.services.api.unity.com");
+            sdkConfiguration.SetBasePath("https://matchmaker-stg.services.api.unity.com");
         }
 
         /// <summary>

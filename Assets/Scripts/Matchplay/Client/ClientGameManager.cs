@@ -123,7 +123,7 @@ namespace Matchplay.Client
             }
             else
             {
-                Debug.LogWarning($"Matchmaking Failed {matchmakingResult.result} : {matchmakingResult.resultMessage}");
+                Debug.LogWarning($"{matchmakingResult.result} : {matchmakingResult.resultMessage}");
             }
 
             return matchmakingResult.result;

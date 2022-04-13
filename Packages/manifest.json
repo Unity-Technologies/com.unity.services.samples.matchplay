@@ -19,7 +19,6 @@
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.toolchain.win-x86_64-linux-x86_64": "1.0.0",
     "com.unity.transport": "1.0.0-pre.10",
-    "com.unity.ucg.usqp": "0.2.0-preview.1",
     "com.unity.ugui": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
@@ -58,7 +57,26 @@
       "name": "Artifactory",
       "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates",
       "scopes": [
-        "com.unity.services.multiplay"
+        "com.unity.services.multiplay",
+        "com.unity.services.authentication"
+      ]
+    },
+    {
+      "name": "Unity",
+      "url": "http://packages.unity.com",
+      "scopes": [
+        "com.unity.collections",
+        "com.unity.multiplayer.tools",
+        "com.unity.netcode.adapter.utp",
+        "com.unity.netcode.gameobjects",
+        "com.unity.services.matchmaker",
+        "com.unity.services.core",
+        "com.unity.toolchain.win-x86_64-linux-x86_64",
+        "com.unity.nuget.newtonsoft-json",
+        "com.unity.transport",
+        "com.unity.services.wire",
+        "com.unity.sysroot",
+        "com.unity.sysroot.linux-x86_64"
       ]
     }
   ]

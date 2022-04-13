@@ -131,6 +131,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 6052207803524585809, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
+      propertyPath: LogLevel
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6052207803524585809, guid: 9a4784eafa4610448980950fcb9a3d36, type: 3}
       propertyPath: NetworkConfig.ForceSamePrefabs
       value: 1
       objectReference: {fileID: 0}
