@@ -19,7 +19,7 @@ namespace Matchplay.Server
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
-        const int k_MultiplayServiceTimeout = 5000;
+        const int k_MultiplayServiceTimeout = 25000;
         bool m_LocalServer;
         MultiplayService m_MultiplayService;
         SynchedServerData m_SynchedServerData;
@@ -62,7 +62,6 @@ namespace Matchplay.Server
 
             var matchmakerPayloadTask = m_MultiplayService.BeginServerAndAwaitMatchmakerAllocation();
 
-            Debug.Log("Starting Multiplay & Matchmaker Services");
             try
             {
                 //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.

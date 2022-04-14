@@ -2,8 +2,6 @@ using System;
 using UnityEngine;
 using Unity.Netcode;
 using Matchplay.Networking;
-using Matchplay.Server;
-using Matchplay.Shared;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client

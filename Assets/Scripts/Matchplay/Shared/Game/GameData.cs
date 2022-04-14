@@ -139,8 +139,8 @@ namespace Matchplay.Shared
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("UserData: ");
-            sb.AppendLine($"- User Name:       {userName}");
-            sb.AppendLine($"- User Auth Id:   {userAuthId}");
+            sb.AppendLine($"- User Name:             {userName}");
+            sb.AppendLine($"- User Auth Id:          {userAuthId}");
             sb.AppendLine($"- User Game Preferences: {userGamePreferences}");
             return sb.ToString();
         }
@@ -188,7 +188,7 @@ namespace Matchplay.Shared
             {
                 GameQueue.Casual => k_MultiplayCasualQueue,
                 GameQueue.Competetive => k_MultiplayCompetetiveQueue,
-                _ => "casual-queue"
+                _ => k_MultiplayCasualQueue
             };
         }
 

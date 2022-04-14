@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Matchplay.Shared;
 using UnityEngine;
@@ -41,6 +42,7 @@ namespace Matchplay.Server
                 Debug.LogWarning("Already backfilling, no need to start another.");
                 return;
             }
+            Debug.Log($"Starting backfill  Server: {MatchPlayerCount}/{m_MaxPlayers}");
 
             m_LocalBackfillData.Id = await MatchmakerService.Instance.CreateBackfillTicketAsync(m_CreateBackfillOptions);
             Backfilling = true;

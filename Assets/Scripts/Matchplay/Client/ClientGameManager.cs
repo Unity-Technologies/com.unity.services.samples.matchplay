@@ -55,7 +55,7 @@ namespace Matchplay.Client
             networkClient.DisconnectClient();
         }
 
-        public async void Matchmake(Action<MatchResult> onMatchmakerResponse = null)
+        public async void Matchmake(Action<MatchmakerPollingResult> onMatchmakerResponse = null)
         {
             if (m_Matchmaker.IsMatchmaking)
             {
@@ -112,12 +112,12 @@ namespace Matchplay.Client
             observableUser.QueuePreference = queue;
         }
 
-        async Task<MatchResult> MatchmakeAsync()
+        async Task<MatchmakerPollingResult> MatchmakeAsync()
         {
             Debug.Log($"Beginning Matchmaking with {observableUser}");
             var matchmakingResult = await m_Matchmaker.Matchmake(observableUser.Data);
 
-            if (matchmakingResult.result == MatchResult.Success)
+            if (matchmakingResult.result == MatchmakerPollingResult.Success)
             {
                 BeginConnection(matchmakingResult.ip, matchmakingResult.port);
             }

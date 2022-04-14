@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Matchplay.Shared;
 using Newtonsoft.Json;
@@ -16,6 +17,7 @@ namespace Matchplay.Server
         IServerCheckManager m_ServerCheckManager;
         IServerEvents m_ServerEvents;
         MultiplayAllocation m_Allocation;
+        const int k_AllocationWebrequestTimeout = 5000;
 
         const string k_PayloadProxyUrl = "http://localhost:8086";
 
@@ -27,15 +29,16 @@ namespace Matchplay.Server
             m_Servercallbacks.Allocate += OnMultiplayAllocation;
             m_Servercallbacks.Deallocate += OnMultiplayDeAllocation;
             m_Servercallbacks.Error += OnMultiplayError;
-
-            Debug.Log("Starting Multiplay Event Listener");
+            
             m_ServerEvents = await m_MultiplayService.SubscribeToServerEventsAsync(m_Servercallbacks);
-
+            await m_ServerEvents.SubscribeAsync();
             Debug.Log("Starting Multiplay Allocation");
-            var mmPayloadTask = await AwaitMatchmakerPayload();
 
+            var mmPayload = await AwaitMatchmakerPayload();
+
+            Debug.Log($"Got Payload:\n{mmPayload}");
             await m_MultiplayService.ServerReadyForPlayersAsync();
-            return mmPayloadTask;
+            return mmPayload;
         }
 
         public async Task BeginServerCheck(GameInfo info)
@@ -52,16 +55,20 @@ namespace Matchplay.Server
             {
                 await Task.Delay(100);
             }
-
             return await GetMatchmakerAllocationPayloadAsync(m_Allocation.AllocationId);
         }
 
         void OnMultiplayAllocation(MultiplayAllocation allocation)
         {
             m_Allocation = allocation;
+            Debug.Log($"Got Allocation:\n ID: -{m_Allocation.AllocationId}\nEvent: {m_Allocation.EventId}\nServer:{m_Allocation.ServerId} ");
+
         }
 
-        void OnMultiplayDeAllocation(MultiplayDeallocation deallocation) { }
+        void OnMultiplayDeAllocation(MultiplayDeallocation deallocation)
+        {
+            Debug.Log($"Multiplay Deallocated : ID: {deallocation.AllocationId}\nEvent: {deallocation.EventId}\nServer{deallocation.ServerId}");
+        }
 
         void OnMultiplayError(MultiplayError error)
         {
@@ -76,32 +83,40 @@ namespace Matchplay.Server
         async Task<MatchmakerAllocationPayload> GetMatchmakerAllocationPayloadAsync(string allocationID)
         {
             var payloadUrl = k_PayloadProxyUrl + $"/payload/{allocationID}";
+            Debug.Log($"Getting payload @ {payloadUrl}");
 
-            using (var webRequest = UnityWebRequest.Get(payloadUrl))
+            using var webRequest = UnityWebRequest.Get(payloadUrl);
+            var operation = webRequest.SendWebRequest();
+            int timeoutMS = 0;
+            while (!operation.isDone)
             {
-                var operation = webRequest.SendWebRequest();
-
-                while (!operation.isDone)
+                if (timeoutMS > k_AllocationWebrequestTimeout)
                 {
-                    await Task.Yield();
+                    throw new TimeoutException($"Fetching the Matchmaker Payload via WebRequest timed out.");
                 }
 
-                switch (webRequest.result)
-                {
-                    case UnityWebRequest.Result.ConnectionError:
-                    case UnityWebRequest.Result.DataProcessingError:
-                        Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": Error: " + webRequest.error);
-                        break;
-                    case UnityWebRequest.Result.ProtocolError:
-                        Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": HTTP Error: " + webRequest.error);
-                        break;
-                    case UnityWebRequest.Result.Success:
-                        Debug.Log(nameof(GetMatchmakerAllocationPayloadAsync) + ":\nReceived: " + webRequest.downloadHandler.text);
-                        break;
-                }
-
-                return JsonConvert.DeserializeObject<MatchmakerAllocationPayload>(webRequest.downloadHandler.text);
+                await Task.Delay(50);
+                timeoutMS += 50;
             }
+
+
+            switch (webRequest.result)
+            {
+                case UnityWebRequest.Result.ConnectionError:
+                case UnityWebRequest.Result.DataProcessingError:
+                    Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": Error: " + webRequest.error);
+                    break;
+                case UnityWebRequest.Result.ProtocolError:
+                    Debug.LogError(
+                        nameof(GetMatchmakerAllocationPayloadAsync) + ": HTTP Error: " + webRequest.error);
+                    break;
+                case UnityWebRequest.Result.Success:
+                    Debug.Log(nameof(GetMatchmakerAllocationPayloadAsync) + ":\nReceived: " +
+                              webRequest.downloadHandler.text);
+                    break;
+            }
+
+            return JsonConvert.DeserializeObject<MatchmakerAllocationPayload>(webRequest.downloadHandler.text);
         }
 
         public void SetPlayerCount(ushort count)
@@ -156,5 +171,19 @@ namespace Matchplay.Server
         public string Expansion;
         public string GeneratorName;
         public string FunctionName;
+
+        public override string ToString()
+        {
+            StringBuilder payloadDescription = new StringBuilder();
+            payloadDescription.AppendLine("Matchmaker Allocation Payload:");
+            payloadDescription.AppendFormat("-ID:{0}\n", MatchProperties.BackfillTicketId);
+            payloadDescription.AppendFormat("-Teams:{0}\n", MatchProperties.Teams.Count);
+            payloadDescription.AppendFormat("-Players:{0}\n", MatchProperties.Players.Count);
+            payloadDescription.AppendFormat("-Region:{0}\n", MatchProperties.Region);
+            payloadDescription.AppendFormat("-Expansion:{0}\n", Expansion);
+            payloadDescription.AppendFormat("-GeneratorName:{0}\n", GeneratorName);
+            payloadDescription.AppendFormat("-FunctionName:{0}\n", FunctionName);
+            return payloadDescription.ToString();
+        }
     }
 }

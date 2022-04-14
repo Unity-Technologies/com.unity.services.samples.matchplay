@@ -178,7 +178,7 @@ namespace Matchplay.Client.UI
 
         }
 
-        void OnMatchmade(MatchResult result)
+        void OnMatchmade(MatchmakerPollingResult result)
         {
             SetMenuState(MainMenuPlayState.Ready);
         }
