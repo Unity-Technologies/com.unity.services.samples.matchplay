@@ -10,7 +10,7 @@ using Debug = UnityEngine.Debug;
 
 namespace Matchplay.Server
 {
-    public class MultiplayService : IDisposable
+    public class MatchplayAllocationService : IDisposable
     {
         IMultiplayService m_MultiplayService;
         MultiplayEventCallbacks m_Servercallbacks;

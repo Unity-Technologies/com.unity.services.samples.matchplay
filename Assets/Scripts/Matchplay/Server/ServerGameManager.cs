@@ -20,7 +20,7 @@ namespace Matchplay.Server
         int m_QueryPort = 7787;
         const int k_MultiplayServiceTimeout = 15000;
         bool m_LocalServer;
-        MultiplayService m_MultiplayService;
+        MatchplayAllocationService m_MatchplayAllocationService;
         SynchedServerData m_SynchedServerData;
 
     /// <summary>
@@ -29,7 +29,7 @@ namespace Matchplay.Server
         public async Task BeginServerAsync()
         {
             m_NetworkServer = new MatchplayNetworkServer();
-            m_MultiplayService = new MultiplayService();
+            m_MatchplayAllocationService = new MatchplayAllocationService();
             m_ServerIP = ApplicationData.IP();
             m_ServerPort = ApplicationData.Port();
             m_QueryPort = ApplicationData.QPort();
@@ -41,7 +41,7 @@ namespace Matchplay.Server
                 gameQueue = GameQueue.Casual
             };
 
-            var matchmakerPayloadTask = m_MultiplayService.BeginServerAndAwaitMatchmakerAllocation();
+            var matchmakerPayloadTask = m_MatchplayAllocationService.BeginServerAndAwaitMatchmakerAllocation();
 
             try
             {
@@ -54,8 +54,8 @@ namespace Matchplay.Server
                         var matchmakerPayload = matchmakerPayloadTask.Result;
                         startingGameInfo = PayloadToMatchInfo(matchmakerPayload);
 
-                        await m_MultiplayService.BeginServerCheck(startingGameInfo);
-                        m_MultiplayService.SetPlayerCount((ushort)matchmakerPayload.MatchProperties.Players.Count);
+                        await m_MatchplayAllocationService.BeginServerCheck(startingGameInfo);
+                        m_MatchplayAllocationService.SetPlayerCount((ushort)matchmakerPayload.MatchProperties.Players.Count);
 
                         m_NetworkServer.OnPlayerJoined += UserJoinedServer;
                         m_NetworkServer.OnPlayerLeft += UserLeft;
@@ -83,21 +83,26 @@ namespace Matchplay.Server
             m_SynchedServerData.map.OnValueChanged += OnServerChangedMap;
             m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
         }
+#region ServerSynching
+        //There are three data locations that need to be kept in sync, Game Server, Backfill Match Ticket, and the Multiplay Server
+        //The Netcode Game Server is the source of truth, and we need to propagate the state of it to the multiplay server.
+        //For the matchmaking ticket, it should already have knowledge of the players, unless a player joined outside of matchmaking.
 
+        //For now we don't have any mechanics to change the map or mode mid-game. But if we did, we would update the backfill ticket to reflect that too.
         void OnServerChangedMap(Map oldMap, Map newMap)
         {
-            m_MultiplayService.ChangedMap(newMap);
+            m_MatchplayAllocationService.ChangedMap(newMap);
         }
 
         void OnServerChangedMode(GameMode oldMode, GameMode newMode)
         {
-            m_MultiplayService.ChangedMode(newMode);
+            m_MatchplayAllocationService.ChangedMode(newMode);
         }
 
         void UserJoinedServer(UserData joinedUser)
         {
             m_Backfiller.AddPlayerToMatch(joinedUser);
-            m_MultiplayService.AddPlayer();
+            m_MatchplayAllocationService.AddPlayer();
             if (!m_Backfiller.NeedsPlayers() && m_Backfiller.Backfilling)
                 Task.Run(() => m_Backfiller.StopBackfill());
         }
@@ -105,15 +110,15 @@ namespace Matchplay.Server
         void UserLeft(UserData leftUser)
         {
             m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
-            m_MultiplayService.RemovePlayer();
+            m_MatchplayAllocationService.RemovePlayer();
             if (m_Backfiller.NeedsPlayers() && !m_Backfiller.Backfilling)
                 Task.Run(() => m_Backfiller.CreateNewbackfillTicket());
         }
-
+#endregion
         /// <summary>
         /// Take the list of players and find the most popular game preferences and run the server with those
         /// </summary>
-        GameInfo PayloadToMatchInfo(MatchmakerAllocationPayload mmAllocation)
+        public static GameInfo PayloadToMatchInfo(MatchmakerAllocationPayload mmAllocation)
         {
             var mapCounter = new Dictionary<Map, int>();
             var modeCounter = new Dictionary<GameMode, int>();
@@ -199,7 +204,7 @@ namespace Matchplay.Server
             }
 
             m_Backfiller?.Dispose();
-            m_MultiplayService?.Dispose();
+            m_MatchplayAllocationService?.Dispose();
             networkServer?.Dispose();
         }
     }
