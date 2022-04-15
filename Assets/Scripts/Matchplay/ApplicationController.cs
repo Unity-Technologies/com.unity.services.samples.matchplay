@@ -19,6 +19,7 @@ namespace Matchplay.Shared
 
         async void Start()
         {
+            Application.targetFrameRate = 60;
             DontDestroyOnLoad(gameObject);
 
             //We use EditorApplicationController for Editor launching.

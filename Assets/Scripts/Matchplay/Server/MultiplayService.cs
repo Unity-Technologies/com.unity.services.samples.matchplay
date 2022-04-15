@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Matchplay.Shared;
 using Newtonsoft.Json;
@@ -25,8 +26,7 @@ namespace Matchplay.Server
             m_MultiplayService = Unity.Services.Multiplay.MultiplayService.Instance;
             m_Servercallbacks = new MultiplayEventCallbacks();
             m_Servercallbacks.Allocate += OnMultiplayAllocation;
-
-            Debug.Log("Starting Multiplay Event Listener");
+            
             m_ServerEvents = await m_MultiplayService.SubscribeToServerEventsAsync(m_Servercallbacks);
 
             Debug.Log("Awaiting Multiplay Allocation");
@@ -65,7 +65,10 @@ namespace Matchplay.Server
             m_AllocationId = allocation.AllocationId;
         }
 
-        void OnMultiplayDeAllocation(MultiplayDeallocation deallocation) { }
+        void OnMultiplayDeAllocation(MultiplayDeallocation deallocation)
+        {
+            Debug.Log($"Multiplay Deallocated : ID: {deallocation.AllocationId}\nEvent: {deallocation.EventId}\nServer{deallocation.ServerId}");
+        }
 
         void OnMultiplayError(MultiplayError error)
         {
@@ -81,8 +84,7 @@ namespace Matchplay.Server
         {
             Debug.Log($"Getting Allocation Payload with ID: {allocationID}");
             var payloadUrl = k_PayloadProxyUrl + $"/payload/{allocationID}";
-
-            using (var webRequest = UnityWebRequest.Get(payloadUrl))
+			using (var webRequest = UnityWebRequest.Get(payloadUrl))
             {
                 var operation = webRequest.SendWebRequest();
 
@@ -113,8 +115,9 @@ namespace Matchplay.Server
                         throw new ArgumentOutOfRangeException();
                 }
 
-                return JsonConvert.DeserializeObject<MatchmakerAllocationPayload>(webRequest.downloadHandler.text);
             }
+
+            return JsonConvert.DeserializeObject<MatchmakerAllocationPayload>(webRequest.downloadHandler.text);
         }
 
         public void SetPlayerCount(ushort count)
@@ -166,6 +169,19 @@ namespace Matchplay.Server
         public string QueueName;
         public string PoolName;
         public string BackfillTicketId;
+
+        public override string ToString()
+        {
+            StringBuilder payloadDescription = new StringBuilder();
+            payloadDescription.AppendLine("Matchmaker Allocation Payload:");
+			payloadDescription.AppendFormat("-QueueName: {0}\n", QueueName);
+			payloadDescription.AppendFormat("-PoolName: {0}\n", PoolName);
+            payloadDescription.AppendFormat("-ID: {0}\n", BackfillTicketId);
+            payloadDescription.AppendFormat("-Teams: {0}\n", MatchProperties.Teams.Count);
+            payloadDescription.AppendFormat("-Players: {0}\n", MatchProperties.Players.Count);
+            payloadDescription.AppendFormat("-Region: {0}\n", MatchProperties.Region);
+            return payloadDescription.ToString();
+        }
 
 
     }

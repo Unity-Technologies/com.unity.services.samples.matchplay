@@ -43,7 +43,6 @@ namespace Matchplay.Server
 
             var matchmakerPayloadTask = m_MultiplayService.BeginServerAndAwaitMatchmakerAllocation();
 
-            Debug.Log("Starting Multiplay & Matchmaker Services");
             try
             {
                 //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
