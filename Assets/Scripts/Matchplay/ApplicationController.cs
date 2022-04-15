@@ -11,9 +11,9 @@ namespace Matchplay.Shared
     {
         //Manager instances to be instantiated.
         [SerializeField]
-        ServerGameManager m_ServerPrefab;
+        ServerSingleton m_ServerPrefab;
         [SerializeField]
-        ClientGameManager m_ClientPrefab;
+        ClientSingleton m_ClientPrefab;
 
         ApplicationData m_AppData;
 
@@ -50,7 +50,7 @@ namespace Matchplay.Shared
             {
                 var serverInstance = Instantiate(m_ServerPrefab);
 
-                await serverInstance.BeginServerAsync();
+                await serverInstance.Manager.BeginServerAsync();
             }
             else
             {
@@ -59,9 +59,9 @@ namespace Matchplay.Shared
 
                 //We want to load the main menu while the auth is still fetching over the next few frames to feel snappy.
 #pragma warning disable 4014
-                clientInstance.Init();
+                clientInstance.Manager.Init();
 #pragma warning restore 4014
-                clientInstance.ToMainMenu();
+                clientInstance.Manager.ToMainMenu();
             }
         }
     }

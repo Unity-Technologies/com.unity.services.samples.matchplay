@@ -4,12 +4,11 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Tools;
-using Unity.Services.Core;
 using Random = UnityEngine.Random;
 
 namespace Matchplay.Server
 {
-    public class ServerGameManager : MonoBehaviour
+    public class ServerGameManager : IDisposable
     {
         public MatchplayNetworkServer networkServer => m_NetworkServer;
 
@@ -19,30 +18,12 @@ namespace Matchplay.Server
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
-        const int k_MultiplayServiceTimeout = 5000;
+        const int k_MultiplayServiceTimeout = 15000;
         bool m_LocalServer;
         MultiplayService m_MultiplayService;
         SynchedServerData m_SynchedServerData;
 
-        public static ServerGameManager Singleton
-        {
-            get
-            {
-                if (s_ServerGameManager != null) return s_ServerGameManager;
-                s_ServerGameManager = FindObjectOfType<ServerGameManager>();
-                if (s_ServerGameManager == null)
-                {
-                    Debug.LogError("No ClientGameManager in scene, did you run this from the bootStrap scene?");
-                    return null;
-                }
-
-                return s_ServerGameManager;
-            }
-        }
-
-        static ServerGameManager s_ServerGameManager;
-
-        /// <summary>
+    /// <summary>
         /// Attempts to initialize the server with services (If we are on Multiplay) and if we time out, we move on to default setup for local testing.
         /// </summary>
         public async Task BeginServerAsync()
@@ -96,7 +77,7 @@ namespace Matchplay.Server
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"Something went wrong trying to set up the Services. {ex} ");
+                Debug.LogWarning($"Something went wrong trying to set up the Services:\n{ex} ");
             }
 
             m_SynchedServerData = await m_NetworkServer.StartServer(m_ServerIP, m_ServerPort, startingGameInfo); //Use Network transforms on the chairs/players to sync positions
@@ -144,10 +125,19 @@ namespace Matchplay.Server
                 var playerGameInfo = player.CustomData.GetAs<GameInfo>();
 
                 //Since we are using flags, each player might have more than one map selected.
-                foreach (var flag in playerGameInfo.map.GetUniqueFlags())
-                    mapCounter[flag] += 1;
+                foreach (var map in playerGameInfo.map.GetUniqueFlags())
+                {
+                    if (mapCounter.ContainsKey(map))
+                        mapCounter[map] += 1;
+                    else
+                        mapCounter[map] = 1;
+                }
+
                 foreach (var mode in playerGameInfo.gameMode.GetUniqueFlags())
-                    modeCounter[mode] += 1;
+                    if (modeCounter.ContainsKey(mode))
+                        modeCounter[mode] += 1;
+                    else
+                        modeCounter[mode] = 1;
             }
 
             Map mostPopularMap = Map.None;
@@ -195,12 +185,7 @@ namespace Matchplay.Server
             return new GameInfo { map = mostPopularMap, gameMode = mostPopularMode, gameQueue = queue };
         }
 
-        void Start()
-        {
-            DontDestroyOnLoad(gameObject);
-        }
-
-        public void OnDestroy()
+        public void Dispose()
         {
             if (!m_LocalServer)
             {

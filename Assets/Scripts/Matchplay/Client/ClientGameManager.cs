@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
 {
-    public class ClientGameManager : MonoBehaviour
+    public class ClientGameManager : IDisposable
     {
         public event Action<Matchplayer> MatchPlayerSpawned;
         public event Action<Matchplayer> MatchPlayerDespawned;
@@ -17,24 +17,6 @@ namespace Matchplay.Client
         public MatchplayNetworkClient networkClient { get; set; }
 
         MatchplayMatchmaker m_Matchmaker;
-
-        public static ClientGameManager Singleton
-        {
-            get
-            {
-                if (s_ClientGameManager != null) return s_ClientGameManager;
-                s_ClientGameManager = FindObjectOfType<ClientGameManager>();
-                if (s_ClientGameManager == null)
-                {
-                    Debug.LogError("No ClientGameManager in scene, did you run this from the bootStrap scene?");
-                    return null;
-                }
-
-                return s_ClientGameManager;
-            }
-        }
-
-        static ClientGameManager s_ClientGameManager;
 
         public async Task Init()
         {
@@ -129,12 +111,7 @@ namespace Matchplay.Client
             return matchmakingResult.result;
         }
 
-        void Start()
-        {
-            DontDestroyOnLoad(gameObject);
-        }
-
-        public void OnDestroy()
+        public void Dispose()
         {
             networkClient.Dispose();
             m_Matchmaker.Dispose();
