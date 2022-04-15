@@ -40,7 +40,7 @@ namespace Matchplay.Client
         {
             m_CancelToken = new CancellationTokenSource();
             var createTicketOptions = MatchmakingToTicketOptions(data);
-            var players = new List<Player> { new(data.userAuthId, data.userGamePreferences) };
+            var players = new List<Player> { new Player(data.userAuthId, data.userGamePreferences)};
             try
             {
                 m_IsMatchmaking = true;
@@ -59,20 +59,18 @@ namespace Matchplay.Client
                             switch (matchAssignment.Status)
                             {
                                 case MultiplayAssignment.StatusOptions.Found:
-                                    return ReturnMatchResult(MatchmakerPollingResult.Success, $"",matchAssignment);
+                                    return ReturnMatchResult(MatchmakerPollingResult.Success, $"", matchAssignment);
                                 case MultiplayAssignment.StatusOptions.Timeout:
                                 {
                                     //TEMP workaround a bug that causes tickets to hang out forever.
                                     await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
                                     return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Ticket: {m_LastUsedTicket} Timed out.");
-
                                 }
                                 case MultiplayAssignment.StatusOptions.Failed:
                                 {
                                     //TEMP workaround a bug that causes tickets to hang out forever.
                                     await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
                                     return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Failed: {matchAssignment.Message}");
-
                                 }
                                 default:
                                     Debug.Log($"Polled Ticket: {m_LastUsedTicket} Status: {matchAssignment.Status} ");
@@ -85,13 +83,14 @@ namespace Matchplay.Client
                 }
                 catch (MatchmakerServiceException e)
                 {
-                    return ReturnMatchResult(MatchmakerPollingResult.TicketRetrievalError,  e.ToString());
+                    return ReturnMatchResult(MatchmakerPollingResult.TicketRetrievalError, e.ToString());
                 }
             }
             catch (MatchmakerServiceException e)
             {
                 return ReturnMatchResult(MatchmakerPollingResult.TicketCreationError, e.ToString());
             }
+
             return ReturnMatchResult(MatchmakerPollingResult.TicketCancellationError, "Cancelled Matchmaking");
         }
 
@@ -118,10 +117,9 @@ namespace Matchplay.Client
         }
 
         //Make sure we exit the matchmaking cycle through this method every time.
-        MatchmakingResult ReturnMatchResult(MatchmakerPollingResult resultErrorType,string message = "", MultiplayAssignment assignment = null)
+        MatchmakingResult ReturnMatchResult(MatchmakerPollingResult resultErrorType, string message = "", MultiplayAssignment assignment = null)
         {
             m_IsMatchmaking = false;
-
 
             if (assignment != null)
             {
