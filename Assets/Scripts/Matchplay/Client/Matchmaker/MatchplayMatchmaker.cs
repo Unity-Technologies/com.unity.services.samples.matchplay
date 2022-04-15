@@ -32,7 +32,7 @@ namespace Matchplay.Client
     {
         string m_LastUsedTicket;
         bool m_IsMatchmaking = false;
-        public const string k_ModeAttribute = "game_mode";
+        const string k_ModeAttribute = "game_mode";
         CancellationTokenSource m_CancelToken = new CancellationTokenSource();
 
         public async Task<MatchmakingResult> Matchmake(UserData data)
@@ -70,6 +70,7 @@ namespace Matchplay.Client
                             }
                         }
 
+                        //GetTicketAsync has a 1 second cooldown, or we get a 429
                         await Task.Delay(1000);
                     }
                 }
@@ -138,7 +139,6 @@ namespace Matchplay.Client
                 resultMessage = message
             };
         }
-
 
         /// <summary>
         /// Testing environment
