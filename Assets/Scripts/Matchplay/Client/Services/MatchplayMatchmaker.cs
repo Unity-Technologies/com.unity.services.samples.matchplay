@@ -39,7 +39,7 @@ namespace Matchplay.Client
         public async Task<MatchmakingResult> Matchmake(UserData data)
         {
             m_CancelToken = new CancellationTokenSource();
-            var createTicketOptions = MatchmakingToTicketOptions(data);
+            var createTicketOptions = UserDataToTicketOptions(data);
             var players = new List<Player> { new Player(data.userAuthId, data.userGamePreferences)};
             try
             {
@@ -161,7 +161,7 @@ namespace Matchplay.Client
         /// <summary>
         /// From Game player to matchmaking player
         /// </summary>
-        CreateTicketOptions MatchmakingToTicketOptions(UserData data)
+        public static CreateTicketOptions UserDataToTicketOptions(UserData data)
         {
             var attributes = new Dictionary<string, object>
             {

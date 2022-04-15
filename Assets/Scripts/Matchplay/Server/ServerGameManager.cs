@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
-using Matchplay.Tools;
+using Matchplay.Shared.Tools;
 using Random = UnityEngine.Random;
 
 namespace Matchplay.Server
@@ -52,7 +52,7 @@ namespace Matchplay.Server
                     if (matchmakerPayloadTask.Result != null)
                     {
                         var matchmakerPayload = matchmakerPayloadTask.Result;
-                        startingGameInfo = PayloadToMatchInfo(matchmakerPayload);
+                        startingGameInfo = PickSharedGameInfo(matchmakerPayload);
 
                         await m_MatchplayAllocationService.BeginServerCheck(startingGameInfo);
                         m_MatchplayAllocationService.SetPlayerCount((ushort)matchmakerPayload.MatchProperties.Players.Count);
@@ -118,7 +118,7 @@ namespace Matchplay.Server
         /// <summary>
         /// Take the list of players and find the most popular game preferences and run the server with those
         /// </summary>
-        public static GameInfo PayloadToMatchInfo(MatchmakerAllocationPayload mmAllocation)
+        public static GameInfo PickSharedGameInfo(MatchmakerAllocationPayload mmAllocation)
         {
             var mapCounter = new Dictionary<Map, int>();
             var modeCounter = new Dictionary<GameMode, int>();
