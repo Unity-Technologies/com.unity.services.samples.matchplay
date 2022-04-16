@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Shared.Tools;
+using Unity.Services.Core;
 using Random = UnityEngine.Random;
 
 namespace Matchplay.Server
@@ -23,17 +24,20 @@ namespace Matchplay.Server
         MatchplayAllocationService m_MatchplayAllocationService;
         SynchedServerData m_SynchedServerData;
 
-    /// <summary>
+        public ServerGameManager(string serverIP, int serverPort, int serverQPort, MatchplayNetworkServer networkServer, MatchplayAllocationService allocationService)
+        {
+            m_ServerIP = serverIP;
+            m_ServerPort = serverPort;
+            m_QueryPort = serverQPort;
+            m_NetworkServer = networkServer;
+            m_MatchplayAllocationService = allocationService;
+        }
+
+        /// <summary>
         /// Attempts to initialize the server with services (If we are on Multiplay) and if we time out, we move on to default setup for local testing.
         /// </summary>
         public async Task BeginServerAsync()
         {
-            m_NetworkServer = new MatchplayNetworkServer();
-            m_MatchplayAllocationService = new MatchplayAllocationService();
-            m_ServerIP = ApplicationData.IP();
-            m_ServerPort = ApplicationData.Port();
-            m_QueryPort = ApplicationData.QPort();
-
             var startingGameInfo = new GameInfo
             {
                 gameMode = GameMode.Staring,
@@ -41,32 +45,19 @@ namespace Matchplay.Server
                 gameQueue = GameQueue.Casual
             };
 
-            var matchmakerPayloadTask = m_MatchplayAllocationService.BeginServerAndAwaitMatchmakerAllocation();
-
             try
             {
-                //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
-                if (await Task.WhenAny(matchmakerPayloadTask, Task.Delay(k_MultiplayServiceTimeout)) == matchmakerPayloadTask)
+                var matchmakerPayload = await GetPayloadWithinTimeout(k_MultiplayServiceTimeout);
+
+                Debug.Log($"Got payload: {matchmakerPayload}");
+                if (matchmakerPayload != null)
                 {
-                    Debug.Log($"Got allocation: {matchmakerPayloadTask.Result}");
-                    if (matchmakerPayloadTask.Result != null)
-                    {
-                        var matchmakerPayload = matchmakerPayloadTask.Result;
-                        startingGameInfo = PickSharedGameInfo(matchmakerPayload);
+                    startingGameInfo = PickSharedGameInfo(matchmakerPayload);
 
-                        await m_MatchplayAllocationService.BeginServerCheck(startingGameInfo);
-                        m_MatchplayAllocationService.SetPlayerCount((ushort)matchmakerPayload.MatchProperties.Players.Count);
-
-                        m_NetworkServer.OnPlayerJoined += UserJoinedServer;
-                        m_NetworkServer.OnPlayerLeft += UserLeft;
-
-                        m_Backfiller = new MatchplayBackfiller(m_ConnectionString, matchmakerPayload.QueueName, matchmakerPayload.MatchProperties, startingGameInfo.MaxUsers);
-
-                        if (m_Backfiller.NeedsPlayers())
-                        {
-                            await m_Backfiller.CreateNewbackfillTicket();
-                        }
-                    }
+                    await StartAllocationService(startingGameInfo, (ushort)matchmakerPayload.MatchProperties.Players.Count);
+                    await CreateAndStartBackfilling(matchmakerPayload, startingGameInfo);
+                    m_NetworkServer.OnPlayerJoined += UserJoinedServer;
+                    m_NetworkServer.OnPlayerLeft += UserLeft;
                 }
                 else
                 {
@@ -83,7 +74,37 @@ namespace Matchplay.Server
             m_SynchedServerData.map.OnValueChanged += OnServerChangedMap;
             m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
         }
-#region ServerSynching
+
+        public async Task<MatchmakerAllocationPayload> GetPayloadWithinTimeout(int timeout)
+        {
+            //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
+            var matchmakerPayloadTask = m_MatchplayAllocationService.BeginServerAndAwaitMatchmakerAllocation();
+            if (await Task.WhenAny(matchmakerPayloadTask, Task.Delay(timeout)) == matchmakerPayloadTask)
+            {
+                return matchmakerPayloadTask.Result;
+            }
+
+            return null;
+        }
+
+        public async Task StartAllocationService(GameInfo startingGameInfo, ushort playerCount)
+        {
+            await m_MatchplayAllocationService.BeginServerCheck(startingGameInfo);
+            m_MatchplayAllocationService.SetPlayerCount(playerCount);
+        }
+
+        public async Task CreateAndStartBackfilling(MatchmakerAllocationPayload payload, GameInfo startingGameInfo)
+        {
+            m_Backfiller = new MatchplayBackfiller(m_ConnectionString, payload.QueueName, payload.MatchProperties, startingGameInfo.MaxUsers);
+
+            if (m_Backfiller.NeedsPlayers())
+            {
+                await m_Backfiller.BeginBackfilling();
+            }
+        }
+
+        #region ServerSynching
+
         //There are three data locations that need to be kept in sync, Game Server, Backfill Match Ticket, and the Multiplay Server
         //The Netcode Game Server is the source of truth, and we need to propagate the state of it to the multiplay server.
         //For the matchmaking ticket, it should already have knowledge of the players, unless a player joined outside of matchmaking.
@@ -112,9 +133,11 @@ namespace Matchplay.Server
             m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
             m_MatchplayAllocationService.RemovePlayer();
             if (m_Backfiller.NeedsPlayers() && !m_Backfiller.Backfilling)
-                Task.Run(() => m_Backfiller.CreateNewbackfillTicket());
+                Task.Run(() => m_Backfiller.BeginBackfilling());
         }
-#endregion
+
+        #endregion
+
         /// <summary>
         /// Take the list of players and find the most popular game preferences and run the server with those
         /// </summary>

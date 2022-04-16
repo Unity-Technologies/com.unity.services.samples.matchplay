@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Matchplay.Client
@@ -22,7 +23,22 @@ namespace Matchplay.Client
 
         static ClientSingleton s_ClientGameManager;
 
-        public ClientGameManager Manager = new ClientGameManager();
+        public ClientGameManager Manager
+        {
+            get
+            {
+                if (m_GameManager != null) return m_GameManager;
+                Debug.LogError($"ClientGameManager is missing, did you run StartClient()?", gameObject);
+                return null;
+            }
+        }
+
+        ClientGameManager m_GameManager;
+
+        public void StartClient()
+        {
+            m_GameManager = new ClientGameManager();
+        }
 
         void Start()
         {

@@ -20,10 +20,14 @@ namespace Matchplay.Server
 
         const string k_PayloadProxyUrl = "http://localhost:8086";
 
+        public MatchplayAllocationService()
+        {
+            m_MultiplayService = MultiplayService.Instance;
+        }
+
         public async Task<MatchmakerAllocationPayload> BeginServerAndAwaitMatchmakerAllocation()
         {
             m_AllocationId = null;
-            m_MultiplayService = Unity.Services.Multiplay.MultiplayService.Instance;
             m_Servercallbacks = new MultiplayEventCallbacks();
             m_Servercallbacks.Allocate += OnMultiplayAllocation;
 

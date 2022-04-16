@@ -1,4 +1,7 @@
 using System;
+using System.Threading.Tasks;
+using Matchplay.Shared;
+using Unity.Services.Core;
 using UnityEngine;
 
 namespace Matchplay.Server
@@ -27,7 +30,32 @@ namespace Matchplay.Server
 
         static ServerSingleton s_ServerSingleton;
 
-        public ServerGameManager Manager = new ServerGameManager();
+        public ServerGameManager Manager
+        {
+            get
+            {
+                if (m_GameManager != null)
+                {
+                    return m_GameManager;
+                }
+
+                Debug.LogError($"Server Manager is missing, did you run StartServer?");
+                return null;
+            }
+        }
+
+        ServerGameManager m_GameManager;
+
+        public async Task StartServer()
+        {
+            await UnityServices.InitializeAsync();
+            m_GameManager = new ServerGameManager(
+                ApplicationData.IP(),
+                ApplicationData.Port(),
+                ApplicationData.QPort(),
+                new MatchplayNetworkServer(),
+                new MatchplayAllocationService());
+        }
 
         // Start is called before the first frame update
         void Start()

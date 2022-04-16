@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Matchplay.Server;
 using Matchplay.Shared;
+using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -18,11 +19,26 @@ namespace Matchplay.Client
 
         MatchplayMatchmaker m_Matchmaker;
 
-        public async Task Init()
+        public ClientGameManager()
+        {
+            //Starts an async task reliably.
+#pragma warning disable 4014
+            Init();
+#pragma warning restore 4014
+        }
+
+        /// <summary>
+        /// We do service initialization in parrallel to starting the main menu scene
+        /// </summary>
+        async Task Init()
         {
             observableUser = new ObservableUser();
-            m_Matchmaker = new MatchplayMatchmaker();
+
+            await UnityServices.InitializeAsync();
+            AuthenticationWrapper.BeginAuth();
+
             networkClient = new MatchplayNetworkClient();
+            m_Matchmaker = new MatchplayMatchmaker();
             observableUser.AuthId = await AuthenticationWrapper.GetClientId();
         }
 
@@ -113,8 +129,8 @@ namespace Matchplay.Client
 
         public void Dispose()
         {
-            networkClient.Dispose();
-            m_Matchmaker.Dispose();
+            networkClient?.Dispose();
+            m_Matchmaker?.Dispose();
         }
     }
 }

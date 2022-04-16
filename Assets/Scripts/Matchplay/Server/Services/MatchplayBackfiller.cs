@@ -22,10 +22,9 @@ namespace Matchplay.Server
 
         public MatchplayBackfiller(string connection, string queueName, MatchProperties matchmakerPayloadProperties, int maxPlayers)
         {
-            SetStagingEnvironment();
             m_MaxPlayers = maxPlayers;
             var backfillProperties = new BackfillTicketProperties(matchmakerPayloadProperties);
-            m_LocalBackfillData = new BackfillTicket { Properties = backfillProperties };
+            m_LocalBackfillData = new BackfillTicket { Id = matchmakerPayloadProperties.BackfillTicketId, Properties = backfillProperties };
 
             m_CreateBackfillOptions = new CreateBackfillTicketOptions
             {
@@ -35,21 +34,27 @@ namespace Matchplay.Server
             };
         }
 
-        public async Task CreateNewbackfillTicket()
+        public async Task BeginBackfilling()
         {
+            SetStagingEnvironment();
+
             if (Backfilling)
             {
                 Debug.LogWarning("Already backfilling, no need to start another.");
                 return;
             }
+
             Debug.Log($"Starting backfill  Server: {MatchPlayerCount}/{m_MaxPlayers}");
 
-            m_LocalBackfillData.Id = await MatchmakerService.Instance.CreateBackfillTicketAsync(m_CreateBackfillOptions);
+            //Create a ticket if we don't have one already (via Allocation)
+            if (string.IsNullOrEmpty(m_LocalBackfillData.Id))
+                m_LocalBackfillData.Id = await MatchmakerService.Instance.CreateBackfillTicketAsync(m_CreateBackfillOptions);
+
             Backfilling = true;
 
             //we want to create an asynchronous backfill loop.
 #pragma warning disable 4014
-            Task.Run(BackfillLoop);
+            BackfillLoop();
 #pragma warning restore 4014
         }
 
@@ -104,6 +109,7 @@ namespace Matchplay.Server
 
             await MatchmakerService.Instance.DeleteBackfillTicketAsync(m_LocalBackfillData.Id);
             Backfilling = false;
+            m_LocalBackfillData.Id = null;
         }
 
         public bool NeedsPlayers()

@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Matchplay.Server;
 using Matchplay.Shared;
 using Matchplay.Shared.Tools;
 using NUnit.Framework;
+using Unity.Services.Core;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -19,19 +21,9 @@ namespace Matchplay.Tests
         [Test]
         public void AllocationPayloadToGameInfo_TwoAnyPlayers()
         {
-            var allOptionsPlayer1 = NewRandomMatchmakingPlayer(GameQueue.Casual, (Map)3, (GameMode)3);
+            var simplePayload = SimplePayload();
 
-            var allOptionsPlayer2 = NewRandomMatchmakingPlayer(GameQueue.Casual, (Map)3, (GameMode)3);
-
-            var playerList = new List<Player>()
-            {
-                allOptionsPlayer1,
-                allOptionsPlayer2
-            };
-
-            var simulatedPayload = CasualDefaultAllocationPayload(playerList);
-
-            var returnedGameInfo = ServerGameManager.PickSharedGameInfo(simulatedPayload);
+            var returnedGameInfo = ServerGameManager.PickSharedGameInfo(simplePayload);
 
             Debug.Log($"Users Shared All preferences, randomly picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
             Assert.IsTrue(returnedGameInfo.map != Map.None && returnedGameInfo.gameMode != GameMode.None,
@@ -109,6 +101,21 @@ namespace Matchplay.Tests
             Debug.Log($"Users did not share map or mode, randomly picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}.");
             Assert.IsTrue(returnedGameInfo.map != Map.None && returnedGameInfo.gameMode != GameMode.None,
                 $"Users did not share map or mode, randomly picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
+        }
+
+        MatchmakerAllocationPayload SimplePayload()
+        {
+            var allOptionsPlayer1 = NewRandomMatchmakingPlayer(GameQueue.Casual, (Map)3, (GameMode)3);
+
+            var allOptionsPlayer2 = NewRandomMatchmakingPlayer(GameQueue.Casual, (Map)3, (GameMode)3);
+
+            var playerList = new List<Player>()
+            {
+                allOptionsPlayer1,
+                allOptionsPlayer2
+            };
+
+            return CasualDefaultAllocationPayload(playerList);
         }
 
         MatchmakerAllocationPayload CasualDefaultAllocationPayload(List<Player> players)
