@@ -46,7 +46,7 @@ namespace Matchplay.Client.UI
             m_DisconnectButton.clicked += DisconnectPressed;
 
             //GameManagerCallbacks
-            m_ClientGameManager = ClientGameManager.Singleton;
+            m_ClientGameManager = ClientSingleton.Instance.Manager;
             m_ClientGameManager.networkClient.OnLocalConnection += OnLocalConnection;
             m_ClientGameManager.networkClient.OnLocalDisconnection += OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;

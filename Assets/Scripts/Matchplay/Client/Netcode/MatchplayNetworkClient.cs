@@ -2,8 +2,6 @@ using System;
 using UnityEngine;
 using Unity.Netcode;
 using Matchplay.Networking;
-using Matchplay.Server;
-using Matchplay.Shared;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
@@ -53,7 +51,7 @@ namespace Matchplay.Client
         /// </summary>
         void ConnectClient()
         {
-            var userData = ClientGameManager.Singleton.observableUser.Data;
+            var userData = ClientSingleton.Instance.Manager.observableUser.Data;
             var payload = JsonUtility.ToJson(userData);
 
             var payloadBytes = System.Text.Encoding.UTF8.GetBytes(payload);

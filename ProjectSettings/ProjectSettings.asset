@@ -606,7 +606,7 @@ PlayerSettings:
   webGLThreadsSupport: 0
   webGLDecompressionFallback: 0
   scriptingDefineSymbols:
-    Standalone: 
+    Standalone: AUTHENTICATION_TESTING_STAGING_UAS
     WebGL: STARTER_ASSETS_PACKAGES_CHECKED
   additionalCompilerArguments: {}
   platformArchitecture: {}
@@ -686,7 +686,7 @@ PlayerSettings:
     Build: 0
     Collab: 0
     Game Performance: 0
-    Legacy Analytics: 1
+    Legacy Analytics: 0
     Purchasing: 0
     UDP: 0
     UNet: 1
@@ -704,11 +704,11 @@ PlayerSettings:
     m_VersionName: 
   apiCompatibilityLevel: 6
   activeInputHandler: 1
-  cloudProjectId: 311f4f68-d43a-4631-86d8-60c36bd8b442
+  cloudProjectId: 456cbe17-1f82-4a65-9702-fb6e03e8eb1f
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Unity Matchmaker Sample
-  organizationId: operate-samples
+  projectName: Matchplay
+  organizationId: unityjacob
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 

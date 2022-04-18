@@ -99,7 +99,7 @@ namespace Matchplay.Client.UI
 
             #region initial_state_setup
 
-            gameManager = ClientGameManager.Singleton;
+            gameManager = ClientSingleton.Instance.Manager;
 
             //Set the game manager casual gameMode defaults to whatever the UI starts with
             gameManager.SetGameModePreferencesFlag(GameMode.Meditating, m_MeditationMode.value);
@@ -178,7 +178,7 @@ namespace Matchplay.Client.UI
 
         }
 
-        void OnMatchmade(MatchResult result)
+        void OnMatchmade(MatchmakerPollingResult result)
         {
             SetMenuState(MainMenuPlayState.Ready);
         }

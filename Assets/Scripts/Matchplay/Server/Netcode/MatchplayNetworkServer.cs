@@ -24,17 +24,17 @@ namespace Matchplay.Server
         NetworkManager m_NetworkManager;
 
         // used in ApprovalCheck. This is intended as a bit of light protection against DOS attacks that rely on sending silly big buffers of garbage.
-        private const int k_MaxConnectPayload = 1024;
+        const int k_MaxConnectPayload = 1024;
 
         /// <summary>
         /// map a given client guid to the data for a given client player.
         /// </summary>
-        private Dictionary<string, UserData> m_ClientData = new Dictionary<string, UserData>();
+        Dictionary<string, UserData> m_ClientData = new Dictionary<string, UserData>();
 
         /// <summary>
         /// map to allow us to cheaply map from guid to player data.
         /// </summary>
-        private Dictionary<ulong, string> m_NetworkIdToAuth = new Dictionary<ulong, string>();
+        Dictionary<ulong, string> m_NetworkIdToAuth = new Dictionary<ulong, string>();
 
         public MatchplayNetworkServer()
         {

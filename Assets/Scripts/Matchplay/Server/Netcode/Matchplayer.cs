@@ -18,7 +18,7 @@ namespace Matchplay.Server
         {
             if (IsServer && !IsHost)
                 return;
-            ClientGameManager.Singleton.AddMatchPlayer(this);
+            ClientSingleton.Instance.Manager.AddMatchPlayer(this);
         }
 
         public void ServerSetName(string name)
@@ -31,7 +31,7 @@ namespace Matchplay.Server
             if (IsServer && !IsHost)
                 return;
 
-            ClientGameManager.Singleton.RemoveMatchPlayer(this);
+            ClientSingleton.Instance.Manager.RemoveMatchPlayer(this);
         }
     }
 }
