@@ -1,13 +1,16 @@
 {
-    "name": "Matchplay.RuntimeTests",
+    "name": "Matchplay.Tests",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
-        "Unity.Netcode.Runtime",
         "Matchplay",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Unity.Services.Matchmaker",
+        "Unity.Services.Core"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,

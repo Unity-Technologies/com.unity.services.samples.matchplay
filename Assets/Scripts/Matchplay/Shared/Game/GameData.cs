@@ -24,9 +24,10 @@ namespace Matchplay.Shared
 
     public enum GameQueue
     {
+        None,
         Casual,
-        Competetive,
-        Missing
+        Competetive
+
     }
 
     /// <summary>
@@ -122,9 +123,9 @@ namespace Matchplay.Shared
     public class UserData
     {
         public string userName; //name of the player
-        [FormerlySerializedAs("clientAuthId")] public string userAuthId; //Auth Player ID
+        public string userAuthId; //Auth Player ID
         public ulong networkId;
-        [FormerlySerializedAs("gamePreferences")] [FormerlySerializedAs("modePreferences")] public GameInfo userGamePreferences; //The game info the player thought he was joining with
+        public GameInfo userGamePreferences; //The game info the player thought he was joining with
 
         public UserData(string userName, string userAuthId, ulong networkId, GameInfo userGamePreferences)
         {
@@ -138,8 +139,8 @@ namespace Matchplay.Shared
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("UserData: ");
-            sb.AppendLine($"- User Name:       {userName}");
-            sb.AppendLine($"- User Auth Id:   {userAuthId}");
+            sb.AppendLine($"- User Name:             {userName}");
+            sb.AppendLine($"- User Auth Id:          {userAuthId}");
             sb.AppendLine($"- User Game Preferences: {userGamePreferences}");
             return sb.ToString();
         }
@@ -153,7 +154,10 @@ namespace Matchplay.Shared
     {
         public Map map = Map.None;
         public GameMode gameMode = GameMode.None;
-        public GameQueue gameQueue = GameQueue.Missing;
+        public GameQueue gameQueue = GameQueue.None;
+
+        //TODO YAGNI if we had different maxPlayers per gameMode i'd expand this to change with the mode type
+        public int MaxUsers = 10;
 
         //QueueNames in the dashboard can be different than your local queue definitions (If you want nice names for them)
         const string k_MultiplayCasualQueue = "casual-queue";
@@ -184,7 +188,7 @@ namespace Matchplay.Shared
             {
                 GameQueue.Casual => k_MultiplayCasualQueue,
                 GameQueue.Competetive => k_MultiplayCompetetiveQueue,
-                _ => "casual-queue"
+                _ => k_MultiplayCasualQueue
             };
         }
 
@@ -193,7 +197,7 @@ namespace Matchplay.Shared
             if (!k_MultiplayToLocalQueueNames.ContainsKey(multiplayQueue))
             {
                 Debug.LogWarning($"No QueuePreference that maps to {multiplayQueue}");
-                return GameQueue.Missing;
+                return GameQueue.None;
             }
 
             return k_MultiplayToLocalQueueNames[multiplayQueue];

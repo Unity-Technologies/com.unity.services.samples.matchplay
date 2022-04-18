@@ -12,10 +12,7 @@ namespace Matchplay.Client.UI
     {
         [SerializeField]
         TMP_Text m_TextLabel;
-
         Matchplayer m_player;
-
-
         Camera m_Camera;
 
         public void SetPlayerLabel(Matchplayer matchPlayer)

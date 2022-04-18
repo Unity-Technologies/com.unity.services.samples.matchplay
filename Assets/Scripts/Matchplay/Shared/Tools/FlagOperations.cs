@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Matchplay.Tools
+namespace Matchplay.Shared.Tools
 {
     public static class FlagOperation{
         public static IEnumerable<T> GetUniqueFlags<T>(this T flags) where T:Enum

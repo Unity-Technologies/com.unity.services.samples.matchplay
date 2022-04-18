@@ -2,12 +2,13 @@ using System;
 using System.Threading.Tasks;
 using Matchplay.Server;
 using Matchplay.Shared;
+using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
 {
-    public class ClientGameManager : MonoBehaviour
+    public class ClientGameManager : IDisposable
     {
         public event Action<Matchplayer> MatchPlayerSpawned;
         public event Action<Matchplayer> MatchPlayerDespawned;
@@ -18,29 +19,26 @@ namespace Matchplay.Client
 
         MatchplayMatchmaker m_Matchmaker;
 
-        public static ClientGameManager Singleton
+        public ClientGameManager()
         {
-            get
-            {
-                if (s_ClientGameManager != null) return s_ClientGameManager;
-                s_ClientGameManager = FindObjectOfType<ClientGameManager>();
-                if (s_ClientGameManager == null)
-                {
-                    Debug.LogError("No ClientGameManager in scene, did you run this from the bootStrap scene?");
-                    return null;
-                }
-
-                return s_ClientGameManager;
-            }
+            //Starts an async task reliably.
+#pragma warning disable 4014
+            Init();
+#pragma warning restore 4014
         }
 
-        static ClientGameManager s_ClientGameManager;
-
-        public async void Init()
+        /// <summary>
+        /// We do service initialization in parrallel to starting the main menu scene
+        /// </summary>
+        async Task Init()
         {
             observableUser = new ObservableUser();
-            m_Matchmaker = new MatchplayMatchmaker();
+
+            await UnityServices.InitializeAsync();
+            AuthenticationWrapper.BeginAuth();
+
             networkClient = new MatchplayNetworkClient();
+            m_Matchmaker = new MatchplayMatchmaker();
             observableUser.AuthId = await AuthenticationWrapper.GetClientId();
         }
 
@@ -55,7 +53,7 @@ namespace Matchplay.Client
             networkClient.DisconnectClient();
         }
 
-        public async void Matchmake(Action<MatchResult> onMatchmakerResponse = null)
+        public async void Matchmake(Action<MatchmakerPollingResult> onMatchmakerResponse = null)
         {
             if (m_Matchmaker.IsMatchmaking)
             {
@@ -95,8 +93,6 @@ namespace Matchplay.Client
             {
                 observableUser.GameModePreferences &= ~gameMode;
             }
-
-            Debug.Log($"Set Game GameModePreferences {observableUser.GameModePreferences} - {added}");
         }
 
         public void SetMapPreferencesFlag(Map map, bool added)
@@ -107,8 +103,6 @@ namespace Matchplay.Client
             {
                 observableUser.MapPreferences &= ~map;
             }
-
-            Debug.Log($"Set Game MapPreferences {observableUser.MapPreferences} - {added}");
         }
 
         public void SetGameQueue(GameQueue queue)
@@ -116,32 +110,27 @@ namespace Matchplay.Client
             observableUser.QueuePreference = queue;
         }
 
-        async Task<MatchResult> MatchmakeAsync()
+        async Task<MatchmakerPollingResult> MatchmakeAsync()
         {
             Debug.Log($"Beginning Matchmaking with {observableUser}");
             var matchmakingResult = await m_Matchmaker.Matchmake(observableUser.Data);
 
-            if (matchmakingResult.result == MatchResult.Success)
+            if (matchmakingResult.result == MatchmakerPollingResult.Success)
             {
                 BeginConnection(matchmakingResult.ip, matchmakingResult.port);
             }
             else
             {
-                Debug.LogWarning($"Matchmaking Failed {matchmakingResult.result} : {matchmakingResult.resultMessage}");
+                Debug.LogWarning($"{matchmakingResult.result} : {matchmakingResult.resultMessage}");
             }
 
             return matchmakingResult.result;
         }
 
-        void Start()
+        public void Dispose()
         {
-            DontDestroyOnLoad(gameObject);
-        }
-
-        public void OnDestroy()
-        {
-            networkClient.Dispose();
-            m_Matchmaker.Dispose();
+            networkClient?.Dispose();
+            m_Matchmaker?.Dispose();
         }
     }
 }

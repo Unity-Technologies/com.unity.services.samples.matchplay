@@ -1,10 +1,10 @@
 {
   "dependencies": {
-    "com.unity.burst": "1.6.4",
+    "com.unity.burst": "1.6.5",
     "com.unity.cinemachine": "2.8.4",
-    "com.unity.collab-proxy": "1.15.13",
+    "com.unity.collab-proxy": "1.15.15",
     "com.unity.collections": "1.2.3",
-    "com.unity.ide.rider": "3.0.12",
+    "com.unity.ide.rider": "3.0.13",
     "com.unity.ide.visualstudio": "2.0.14",
     "com.unity.ide.vscode": "1.2.5",
     "com.unity.inputsystem": "1.3.0",
@@ -15,11 +15,10 @@
     "com.unity.services.authentication": "1.0.0-pre.37",
     "com.unity.services.matchmaker": "1.0.0-pre.8",
     "com.unity.services.multiplay": "1.0.0-pre.1",
-    "com.unity.test-framework": "1.1.31",
+    "com.unity.test-framework": "2.0.1-pre.18",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.toolchain.win-x86_64-linux-x86_64": "1.0.0",
     "com.unity.transport": "1.0.0-pre.10",
-    "com.unity.ucg.usqp": "0.2.0-preview.1",
     "com.unity.ugui": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
@@ -58,7 +57,27 @@
       "name": "Artifactory",
       "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates",
       "scopes": [
-        "com.unity.services.multiplay"
+        "com.unity.services.multiplay",
+        "com.unity.services.authentication",
+        "com.unity.test-framework"
+      ]
+    },
+    {
+      "name": "Unity",
+      "url": "http://packages.unity.com",
+      "scopes": [
+        "com.unity.collections",
+        "com.unity.multiplayer.tools",
+        "com.unity.netcode.adapter.utp",
+        "com.unity.netcode.gameobjects",
+        "com.unity.services.matchmaker",
+        "com.unity.services.core",
+        "com.unity.toolchain.win-x86_64-linux-x86_64",
+        "com.unity.nuget.newtonsoft-json",
+        "com.unity.transport",
+        "com.unity.services.wire",
+        "com.unity.sysroot",
+        "com.unity.sysroot.linux-x86_64"
       ]
     }
   ]
