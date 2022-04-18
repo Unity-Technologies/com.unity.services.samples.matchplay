@@ -4,8 +4,6 @@ _Tested with Unity 2021.2 for PC and OSX clients, and Linux Headless servers._
 
 This sample demonstrates how to create a "Matchmake" button; a basic networked client/server game with a matchmaking feature from end to end using the Unity Engine and Cloud Services SDK.
 
-![Just get me a game.](~Documentation/Images/1_PlayButton.PNG")
-
 **Note**: This is not a “drag-and-drop” solution; the Matchplay Sample is not a minimal code sample intended to be completely copied into a full-scale project. Rather, it demonstrates how to use multiple services in a vertical slice with some basic game logic and infrastructure. Use it as a reference to learn how Matchmaker and Multiplay work together to make a common end-user feature.
 
 
