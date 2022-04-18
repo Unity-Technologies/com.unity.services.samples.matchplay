@@ -40,7 +40,7 @@ namespace Matchplay.Client
         {
             m_CancelToken = new CancellationTokenSource();
             var createTicketOptions = UserDataToTicketOptions(data);
-            var players = new List<Player> { new Player(data.userAuthId, data.userGamePreferences)};
+            var players = new List<Player> { new Player(data.userAuthId, data.userGamePreferences) };
             try
             {
                 m_IsMatchmaking = true;
@@ -59,7 +59,11 @@ namespace Matchplay.Client
                             switch (matchAssignment.Status)
                             {
                                 case MultiplayAssignment.StatusOptions.Found:
+                                {
+                                    //TEMP workaround a bug that causes tickets to hang out forever.
+                                    await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
                                     return ReturnMatchResult(MatchmakerPollingResult.Success, $"", matchAssignment);
+                                }
                                 case MultiplayAssignment.StatusOptions.Timeout:
                                 {
                                     //TEMP workaround a bug that causes tickets to hang out forever.
