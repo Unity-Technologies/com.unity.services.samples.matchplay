@@ -1,5 +1,8 @@
 # Matchplay - Matchmaker + Multiplay Sample
 
+
+## Currently Only Works in Staging, to test, follow the staging setup guide [here](https://confluence.unity3d.com/display/DEV/Guide%3A+Staging+Unity+Services+in+a+Unity+Editor+Project)
+
 _Tested with Unity 2021.2 for PC and OSX clients, and Linux Headless servers._
 
 This sample demonstrates how to create a "Matchmake" button; a basic networked client/server game with a matchmaking feature from end to end using the Unity Engine and Cloud Services SDK.
