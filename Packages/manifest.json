@@ -50,7 +50,8 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+	"com.unity.ext.nunit" : "2.0.2"
   },
   "scopedRegistries": [
     {
@@ -59,14 +60,8 @@
       "scopes": [
         "com.unity.services.multiplay",
         "com.unity.services.authentication",
-        "com.unity.test-framework"
-      ]
-    },
-    {
-      "name": "Unity",
-      "url": "http://packages.unity.com",
-      "scopes": [
-        "com.unity.collections",
+        "com.unity.test-framework",
+		"com.unity.collections",
         "com.unity.multiplayer.tools",
         "com.unity.netcode.adapter.utp",
         "com.unity.netcode.gameobjects",
@@ -77,8 +72,9 @@
         "com.unity.transport",
         "com.unity.services.wire",
         "com.unity.sysroot",
-        "com.unity.sysroot.linux-x86_64"
+        "com.unity.sysroot.linux-x86_64", 
+		"com.unity.ext.nunit"
       ]
-    }
+    }   
   ]
 }

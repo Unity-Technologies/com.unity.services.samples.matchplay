@@ -33,14 +33,14 @@
         "com.unity.burst": "1.6.4",
         "com.unity.test-framework": "1.1.31"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.ext.nunit": {
       "version": "2.0.2",
-      "depth": 1,
+      "depth": 0,
       "source": "registry",
       "dependencies": {},
-      "url": "https://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.ide.rider": {
       "version": "3.0.13",
@@ -90,7 +90,7 @@
       "dependencies": {
         "com.unity.profiling.core": "1.0.0-pre.1"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.netcode.adapter.utp": {
       "version": "1.0.0-pre.4",
@@ -100,7 +100,7 @@
         "com.unity.netcode.gameobjects": "1.0.0-pre.4",
         "com.unity.transport": "1.0.0-pre.10"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.netcode.gameobjects": {
       "version": "1.0.0-pre.4",
@@ -113,7 +113,7 @@
         "com.unity.nuget.mono-cecil": "1.10.1",
         "com.unity.collections": "1.1.0"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.nuget.mono-cecil": {
       "version": "1.10.1",
@@ -127,7 +127,7 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {},
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.profiling.core": {
       "version": "1.0.2",
@@ -184,7 +184,7 @@
         "com.unity.nuget.newtonsoft-json": "3.0.1",
         "com.unity.modules.androidjni": "1.0.0"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.services.matchmaker": {
       "version": "1.0.0-pre.8",
@@ -200,7 +200,7 @@
         "com.unity.nuget.newtonsoft-json": "2.0.0",
         "com.unity.services.authentication": "1.0.0-pre.37"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.services.multiplay": {
       "version": "1.0.0-pre.1",
@@ -227,7 +227,7 @@
         "com.unity.nuget.newtonsoft-json": "3.0.1",
         "com.unity.services.authentication": "1.0.0-pre.37"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.shadergraph": {
       "version": "12.1.6",
@@ -243,7 +243,7 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {},
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.sysroot.linux-x86_64": {
       "version": "1.0.0",
@@ -252,7 +252,7 @@
       "dependencies": {
         "com.unity.sysroot": "1.0.0"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.test-framework": {
       "version": "2.0.1-pre.18",
@@ -282,7 +282,7 @@
         "com.unity.sysroot": "1.0.0",
         "com.unity.sysroot.linux-x86_64": "1.0.0"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.transport": {
       "version": "1.0.0-pre.10",
@@ -293,7 +293,7 @@
         "com.unity.burst": "1.5.5",
         "com.unity.mathematics": "1.2.1"
       },
-      "url": "http://packages.unity.com"
+      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
     },
     "com.unity.ugui": {
       "version": "1.0.0",
