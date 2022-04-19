@@ -19,16 +19,5 @@ namespace Matchplay.Networking
         Timeout //networkClient timed out while connecting
     }
 
-//
-//    public struct PlayerConnectionPayload
-//    {
-//        public string clientAuthID;
-//        public string playerName;
-//        public GameInfo clientMatchInfo;
-//    }
-
-    /// <summary>
-    /// Represents a single player on the game server
-    /// </summary>
-
+    
 }

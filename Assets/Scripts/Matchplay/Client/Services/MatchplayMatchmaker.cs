@@ -22,8 +22,6 @@ namespace Matchplay.Client
     {
         public string ip;
         public int port;
-        public Map map;
-        public GameMode gameMode;
         public MatchmakerPollingResult result;
         public string resultMessage;
     }
@@ -36,6 +34,10 @@ namespace Matchplay.Client
         CancellationTokenSource m_CancelToken;
         const int k_GetTicketCooldown = 1000;
 
+        /// <summary>
+        /// Create a ticket for the one user and begin matchmaking with their preferences
+        /// </summary>
+        /// <param name="data">The Client's preferences and ID</param>
         public async Task<MatchmakingResult> Matchmake(UserData data)
         {
             m_CancelToken = new CancellationTokenSource();

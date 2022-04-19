@@ -46,6 +46,9 @@ namespace Matchplay.Server
 
         ServerGameManager m_GameManager;
 
+        /// <summary>
+        /// Server Should start itself as soon as the game starts.
+        /// </summary>
         public async Task StartServer()
         {
             await UnityServices.InitializeAsync();
@@ -57,7 +60,6 @@ namespace Matchplay.Server
                 new MatchplayAllocationService());
         }
 
-        // Start is called before the first frame update
         void Start()
         {
             DontDestroyOnLoad(gameObject);

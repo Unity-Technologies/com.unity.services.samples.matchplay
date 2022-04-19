@@ -133,7 +133,7 @@ namespace Matchplay.Client.UI
             m_LocalLaunchMode = false;
             m_QueueGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.None;
-            if (gameManager.observableUser.QueuePreference == GameQueue.Competetive)
+            if (gameManager.matchplayUser.QueuePreference == GameQueue.Competetive)
                 m_GameSettings.contentContainer.style.display = DisplayStyle.None;
             else
                 m_GameSettings.contentContainer.style.display = DisplayStyle.Flex;
@@ -157,7 +157,11 @@ namespace Matchplay.Client.UI
                     Debug.LogError("No valid port in Port Field");
             }
             else
-                gameManager.Matchmake(OnMatchmade);
+            {
+#pragma warning disable 4014
+                gameManager.MatchmakeAsync(OnMatchmade);
+#pragma warning restore 4014
+            }
 
             SetMenuState(MainMenuPlayState.Playing);
         }
@@ -175,7 +179,6 @@ namespace Matchplay.Client.UI
                 await gameManager.CancelMatchmaking();
                 SetMenuState(MainMenuPlayState.Ready);
             }
-
         }
 
         void OnMatchmade(MatchmakerPollingResult result)

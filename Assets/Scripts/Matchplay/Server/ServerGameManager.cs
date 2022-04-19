@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Shared.Tools;
-using Unity.Services.Core;
 using Random = UnityEngine.Random;
 
 namespace Matchplay.Server
@@ -15,7 +14,7 @@ namespace Matchplay.Server
 
         MatchplayNetworkServer m_NetworkServer;
         MatchplayBackfiller m_Backfiller;
-        string m_ConnectionString => $"{m_ServerIP}:{m_ServerPort}";
+        string connectionString => $"{m_ServerIP}:{m_ServerPort}";
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
@@ -75,7 +74,7 @@ namespace Matchplay.Server
             m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
         }
 
-        public async Task<MatchmakerAllocationPayload> GetPayloadWithinTimeout(int timeout)
+        async Task<MatchmakerAllocationPayload> GetPayloadWithinTimeout(int timeout)
         {
             //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
             var matchmakerPayloadTask = m_MatchplayAllocationService.BeginServerAndAwaitMatchmakerAllocation();
@@ -87,15 +86,15 @@ namespace Matchplay.Server
             return null;
         }
 
-        public async Task StartAllocationService(GameInfo startingGameInfo, ushort playerCount)
+        async Task StartAllocationService(GameInfo startingGameInfo, ushort playerCount)
         {
             await m_MatchplayAllocationService.BeginServerCheck(startingGameInfo);
             m_MatchplayAllocationService.SetPlayerCount(playerCount);
         }
 
-        public async Task CreateAndStartBackfilling(MatchmakerAllocationPayload payload, GameInfo startingGameInfo)
+        async Task CreateAndStartBackfilling(MatchmakerAllocationPayload payload, GameInfo startingGameInfo)
         {
-            m_Backfiller = new MatchplayBackfiller(m_ConnectionString, payload.QueueName, payload.MatchProperties, startingGameInfo.MaxUsers);
+            m_Backfiller = new MatchplayBackfiller(connectionString, payload.QueueName, payload.MatchProperties, startingGameInfo.MaxUsers);
 
             if (m_Backfiller.NeedsPlayers())
             {
