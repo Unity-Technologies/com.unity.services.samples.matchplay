@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Matchplay.Server;
 using Matchplay.Shared;
+using Matchplay.Shared.Tools;
 using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -23,6 +24,7 @@ namespace Matchplay.Client
         {
             //We can load the mainMenu while the client initializes
 #pragma warning disable 4014
+
             //Disabled warning because we want to fire and forget.
             InitAsync();
 #pragma warning restore 4014
@@ -34,8 +36,14 @@ namespace Matchplay.Client
         async Task InitAsync()
         {
             matchplayUser = new MatchplayUser();
+            var unityAuthenticationInitOptions = new InitializationOptions();
+            var profile = ProfileManager.Profile;
+            if (profile.Length > 0)
+            {
+                unityAuthenticationInitOptions.SetOption("com.unity.services.authentication.profile", profile);
+            }
 
-            await UnityServices.InitializeAsync();
+            await UnityServices.InitializeAsync(unityAuthenticationInitOptions);
             AuthenticationWrapper.BeginAuth();
 
             networkClient = new MatchplayNetworkClient();

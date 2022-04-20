@@ -23,7 +23,6 @@ namespace Matchplay.Server
                     Debug.LogError("No ClientSingleton in scene, did you run this from the bootStrap scene?");
                     return null;
                 }
-
                 return s_ServerSingleton;
             }
         }

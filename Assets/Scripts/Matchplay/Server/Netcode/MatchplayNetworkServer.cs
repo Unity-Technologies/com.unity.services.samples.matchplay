@@ -149,8 +149,6 @@ namespace Matchplay.Server
 
             var matchPlayerInstance = GetNetworkedMatchPlayer(networkId);
             OnServerPlayerDespawned?.Invoke(matchPlayerInstance);
-
-            //matchPlayerInstance.NetworkObject.Despawn(true);
         }
 
         void SetupPlayerPrefab(ulong networkId, string playerName)

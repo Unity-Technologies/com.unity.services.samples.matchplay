@@ -62,20 +62,14 @@ namespace Matchplay.Client
                             {
                                 case MultiplayAssignment.StatusOptions.Found:
                                 {
-                                    //TEMP workaround a bug that causes tickets to hang out forever.
-                                    await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
                                     return ReturnMatchResult(MatchmakerPollingResult.Success, $"", matchAssignment);
                                 }
                                 case MultiplayAssignment.StatusOptions.Timeout:
                                 {
-                                    //TEMP workaround a bug that causes tickets to hang out forever.
-                                    await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
-                                    return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Ticket: {m_LastUsedTicket} Timed out.");
+                                    return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Ticket: {m_LastUsedTicket} Timed out - {matchAssignment.Message}");
                                 }
                                 case MultiplayAssignment.StatusOptions.Failed:
                                 {
-                                    //TEMP workaround a bug that causes tickets to hang out forever.
-                                    await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
                                     return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Failed: {matchAssignment.Message}");
                                 }
                                 default:
