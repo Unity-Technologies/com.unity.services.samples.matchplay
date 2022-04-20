@@ -6,7 +6,7 @@
                 <ui:VisualElement name="serverInfoBG" class="hud" style="justify-content: flex-start; flex-direction: column; padding-left: 10px; padding-right: 10px; padding-top: 10px; padding-bottom: 10px;">
                     <ui:Label text="Match Info" display-tooltip-when-elided="true" name="matchInfoLabel" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left; color: rgba(255, 255, 255, 0.6); -unity-font-style: bold; font-size: 30px;" />
                     <ui:VisualElement name="gameModeGroup" class="hudText" style="flex-direction: row; align-items: center; background-color: rgba(31, 31, 31, 0);">
-                        <ui:Label text="Game Mode" display-tooltip-when-elided="true" name="modeLabel" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left; -unity-font-style: bold;" />
+                        <ui:Label text="Game Mode" display-tooltip-when-elided="true" name="modeLabel" class="hudText" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left; -unity-font-style: bold;" />
                         <ui:Label text="####" display-tooltip-when-elided="true" name="modeValue" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left;" />
                     </ui:VisualElement>
                     <ui:VisualElement name="queueGroup" class="hudText" style="flex-direction: row; align-items: center; background-color: rgba(31, 31, 31, 0);">
