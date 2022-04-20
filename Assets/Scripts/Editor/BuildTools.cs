@@ -85,7 +85,7 @@ namespace Matchplay.Editor
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log("Win networkClient Build succeeded: " + summary.totalTime + " seconds");
+                Debug.Log("Win Client Build succeeded: " + summary.totalTime + " seconds @ " + summary.outputPath);
             }
 
             if (summary.result == BuildResult.Failed)
@@ -101,7 +101,7 @@ namespace Matchplay.Editor
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log("Linux networkServer Build succeeded: " + summary.totalTime + " seconds");
+                Debug.Log("Linux Server Build succeeded: " + summary.totalTime + " seconds @ " + summary.outputPath);
             }
 
             if (summary.result == BuildResult.Failed)
@@ -117,7 +117,7 @@ namespace Matchplay.Editor
 
             if (summary.result == BuildResult.Succeeded)
             {
-                Debug.Log("OSX networkClient Build succeeded: " + summary.totalSize + " bytes");
+                Debug.Log("OSX Client Build succeeded: " + summary.totalTime + " seconds @ " + summary.outputPath);
             }
 
             if (summary.result == BuildResult.Failed)

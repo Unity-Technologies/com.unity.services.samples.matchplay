@@ -124,15 +124,27 @@ namespace Matchplay.Server
             m_Backfiller.AddPlayerToMatch(joinedUser);
             m_MatchplayAllocationService.AddPlayer();
             if (!m_Backfiller.NeedsPlayers() && m_Backfiller.Backfilling)
-                Task.Run(() => m_Backfiller.StopBackfill());
+#pragma warning disable 4014
+                m_Backfiller.StopBackfill();
+#pragma warning restore 4014
         }
 
         void UserLeft(UserData leftUser)
         {
             m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
             m_MatchplayAllocationService.RemovePlayer();
+            var playerCount = m_NetworkServer.PlayerCount;
+            if (playerCount <= 0)
+            {
+#pragma warning disable 4014
+                CloseServer();
+#pragma warning restore 4014
+                return;
+            }
             if (m_Backfiller.NeedsPlayers() && !m_Backfiller.Backfilling)
-                Task.Run(() => m_Backfiller.BeginBackfilling());
+#pragma warning disable 4014
+                m_Backfiller.BeginBackfilling();
+#pragma warning restore 4014
         }
 
         #endregion
@@ -207,8 +219,14 @@ namespace Matchplay.Server
 
             //Convert from the multiplay queue values to local enums
             var queue = GameInfo.ToGameQueue(mmAllocation.QueueName);
-
             return new GameInfo { map = mostPopularMap, gameMode = mostPopularMode, gameQueue = queue };
+        }
+
+        async Task CloseServer()
+        {
+            await m_Backfiller.StopBackfill();
+            Dispose();
+            Application.Quit();
         }
 
         public void Dispose()

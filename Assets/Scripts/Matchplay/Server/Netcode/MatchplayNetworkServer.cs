@@ -19,6 +19,7 @@ namespace Matchplay.Server
         public Action<UserData> OnPlayerLeft;
         public Action<UserData> OnPlayerJoined;
 
+        public int PlayerCount => m_NetworkManager.ConnectedClients.Count;
         SynchedServerData m_SynchedServerData;
         bool m_InitializedServer;
         NetworkManager m_NetworkManager;
