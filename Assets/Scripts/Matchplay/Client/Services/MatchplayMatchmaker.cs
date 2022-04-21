@@ -77,7 +77,6 @@ namespace Matchplay.Client
                                     break;
                             }
                         }
-
                         await Task.Delay(k_GetTicketCooldown);
                     }
                 }

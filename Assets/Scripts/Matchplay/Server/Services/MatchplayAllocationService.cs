@@ -96,9 +96,7 @@ namespace Matchplay.Server
 
             return m_AllocationId;
         }
-
-
-
+        
         /// <summary>
         /// This should be in the SDK but we can use web-requests to get access to the MatchmakerAllocationPayload
         /// </summary>

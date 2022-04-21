@@ -6,6 +6,7 @@ using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using Matchplay.Shared;
+using Matchplay.Shared.Tools;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -145,7 +146,6 @@ namespace Matchplay.Server
                 {
                     m_ClientData.Remove(authId);
                 }
-
             }
 
             var matchPlayerInstance = GetNetworkedMatchPlayer(networkId);
@@ -156,7 +156,9 @@ namespace Matchplay.Server
         {
             // get this client's player NetworkObject
             var networkedMatchPlayer = GetNetworkedMatchPlayer(networkId);
-            networkedMatchPlayer.ServerSetName(playerName);
+            networkedMatchPlayer.PlayerName.Value = playerName;
+            networkedMatchPlayer.PlayerColor.Value = Customization.IDToColor(networkId);
+
             OnServerPlayerSpawned?.Invoke(networkedMatchPlayer);
         }
 

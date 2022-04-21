@@ -1,8 +1,8 @@
-using System;
 using Matchplay.Client;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+
 
 namespace Matchplay.Server
 {
@@ -12,18 +12,25 @@ namespace Matchplay.Server
     /// </summary>
     public class Matchplayer : NetworkBehaviour
     {
+        public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>(NetworkVariableReadPermission.Everyone);
         public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>(NetworkVariableReadPermission.Everyone);
 
+        [SerializeField] Renderer playerRenderer;
         public override void OnNetworkSpawn()
         {
             if (IsServer && !IsHost)
                 return;
+            SetColor(Color.black,PlayerColor.Value);
+            PlayerColor.OnValueChanged += SetColor;
             ClientSingleton.Instance.Manager.AddMatchPlayer(this);
         }
-
-        public void ServerSetName(string name)
+        
+        void SetColor(Color oldColor, Color newColor)
         {
-            PlayerName.Value = name;
+            if (oldColor == newColor)
+                return;
+
+            playerRenderer.material.color = newColor;
         }
 
         public override void OnNetworkDespawn()
