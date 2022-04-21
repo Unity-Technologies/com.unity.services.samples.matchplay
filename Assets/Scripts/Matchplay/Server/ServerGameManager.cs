@@ -10,7 +10,7 @@ namespace Matchplay.Server
 {
     public class ServerGameManager : IDisposable
     {
-        public MatchplayNetworkServer networkServer => m_NetworkServer;
+        public MatchplayNetworkServer NetworkServer => m_NetworkServer;
 
         MatchplayNetworkServer m_NetworkServer;
         MatchplayBackfiller m_Backfiller;
@@ -124,9 +124,11 @@ namespace Matchplay.Server
             m_Backfiller.AddPlayerToMatch(joinedUser);
             m_MatchplayAllocationService.AddPlayer();
             if (!m_Backfiller.NeedsPlayers() && m_Backfiller.Backfilling)
+            {
 #pragma warning disable 4014
                 m_Backfiller.StopBackfill();
 #pragma warning restore 4014
+            }
         }
 
         void UserLeft(UserData leftUser)
@@ -141,10 +143,14 @@ namespace Matchplay.Server
 #pragma warning restore 4014
                 return;
             }
+
             if (m_Backfiller.NeedsPlayers() && !m_Backfiller.Backfilling)
+            {
 #pragma warning disable 4014
                 m_Backfiller.BeginBackfilling();
 #pragma warning restore 4014
+            }
+
         }
 
         #endregion
@@ -245,7 +251,7 @@ namespace Matchplay.Server
 
             m_Backfiller?.Dispose();
             m_MatchplayAllocationService?.Dispose();
-            networkServer?.Dispose();
+            NetworkServer?.Dispose();
         }
     }
 }

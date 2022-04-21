@@ -61,9 +61,17 @@ namespace Matchplay.Client
 
             //  If the socket connection fails, we'll hear back by getting an ReceiveLocalClientDisconnectStatus callback for ourselves and get a message telling us the reason
             //  If the socket connection succeeds, we'll get our  ReceiveLocalClientConnectStatus callback This is where game-layer failures will be reported.
-            m_NetworkManager.StartClient();
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, ReceiveLocalClientConnectStatus);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, ReceiveLocalClientDisconnectStatus);
+            if (m_NetworkManager.StartClient())
+            {
+                Debug.Log("Starting Client!");
+                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, ReceiveLocalClientConnectStatus);
+                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, ReceiveLocalClientDisconnectStatus);
+            }
+            else
+            {
+                Debug.LogWarning($"Could not Start Client!");
+                OnLocalDisconnection?.Invoke(ConnectStatus.Undefined);
+            }
         }
 
         void ReceiveLocalClientConnectStatus(ulong clientId, FastBufferReader reader)

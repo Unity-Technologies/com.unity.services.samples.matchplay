@@ -24,7 +24,6 @@ namespace Matchplay.Client
         {
             //We can load the mainMenu while the client initializes
 #pragma warning disable 4014
-
             //Disabled warning because we want to fire and forget.
             InitAsync();
 #pragma warning restore 4014

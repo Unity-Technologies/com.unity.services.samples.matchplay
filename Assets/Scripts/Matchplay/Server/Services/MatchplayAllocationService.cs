@@ -49,7 +49,7 @@ namespace Matchplay.Server
 
         public void SetPlayerCount(ushort count)
         {
-            m_ServerCheckManager.CurrentPlayers = count;    
+            m_ServerCheckManager.CurrentPlayers = count;
         }
 
         public void AddPlayer()
@@ -79,8 +79,7 @@ namespace Matchplay.Server
         async Task<string> AwaitAllocationID()
         {
             var config = m_MultiplayService.ServerConfig;
-            Debug.LogFormat($"Awaiting Allocation. Server Config is:\n-ServerID: {0}\n-AllocationID: {1}\n-Port: {2}\n-QPort: {3}", config.ServerId, config.AllocatedUuid, config
-                .Port, config.QueryPort);
+            Debug.Log($"Awaiting Allocation. Server Config is:\n-ServerID: { config.ServerId}\n-AllocationID: {config.AllocatedUuid}\n-Port: {config.Port}\n-QPort: {config.QueryPort}");
             //Waiting on OnMultiplayAllocation() event (Probably wont ever happen in a matchmaker scenario)
             while (string.IsNullOrEmpty(m_AllocationId))
             {

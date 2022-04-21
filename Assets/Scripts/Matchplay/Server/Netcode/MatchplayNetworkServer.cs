@@ -24,7 +24,7 @@ namespace Matchplay.Server
         bool m_InitializedServer;
         NetworkManager m_NetworkManager;
 
-        // used in ApprovalCheck. This is intended as a bit of light protection against DOS attacks that rely on sending silly big buffers of garbage.
+        //Used in ApprovalCheck. This is intended as a bit of light protection against DOS attacks that rely on sending silly big buffers of garbage.
         const int k_MaxConnectPayload = 1024;
 
         /// <summary>
@@ -102,9 +102,9 @@ namespace Matchplay.Server
             }
 
             var payload = System.Text.Encoding.UTF8.GetString(connectionData);
-            var userData = JsonUtility.FromJson<UserData>(payload); // https://docs.unity3d.com/2020.2/Documentation/Manual/JSONSerialization.html
+            var userData = JsonUtility.FromJson<UserData>(payload);
             userData.networkId = networkId;
-            Debug.Log("Host ApprovalCheck: connecting client: " + userData);
+            Debug.Log($"Host ApprovalCheck: connecting client: ({networkId}) - {userData}");
 
             //Test for Duplicate Login.
             if (m_ClientData.ContainsKey(userData.userAuthId))
@@ -139,13 +139,13 @@ namespace Matchplay.Server
             if (m_NetworkIdToAuth.TryGetValue(networkId, out var authId))
             {
                 m_NetworkIdToAuth?.Remove(networkId);
+                OnPlayerLeft?.Invoke(m_ClientData[authId]);
 
                 if (m_ClientData[authId].networkId == networkId)
                 {
                     m_ClientData.Remove(authId);
                 }
 
-                OnPlayerLeft?.Invoke(m_ClientData[authId]);
             }
 
             var matchPlayerInstance = GetNetworkedMatchPlayer(networkId);
@@ -234,6 +234,7 @@ namespace Matchplay.Server
             m_NetworkManager.ConnectionApprovalCallback -= ApprovalCheck;
             m_NetworkManager.OnClientDisconnectCallback -= OnClientDisconnect;
             m_NetworkManager.OnServerStarted -= OnNetworkReady;
+            m_NetworkManager.Shutdown();
         }
     }
 }

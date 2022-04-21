@@ -20,8 +20,8 @@ namespace Matchplay.Server
         {
             if (!IsServer)
                 return;
-            ServerSingleton.Instance.Manager.networkServer.OnServerPlayerSpawned += JoinSeat;
-            ServerSingleton.Instance.Manager.networkServer.OnServerPlayerDespawned += LeaveSeat;
+            ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerSpawned += JoinSeat;
+            ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerDespawned += LeaveSeat;
         }
 
         public override void OnDestroy()
@@ -30,8 +30,8 @@ namespace Matchplay.Server
                 return;
             if (ServerSingleton.Instance == null)
                 return;
-            ServerSingleton.Instance.Manager.networkServer.OnServerPlayerSpawned -= JoinSeat;
-            ServerSingleton.Instance.Manager.networkServer.OnServerPlayerDespawned -= LeaveSeat;
+            ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerSpawned -= JoinSeat;
+            ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerDespawned -= LeaveSeat;
         }
 
         public void JoinSeat(Matchplayer player)
