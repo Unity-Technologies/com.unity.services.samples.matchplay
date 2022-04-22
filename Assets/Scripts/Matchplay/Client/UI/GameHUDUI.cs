@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Label = UnityEngine.UIElements.Label;
@@ -20,6 +21,7 @@ namespace Matchplay.Client.UI
         SynchedServerData m_SynchedServerData;
 
         Dictionary<int, PlayerNameUI> m_PlayerLabels = new Dictionary<int, PlayerNameUI>();
+        Label m_ServerLabel;
         Label m_GameModeValue;
         Label m_QueueValue;
         Label m_MapValue;
@@ -38,6 +40,7 @@ namespace Matchplay.Client.UI
 
             //UIDocument setup
             var root = gameObject.GetComponent<UIDocument>().rootVisualElement;
+            m_ServerLabel = root.Q<Label>("serverValue");
             m_GameModeValue = root.Q<Label>("modeValue");
             m_QueueValue = root.Q<Label>("queueValue");
             m_MapValue = root.Q<Label>("mapValue");
@@ -52,8 +55,9 @@ namespace Matchplay.Client.UI
             m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;
             m_ClientGameManager.MatchPlayerDespawned += RemovePlayerLabel;
 
-            //Synched Variables
+            //Synched Variables, since the Game HUD is not networked
             m_SynchedServerData.OnNetworkSpawned += OnSynchSpawned;
+            m_SynchedServerData.serverID.OnValueChanged += OnServerChanged;
             m_SynchedServerData.map.OnValueChanged += OnMapChanged;
             m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
             m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
@@ -97,9 +101,17 @@ namespace Matchplay.Client.UI
 
         void OnSynchSpawned()
         {
+            OnServerChanged("",m_SynchedServerData.serverID.Value.ToString());
             OnMapChanged(Map.None, m_SynchedServerData.map.Value);
             OnModeChanged(GameMode.None, m_SynchedServerData.gameMode.Value);
             OnQueueChanged(GameQueue.None, m_SynchedServerData.gameQueue.Value);
+        }
+
+        void OnServerChanged(FixedString64Bytes oldServerID, FixedString64Bytes newServerID)
+        {
+            if (oldServerID == newServerID)
+                return;
+            m_ServerLabel.text = newServerID.ToString();
         }
 
         void OnMapChanged(Map oldMap, Map newMap)

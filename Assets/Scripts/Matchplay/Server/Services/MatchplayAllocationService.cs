@@ -79,7 +79,12 @@ namespace Matchplay.Server
         async Task<string> AwaitAllocationID()
         {
             var config = m_MultiplayService.ServerConfig;
-            Debug.Log($"Awaiting Allocation. Server Config is:\n-ServerID: { config.ServerId}\n-AllocationID: {config.AllocatedUuid}\n-Port: {config.Port}\n-QPort: {config.QueryPort}");
+            Debug.Log($"Awaiting Allocation. Server Config is:\n" +
+                      $"-ServerID: { config.ServerId}\n" +
+                      $"-AllocationID: {config.AllocatedUuid}\n" +
+                      $"-Port: {config.Port}\n" +
+                      $"-QPort: {config.QueryPort}");
+            
             //Waiting on OnMultiplayAllocation() event (Probably wont ever happen in a matchmaker scenario)
             while (string.IsNullOrEmpty(m_AllocationId))
             {
@@ -96,7 +101,7 @@ namespace Matchplay.Server
 
             return m_AllocationId;
         }
-        
+
         /// <summary>
         /// This should be in the SDK but we can use web-requests to get access to the MatchmakerAllocationPayload
         /// </summary>
