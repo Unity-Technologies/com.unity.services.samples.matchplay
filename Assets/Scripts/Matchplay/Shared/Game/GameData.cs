@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -36,7 +37,7 @@ namespace Matchplay.Shared
     {
         public MatchplayUser()
         {
-            Data = new UserData("Player", "", 0, new GameInfo());
+            Data = new UserData("Player", Guid.NewGuid().ToString(), 0, new GameInfo());
         }
 
         public UserData Data { get; }

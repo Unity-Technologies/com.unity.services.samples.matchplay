@@ -5,9 +5,19 @@ using UnityEngine;
 
 namespace Matchplay.Client
 {
+    public enum AuthResult
+    {
+        Authenticating,
+        Authenticated,
+        Error,
+        TimedOut
+    }
+
     public static class AuthenticationWrapper
     {
         static bool IsAuthenticated => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn;
+
+        static AuthResult s_AuthResult = AuthResult.Error;
 
         public static async void BeginAuth(int tries = 5)
         {
@@ -17,22 +27,23 @@ namespace Matchplay.Client
         }
 
         //Awaitable task that will pass the clientID once authentication is done.
-        public static async Task<string> GetClientId()
+        public static string ClientId()
         {
-            await Authenticating();
             return AuthenticationService.Instance.PlayerId;
         }
 
         //Awaitable task that will pass once authentication is done.
-        public static async Task Authenticating()
+        public static async Task<AuthResult> Authenticating()
         {
-            while (!IsAuthenticated)
+            while (s_AuthResult == AuthResult.Authenticating)
             {
                 await Task.Delay(200);
             }
+
+            return s_AuthResult;
         }
 
-        static async Task SignInAnonymouslyAsync(int maxRetries)
+        static async Task<AuthResult> SignInAnonymouslyAsync(int maxRetries)
         {
             var tries = 0;
             while (!IsAuthenticated && tries < maxRetries)
@@ -43,6 +54,7 @@ namespace Matchplay.Client
                     await AuthenticationService.Instance.SignInAnonymouslyAsync();
                     if (IsAuthenticated)
                     {
+                        s_AuthResult = AuthResult.Authenticated;
                         break;
                     }
                 }
@@ -51,12 +63,14 @@ namespace Matchplay.Client
                     // Compare error code to AuthenticationErrorCodes
                     // Notify the player with the proper error message
                     Debug.LogException(ex);
+                    s_AuthResult = AuthResult.Error;
                 }
                 catch (RequestFailedException exception)
                 {
                     // Compare error code to CommonErrorCodes
                     // Notify the player with the proper error message
                     Debug.LogException(exception);
+                    s_AuthResult = AuthResult.Error;
                 }
 
                 tries++;
@@ -66,10 +80,10 @@ namespace Matchplay.Client
             if (!IsAuthenticated)
             {
                 Debug.LogError($"Player was not signed in successfully after {tries} attempts");
-                return;
+                s_AuthResult = AuthResult.TimedOut;
             }
 
-            Debug.Log("Player signed in as player ID " + AuthenticationService.Instance.PlayerId);
+            return s_AuthResult;
         }
     }
 }

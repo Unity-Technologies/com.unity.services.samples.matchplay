@@ -19,20 +19,7 @@ namespace Matchplay.Editor
         const string k_RelativeBuildFolder = "Builds";
         const string k_WinClientFolder = "Matchplay-WIN";
         const string k_OSXClientFolder = "Matchplay-OSX";
-        const string k_LinuxServerFolder = "Matchplay-networkServer";
-
-        public static string[] AllBuildScenePaths()
-        {
-            List<string> scenePaths = new List<string>();
-
-            foreach (var scene in EditorBuildSettings.scenes)
-            {
-                Debug.Log($"Adding Scene: {scene.path} ");
-                scenePaths.Add(scene.path);
-            }
-
-            return scenePaths.ToArray();
-        }
+        const string k_LinuxServerFolder = "Matchplay-LinuxServer";
 
         [MenuItem("BuildTools/All")]
         public static void BuildAll()
@@ -42,8 +29,27 @@ namespace Matchplay.Editor
             BuildOSXClient();
         }
 
-        static BuildReport BuildForPlatform(BuildPlatforms platform, bool server = false)
+        [MenuItem("BuildTools/WIN Client")]
+        public static void BuildWINClient()
         {
+            BuildForPlatform(BuildPlatforms.WIN);
+        }
+
+        [MenuItem("BuildTools/Linux Server")]
+        public static void BuildLinuxServer()
+        {
+            BuildForPlatform(BuildPlatforms.Linux, true);
+        }
+
+        [MenuItem("BuildTools/OSX Client")]
+        public static void BuildOSXClient()
+        {
+            BuildForPlatform(BuildPlatforms.OSX);
+        }
+
+        static void BuildForPlatform(BuildPlatforms platform, bool server = false)
+        {
+            var startBuildTarget = EditorUserBuildSettings.activeBuildTarget;
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions();
             buildPlayerOptions.scenes = AllBuildScenePaths();
             var locationPath = k_RelativeBuildFolder;
@@ -74,56 +80,40 @@ namespace Matchplay.Editor
             if (server)
                 buildPlayerOptions.subtarget = (int)StandaloneBuildSubtarget.Server;
 
-            return BuildPipeline.BuildPlayer(buildPlayerOptions);
-            ;
+            BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+            var summary = report.summary;
+            switch (summary.result)
+            {
+                case BuildResult.Succeeded:
+                    Debug.Log($"{platform} succeeded after {summary.totalTime} seconds @ {summary.outputPath}");
+                    break;
+                case BuildResult.Failed:
+                    Debug.Log($"{platform} failed after {summary.totalTime} seconds");
+                    break;
+                case BuildResult.Unknown:
+                    Debug.Log($"{platform} hit an unknown after {summary.totalTime} seconds.");
+                    break;
+                case BuildResult.Cancelled:
+                    Debug.Log($"{platform} cancelled after {summary.totalTime} seconds.");
+                    break;
+            }
+            //Switch back to the build target we were at (if applicable)
+            if (EditorUserBuildSettings.activeBuildTarget != startBuildTarget)
+                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Standalone, startBuildTarget);
+
         }
 
-        [MenuItem("BuildTools/WIN Client")]
-        public static void BuildWINClient()
+        public static string[] AllBuildScenePaths()
         {
-            var summary = BuildForPlatform(BuildPlatforms.WIN).summary;
+            List<string> scenePaths = new List<string>();
 
-            if (summary.result == BuildResult.Succeeded)
+            foreach (var scene in EditorBuildSettings.scenes)
             {
-                Debug.Log("Win Client Build succeeded: " + summary.totalTime + " seconds @ " + summary.outputPath);
+                Debug.Log($"Adding Scene: {scene.path} ");
+                scenePaths.Add(scene.path);
             }
 
-            if (summary.result == BuildResult.Failed)
-            {
-                Debug.Log("Build failed");
-            }
-        }
-
-        [MenuItem("BuildTools/Linux Server")]
-        public static void BuildLinuxServer()
-        {
-            var summary = BuildForPlatform(BuildPlatforms.Linux, true).summary;
-
-            if (summary.result == BuildResult.Succeeded)
-            {
-                Debug.Log("Linux Server Build succeeded: " + summary.totalTime + " seconds @ " + summary.outputPath);
-            }
-
-            if (summary.result == BuildResult.Failed)
-            {
-                Debug.LogError($"Build failed for {summary.platformGroup} @ {summary.outputPath}");
-            }
-        }
-
-        [MenuItem("BuildTools/OSX Client")]
-        public static void BuildOSXClient()
-        {
-            var summary = BuildForPlatform(BuildPlatforms.OSX).summary;
-
-            if (summary.result == BuildResult.Succeeded)
-            {
-                Debug.Log("OSX Client Build succeeded: " + summary.totalTime + " seconds @ " + summary.outputPath);
-            }
-
-            if (summary.result == BuildResult.Failed)
-            {
-                Debug.Log("Build failed");
-            }
+            return scenePaths.ToArray();
         }
     }
 }

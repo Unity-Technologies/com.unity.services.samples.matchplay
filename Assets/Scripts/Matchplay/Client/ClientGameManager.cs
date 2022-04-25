@@ -4,6 +4,7 @@ using Matchplay.Server;
 using Matchplay.Shared;
 using Matchplay.Shared.Tools;
 using Unity.Services.Core;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -24,6 +25,7 @@ namespace Matchplay.Client
         {
             //We can load the mainMenu while the client initializes
 #pragma warning disable 4014
+
             //Disabled warning because we want to fire and forget.
             InitAsync();
 #pragma warning restore 4014
@@ -47,7 +49,14 @@ namespace Matchplay.Client
 
             networkClient = new MatchplayNetworkClient();
             m_Matchmaker = new MatchplayMatchmaker();
-            matchplayUser.AuthId = await AuthenticationWrapper.GetClientId();
+            var authenticationResult = await AuthenticationWrapper.Authenticating();
+
+            //Catch for if the authentication fails, we can still do local server Testing
+            if (authenticationResult == AuthResult.Authenticated)
+                matchplayUser.AuthId = AuthenticationWrapper.ClientId();
+            else
+                matchplayUser.AuthId = Guid.NewGuid().ToString();
+
         }
 
         public void BeginConnection(string ip, int port)
@@ -139,6 +148,12 @@ namespace Matchplay.Client
         {
             networkClient?.Dispose();
             m_Matchmaker?.Dispose();
+        }
+
+        public void ExitGame()
+        {
+            Dispose();
+            Application.Quit();
         }
     }
 }
