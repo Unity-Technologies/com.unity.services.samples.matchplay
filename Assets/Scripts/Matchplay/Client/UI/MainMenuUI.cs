@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Matchplay.Shared;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 namespace Matchplay.Client.UI
