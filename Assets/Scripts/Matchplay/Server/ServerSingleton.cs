@@ -20,7 +20,7 @@ namespace Matchplay.Server
                 s_ServerSingleton = FindObjectOfType<ServerSingleton>();
                 if (s_ServerSingleton == null)
                 {
-                    Debug.LogError("No ClientSingleton in scene, did you run this from the bootStrap scene?");
+                    Debug.LogError("No ServerSingleton in scene, did you run this from the bootStrap scene?");
                     return null;
                 }
                 return s_ServerSingleton;

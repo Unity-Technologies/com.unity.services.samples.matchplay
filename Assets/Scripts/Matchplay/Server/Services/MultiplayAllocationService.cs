@@ -25,7 +25,6 @@ namespace Matchplay.Server
             try
             {
                 m_MultiplayService = MultiplayService.Instance;
-
             }
             catch(Exception ex)
             {

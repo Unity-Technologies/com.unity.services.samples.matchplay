@@ -1,3 +1,4 @@
+using Matchplay.Networking;
 using Matchplay.Server;
 using TMPro;
 using Unity.Collections;
@@ -21,7 +22,7 @@ namespace Matchplay.Client.UI
             m_player.PlayerName.OnValueChanged += ChangeLabelName;
         }
 
-        void ChangeLabelName(FixedString64Bytes oldLabel, FixedString64Bytes newLabel)
+        void ChangeLabelName(NetworkString oldLabel, NetworkString newLabel)
         {
             m_TextLabel.SetText(newLabel.ToString());
         }

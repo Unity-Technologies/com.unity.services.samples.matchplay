@@ -58,28 +58,29 @@ namespace Matchplay.Server
 
             m_NetworkManager.StartServer();
             ChangeMap(startingGameInfo.map);
-            try
-            {
-                var getServerDataTries = 3;
-                while (getServerDataTries > 0 && m_SynchedServerData == null)
-                {
-                    m_SynchedServerData = Object.FindObjectOfType<SynchedServerData>();
-                    getServerDataTries--;
-                    await Task.Delay(50);
-                }
 
-                m_SynchedServerData.map.Value = startingGameInfo.map;
-                m_SynchedServerData.gameMode.Value = startingGameInfo.gameMode;
-                m_SynchedServerData.gameQueue.Value = startingGameInfo.gameQueue;
-                Debug.Log($"Synched Server Values: {m_SynchedServerData.map.Value} - {m_SynchedServerData.gameMode.Value} - {m_SynchedServerData.gameQueue.Value}");
-                return m_SynchedServerData;
-            }
-            catch (Exception ex)
+            var getServerDataTries = 3;
+            while (getServerDataTries > 0 && m_SynchedServerData == null)
             {
-                Debug.LogError($"Error setting synched values :\n{ex}");
+                m_SynchedServerData = Object.FindObjectOfType<SynchedServerData>();
+                getServerDataTries--;
+                await Task.Delay(150);
             }
 
-            return null;
+            if (m_SynchedServerData == null)
+            {
+                Debug.Log($"Could not find the SynchedServerData in the scene: {SceneManager.GetActiveScene()}");
+                return null;
+            }
+
+            m_SynchedServerData.map.Value = startingGameInfo.map;
+            m_SynchedServerData.gameMode.Value = startingGameInfo.gameMode;
+            m_SynchedServerData.gameQueue.Value = startingGameInfo.gameQueue;
+            Debug.Log($"Synched Server Values: {m_SynchedServerData.map.Value} - {m_SynchedServerData.gameMode.Value} - {m_SynchedServerData.gameQueue.Value}");
+            return m_SynchedServerData;
+
+
+
         }
 
         void OnNetworkReady()

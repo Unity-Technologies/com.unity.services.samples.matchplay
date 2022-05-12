@@ -1,5 +1,5 @@
 using System;
-using Unity.Collections;
+using Matchplay.Networking;
 using Unity.Netcode;
 
 namespace Matchplay.Shared
@@ -9,7 +9,7 @@ namespace Matchplay.Shared
     /// </summary>
     public class SynchedServerData : NetworkBehaviour
     {
-        public NetworkVariable<FixedString64Bytes> serverID = new NetworkVariable<FixedString64Bytes>();
+        public NetworkVariable<NetworkString> serverID = new NetworkVariable<NetworkString>();
         public NetworkVariable<Map> map = new NetworkVariable<Map>();
         public NetworkVariable<GameMode> gameMode = new NetworkVariable<GameMode>();
         public NetworkVariable<GameQueue> gameQueue = new NetworkVariable<GameQueue>();
@@ -22,13 +22,6 @@ namespace Matchplay.Shared
         public override void OnNetworkSpawn()
         {
             OnNetworkSpawned?.Invoke();
-        }
-
-        public override void OnNetworkDespawn()
-        {
-            map.Value = Map.None;
-            gameMode.Value = GameMode.None;
-            gameQueue.Value = GameQueue.None;
         }
     }
 }
