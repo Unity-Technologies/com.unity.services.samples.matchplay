@@ -10,7 +10,7 @@ using Debug = UnityEngine.Debug;
 
 namespace Matchplay.Server
 {
-    public class MatchplayAllocationService : IDisposable
+    public class MultiplayAllocationService : IDisposable
     {
         IMultiplayService m_MultiplayService;
         MultiplayEventCallbacks m_Servercallbacks;
@@ -20,16 +20,26 @@ namespace Matchplay.Server
 
         const string k_PayloadProxyUrl = "http://localhost:8086";
 
-        public MatchplayAllocationService()
+        public MultiplayAllocationService()
         {
-            m_MultiplayService = MultiplayService.Instance;
+            try
+            {
+                m_MultiplayService = MultiplayService.Instance;
+
+            }
+            catch(Exception ex)
+            {
+                Debug.LogWarning($"Error creating Multiplay allocation service.\n{ex}");
+            }
         }
 
         /// <summary>
         /// Should be wrapped in a timeout function
         /// </summary>
-        public async Task<MatchmakerAllocationPayload> BeginServerAndAwaitMatchmakerAllocation()
+        public async Task<MatchmakerAllocationPayload> BeginMatchplayServerAndAwaitMatchmakerAllocation()
         {
+            if (m_MultiplayService == null)
+                return null;
             m_AllocationId = null;
             m_Servercallbacks = new MultiplayEventCallbacks();
             m_Servercallbacks.Allocate += OnMultiplayAllocation;
@@ -44,6 +54,8 @@ namespace Matchplay.Server
         //The networked server is our source of truth for what is going on, so we update our multiplay check server with values from there.
         public async Task BeginServerCheck(GameInfo info)
         {
+            if (m_MultiplayService == null)
+                return;
             m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync((ushort)info.MaxUsers, "Matchplay Server", info.gameMode.ToString(), "0", info.map.ToString());
         }
 
@@ -78,13 +90,14 @@ namespace Matchplay.Server
 
         async Task<string> AwaitAllocationID()
         {
+
             var config = m_MultiplayService.ServerConfig;
             Debug.Log($"Awaiting Allocation. Server Config is:\n" +
                       $"-ServerID: { config.ServerId}\n" +
                       $"-AllocationID: {config.AllocatedUuid}\n" +
                       $"-Port: {config.Port}\n" +
                       $"-QPort: {config.QueryPort}");
-            
+
             //Waiting on OnMultiplayAllocation() event (Probably wont ever happen in a matchmaker scenario)
             while (string.IsNullOrEmpty(m_AllocationId))
             {

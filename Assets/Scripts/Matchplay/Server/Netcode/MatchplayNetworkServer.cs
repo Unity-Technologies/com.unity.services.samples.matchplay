@@ -7,6 +7,7 @@ using Unity.Netcode;
 using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Shared.Tools;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -236,7 +237,8 @@ namespace Matchplay.Server
             m_NetworkManager.ConnectionApprovalCallback -= ApprovalCheck;
             m_NetworkManager.OnClientDisconnectCallback -= OnClientDisconnect;
             m_NetworkManager.OnServerStarted -= OnNetworkReady;
-            m_NetworkManager.Shutdown();
+            if(m_NetworkManager.IsListening)
+                m_NetworkManager.Shutdown();
         }
     }
 }

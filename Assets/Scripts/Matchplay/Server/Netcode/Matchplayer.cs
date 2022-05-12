@@ -12,8 +12,8 @@ namespace Matchplay.Server
     /// </summary>
     public class Matchplayer : NetworkBehaviour
     {
-        public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>(NetworkVariableReadPermission.Everyone);
-        public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>(NetworkVariableReadPermission.Everyone);
+        public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>();
+        public NetworkVariable<FixedString64Bytes> PlayerName = new NetworkVariable<FixedString64Bytes>();
 
         [SerializeField] Renderer playerRenderer;
         public override void OnNetworkSpawn()
@@ -24,7 +24,7 @@ namespace Matchplay.Server
             PlayerColor.OnValueChanged += SetColor;
             ClientSingleton.Instance.Manager.AddMatchPlayer(this);
         }
-        
+
         void SetColor(Color oldColor, Color newColor)
         {
             if (oldColor == newColor)

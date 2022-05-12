@@ -5,8 +5,9 @@ using UnityEngine;
 
 namespace Matchplay.Client
 {
-    public enum AuthResult
+    public enum AuthState
     {
+        Initialized,
         Authenticating,
         Authenticated,
         Error,
@@ -17,13 +18,14 @@ namespace Matchplay.Client
     {
         static bool IsAuthenticated => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn;
 
-        static AuthResult s_AuthResult = AuthResult.Error;
+        static AuthState s_AuthState = AuthState.Initialized;
 
-        public static async void BeginAuth(int tries = 5)
+        public static async Task BeginAuth(int tries = 5)
         {
             if (IsAuthenticated)
                 return;
-            await SignInAnonymouslyAsync(tries);
+            var signinResult = await SignInAnonymouslyAsync(tries);
+            Debug.Log($"Auth attempts Finished : {signinResult.ToString()}");
         }
 
         //Awaitable task that will pass the clientID once authentication is done.
@@ -33,17 +35,17 @@ namespace Matchplay.Client
         }
 
         //Awaitable task that will pass once authentication is done.
-        public static async Task<AuthResult> Authenticating()
+        public static async Task<AuthState> Authenticating()
         {
-            while (s_AuthResult == AuthResult.Authenticating)
+            while (s_AuthState == AuthState.Authenticating||s_AuthState==AuthState.Initialized)
             {
                 await Task.Delay(200);
             }
 
-            return s_AuthResult;
+            return s_AuthState;
         }
 
-        static async Task<AuthResult> SignInAnonymouslyAsync(int maxRetries)
+        static async Task<AuthState> SignInAnonymouslyAsync(int maxRetries)
         {
             var tries = 0;
             while (!IsAuthenticated && tries < maxRetries)
@@ -54,7 +56,7 @@ namespace Matchplay.Client
                     await AuthenticationService.Instance.SignInAnonymouslyAsync();
                     if (IsAuthenticated)
                     {
-                        s_AuthResult = AuthResult.Authenticated;
+                        s_AuthState = AuthState.Authenticated;
                         break;
                     }
                 }
@@ -63,14 +65,14 @@ namespace Matchplay.Client
                     // Compare error code to AuthenticationErrorCodes
                     // Notify the player with the proper error message
                     Debug.LogException(ex);
-                    s_AuthResult = AuthResult.Error;
+                    s_AuthState = AuthState.Error;
                 }
                 catch (RequestFailedException exception)
                 {
                     // Compare error code to CommonErrorCodes
                     // Notify the player with the proper error message
                     Debug.LogException(exception);
-                    s_AuthResult = AuthResult.Error;
+                    s_AuthState = AuthState.Error;
                 }
 
                 tries++;
@@ -80,10 +82,10 @@ namespace Matchplay.Client
             if (!IsAuthenticated)
             {
                 Debug.LogError($"Player was not signed in successfully after {tries} attempts");
-                s_AuthResult = AuthResult.TimedOut;
+                s_AuthState = AuthState.TimedOut;
             }
 
-            return s_AuthResult;
+            return s_AuthState;
         }
     }
 }

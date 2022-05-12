@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Matchplay.Shared;
 using Unity.Services.Core;
@@ -47,15 +48,23 @@ namespace Matchplay.Server
         /// <summary>
         /// Server Should start itself as soon as the game starts.
         /// </summary>
-        public async Task StartServer()
+        public async Task CreateServer()
         {
             await UnityServices.InitializeAsync();
+            Debug.Log("Creating Server GameManager");
+
+            var matchplayServer = new MatchplayNetworkServer();
+
+            var allocationService = new MultiplayAllocationService();
+
+
             m_GameManager = new ServerGameManager(
                 ApplicationData.IP(),
                 ApplicationData.Port(),
                 ApplicationData.QPort(),
-                new MatchplayNetworkServer(),
-                new MatchplayAllocationService());
+                matchplayServer,
+                allocationService);
+            Debug.Log(" Server GameManager created");
         }
 
         void Start()
@@ -65,7 +74,7 @@ namespace Matchplay.Server
 
         void OnDestroy()
         {
-            Manager.Dispose();
+            m_GameManager?.Dispose();
         }
     }
 }

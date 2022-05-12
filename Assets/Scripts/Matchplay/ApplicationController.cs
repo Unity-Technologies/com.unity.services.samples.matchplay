@@ -46,8 +46,8 @@ namespace Matchplay.Shared
             if (isServer)
             {
                 var serverInstance = Instantiate(m_ServerPrefab);
-                await serverInstance.StartServer();
-                await serverInstance.Manager.BeginServerAsync();
+                await serverInstance.CreateServer();
+                await serverInstance.Manager.StartGameServerAsync();
             }
             else
             {
