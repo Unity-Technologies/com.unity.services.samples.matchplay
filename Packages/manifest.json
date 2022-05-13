@@ -3,22 +3,22 @@
     "com.unity.burst": "1.6.5",
     "com.unity.cinemachine": "2.8.4",
     "com.unity.collab-proxy": "1.15.15",
-    "com.unity.collections": "1.2.3",
+    "com.unity.collections": "1.3.0-pre.21",
+    "com.unity.ext.nunit": "2.0.2",
     "com.unity.ide.rider": "3.0.13",
     "com.unity.ide.visualstudio": "2.0.14",
     "com.unity.ide.vscode": "1.2.5",
     "com.unity.inputsystem": "1.3.0",
-    "com.unity.multiplayer.tools": "1.0.0-pre.2",
-    "com.unity.netcode.adapter.utp": "1.0.0-pre.4",
-    "com.unity.netcode.gameobjects": "1.0.0-pre.4",
+    "com.unity.multiplayer.tools": "1.0.0-pre.7",
+    "com.unity.netcode.gameobjects": "1.0.0-pre.9",
     "com.unity.render-pipelines.universal": "12.1.6",
-    "com.unity.services.authentication": "1.0.0-pre.37",
+    "com.unity.services.authentication": "2.0.0",
     "com.unity.services.matchmaker": "1.0.0-pre.8",
     "com.unity.services.multiplay": "1.0.0-pre.1",
     "com.unity.test-framework": "2.0.1-pre.18",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.toolchain.win-x86_64-linux-x86_64": "1.0.0",
-    "com.unity.transport": "1.0.0-pre.10",
+    "com.unity.transport": "1.0.0",
     "com.unity.ugui": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
@@ -59,13 +59,7 @@
       "scopes": [
         "com.unity.services.multiplay",
         "com.unity.services.authentication",
-        "com.unity.test-framework"
-      ]
-    },
-    {
-      "name": "Unity",
-      "url": "http://packages.unity.com",
-      "scopes": [
+        "com.unity.test-framework",
         "com.unity.collections",
         "com.unity.multiplayer.tools",
         "com.unity.netcode.adapter.utp",
@@ -77,7 +71,8 @@
         "com.unity.transport",
         "com.unity.services.wire",
         "com.unity.sysroot",
-        "com.unity.sysroot.linux-x86_64"
+        "com.unity.sysroot.linux-x86_64",
+        "com.unity.ext.nunit"
       ]
     }
   ]

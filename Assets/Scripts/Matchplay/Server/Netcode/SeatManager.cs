@@ -16,27 +16,29 @@ namespace Matchplay.Server
 
         List<Matchplayer> m_CurrentSeats = new List<Matchplayer>();
 
-        void Awake()
+        public override void OnNetworkSpawn()
         {
             if (!IsServer)
                 return;
-            ServerSingleton.Instance.Manager.networkServer.OnServerPlayerSpawned += JoinSeat;
-            ServerSingleton.Instance.Manager.networkServer.OnServerPlayerDespawned += LeaveSeat;
+            ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerSpawned += JoinSeat_Server;
+            ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerDespawned += LeaveSeat_Server;
         }
 
-        public override void OnDestroy()
+        public override void OnNetworkDespawn()
         {
             if (!IsServer)
                 return;
             if (ServerSingleton.Instance == null)
                 return;
-            ServerSingleton.Instance.Manager.networkServer.OnServerPlayerSpawned -= JoinSeat;
-            ServerSingleton.Instance.Manager.networkServer.OnServerPlayerDespawned -= LeaveSeat;
+            ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerSpawned -= JoinSeat_Server;
+            ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerDespawned -= LeaveSeat_Server;
         }
 
-        public void JoinSeat(Matchplayer player)
+        void JoinSeat_Server(Matchplayer player)
         {
             m_CurrentSeats.Add(player);
+            Debug.Log($"{player.PlayerName} sat at the table. {m_CurrentSeats.Count} sat at the table.");
+
             RearrangeSeats();
         }
 
@@ -56,7 +58,7 @@ namespace Matchplay.Server
             }
         }
 
-        void LeaveSeat(Matchplayer player)
+        void LeaveSeat_Server(Matchplayer player)
         {
             m_CurrentSeats.Remove(player);
             RearrangeSeats();

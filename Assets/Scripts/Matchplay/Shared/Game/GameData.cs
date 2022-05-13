@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -27,17 +28,16 @@ namespace Matchplay.Shared
         None,
         Casual,
         Competetive
-
     }
 
     /// <summary>
     /// Wrapping the userData into a class that will callback to listeners when changed, for example, UI.
     /// </summary>
-    public class ObservableUser
+    public class MatchplayUser
     {
-        public ObservableUser()
+        public MatchplayUser()
         {
-            Data = new UserData("Player", "", 0, new GameInfo());
+            Data = new UserData("Player", Guid.NewGuid().ToString(), 0, new GameInfo());
         }
 
         public UserData Data { get; }
@@ -57,60 +57,30 @@ namespace Matchplay.Shared
         public string AuthId
         {
             get => Data.userAuthId;
-            set
-            {
-                Data.userAuthId = value;
-                onAuthChanged?.Invoke(Data.userAuthId);
-            }
-        }
-
-        public Action<string> onAuthChanged;
-
-        public ulong SetNetworkID
-        {
-            get => Data.networkId;
-            set => Data.networkId = value;
+            set => Data.userAuthId = value;
         }
 
         public Map MapPreferences
         {
             get => Data.userGamePreferences.map;
-            set
-            {
-                Data.userGamePreferences.map = value;
-                onMapPreferencesChanged?.Invoke(Data.userGamePreferences.map);
-            }
+            set { Data.userGamePreferences.map = value; }
         }
-
-        public Action<Map> onMapPreferencesChanged;
 
         public GameMode GameModePreferences
         {
             get => Data.userGamePreferences.gameMode;
-            set
-            {
-                Data.userGamePreferences.gameMode = value;
-                onModePreferencesChanged?.Invoke(Data.userGamePreferences.gameMode);
-            }
+            set => Data.userGamePreferences.gameMode = value;
         }
-
-        public Action<GameMode> onModePreferencesChanged;
 
         public GameQueue QueuePreference
         {
             get => Data.userGamePreferences.gameQueue;
-            set
-            {
-                Data.userGamePreferences.gameQueue = value;
-                onQueuePreferenceChanged?.Invoke(Data.userGamePreferences.gameQueue);
-            }
+            set => Data.userGamePreferences.gameQueue = value;
         }
-
-        public Action<GameQueue> onQueuePreferenceChanged;
 
         public override string ToString()
         {
-            var userData = new StringBuilder("ObservableUser: ");
+            var userData = new StringBuilder("MatchplayUser: ");
             userData.AppendLine($"- {Data}");
             return userData.ToString();
         }

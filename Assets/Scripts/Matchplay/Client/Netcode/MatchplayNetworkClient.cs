@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using Matchplay.Networking;
 using UnityEngine.SceneManagement;
 
@@ -25,7 +26,7 @@ namespace Matchplay.Client
         public MatchplayNetworkClient()
         {
             m_NetworkManager = NetworkManager.Singleton;
-            m_NetworkManager.OnClientDisconnectCallback += LocalClientDisconnect;
+            m_NetworkManager.OnClientDisconnectCallback += RemoteDisconnect;
         }
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace Matchplay.Client
         public void DisconnectClient()
         {
             DisconnectReason.SetDisconnectReason(ConnectStatus.UserRequestedDisconnect);
-            m_NetworkManager.Shutdown(false);
+            NetworkShutdown();
         }
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace Matchplay.Client
         /// </summary>
         void ConnectClient()
         {
-            var userData = ClientSingleton.Instance.Manager.observableUser.Data;
+            var userData = ClientSingleton.Instance.Manager.matchplayUser.Data;
             var payload = JsonUtility.ToJson(userData);
 
             var payloadBytes = System.Text.Encoding.UTF8.GetBytes(payload);
@@ -61,9 +62,17 @@ namespace Matchplay.Client
 
             //  If the socket connection fails, we'll hear back by getting an ReceiveLocalClientDisconnectStatus callback for ourselves and get a message telling us the reason
             //  If the socket connection succeeds, we'll get our  ReceiveLocalClientConnectStatus callback This is where game-layer failures will be reported.
-            m_NetworkManager.StartClient();
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, ReceiveLocalClientConnectStatus);
-            MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, ReceiveLocalClientDisconnectStatus);
+            if (m_NetworkManager.StartClient())
+            {
+                Debug.Log("Starting Client!");
+                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, ReceiveLocalClientConnectStatus);
+                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, ReceiveLocalClientDisconnectStatus);
+            }
+            else
+            {
+                Debug.LogWarning($"Could not Start Client!");
+                OnLocalDisconnection?.Invoke(ConnectStatus.Undefined);
+            }
         }
 
         void ReceiveLocalClientConnectStatus(ulong clientId, FastBufferReader reader)
@@ -85,11 +94,17 @@ namespace Matchplay.Client
             DisconnectReason.SetDisconnectReason(status);
         }
 
-        void LocalClientDisconnect(ulong clientId)
+        void RemoteDisconnect(ulong clientId)
         {
+            Debug.Log($"Got Client Disconnect callback for {clientId}");
             if (clientId == m_NetworkManager.LocalClientId)
                 return;
+            NetworkShutdown();
 
+        }
+
+        void NetworkShutdown()
+        {
             //On a client disconnect we want to take them back to the main menu.
             //We have to check here in SceneManager if our active scene is the main menu, as if it is, it means we timed out rather than a raw disconnect;
             if (SceneManager.GetActiveScene().name == "mainMenu")
@@ -105,11 +120,12 @@ namespace Matchplay.Client
             SceneManager.LoadScene("mainMenu");
         }
 
+
         public void Dispose()
         {
             if (m_NetworkManager != null && m_NetworkManager.CustomMessagingManager != null)
             {
-                m_NetworkManager.OnClientDisconnectCallback -= LocalClientDisconnect;
+                m_NetworkManager.OnClientDisconnectCallback -= RemoteDisconnect;
             }
         }
     }

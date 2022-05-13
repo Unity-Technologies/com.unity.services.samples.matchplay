@@ -19,10 +19,14 @@ namespace Matchplay.Client.UI
     {
         UIDocument m_Document;
         ClientGameManager gameManager;
-
+        AuthState m_AuthState;
         bool m_LocalLaunchMode;
         string m_LocalIP;
         string m_LocalPort;
+        string m_LocalName;
+
+        Button m_ExitButton;
+        Button m_RenameButton;
         Button m_MatchmakerButton;
         Button m_CancelButton;
         Button m_LocalButton;
@@ -34,6 +38,7 @@ namespace Matchplay.Client.UI
         VisualElement m_GameSettings;
         VisualElement m_IPPortGroup;
         VisualElement m_QueueGroup;
+        Label m_NameLabel;
 
         Toggle m_StaringMode;
         Toggle m_MeditationMode;
@@ -42,6 +47,7 @@ namespace Matchplay.Client.UI
 
         TextField m_IPField;
         TextField m_PortField;
+        TextField m_RenameField;
 
         async void Start()
         {
@@ -59,11 +65,15 @@ namespace Matchplay.Client.UI
 
             #region interactables
 
+            m_ExitButton = root.Q<Button>("exit_button");
+            m_ExitButton.clicked += ExitApplication;
+
+            m_RenameButton = root.Q<Button>("rename_button");
+            m_RenameButton.clicked += ToggleRenameField;
+
             m_MatchmakerButton = root.Q<Button>("matchmaking_button");
             m_MatchmakerButton.clicked += SetMatchmakerMode;
 
-            m_CancelButton = root.Q<Button>("cancel_button");
-            m_CancelButton.clicked += CancelButtonPressed;
 
             m_LocalButton = root.Q<Button>("local_button");
             m_LocalButton.clicked += SetLocalGameMode;
@@ -87,6 +97,9 @@ namespace Matchplay.Client.UI
             m_PlayButton = root.Q<Button>("play_button");
             m_PlayButton.clicked += PlayButtonPressed;
 
+            m_CancelButton = root.Q<Button>("cancel_button");
+            m_CancelButton.clicked += CancelButtonPressed;
+
             m_IPField = root.Q<TextField>("ip_text_field");
             m_LocalIP = m_IPField.value;
             m_IPField.RegisterValueChangedCallback(IPField);
@@ -95,11 +108,19 @@ namespace Matchplay.Client.UI
             m_LocalPort = m_PortField.value;
             m_PortField.RegisterValueChangedCallback(PortField);
 
+            m_RenameField = root.Q<TextField>("rename_field");
+            m_RenameField.isDelayed = true;
+            m_RenameField.RegisterValueChangedCallback(OnNameFieldChanged);
+
+            m_NameLabel = root.Q<Label>("name_label");
+
             #endregion
 
             #region initial_state_setup
 
             gameManager = ClientSingleton.Instance.Manager;
+            SetName(gameManager.matchplayUser.Name);
+            gameManager.matchplayUser.onNameChanged += SetName;
 
             //Set the game manager casual gameMode defaults to whatever the UI starts with
             gameManager.SetGameModePreferencesFlag(GameMode.Meditating, m_MeditationMode.value);
@@ -111,10 +132,33 @@ namespace Matchplay.Client.UI
 
             //We can't click play until the auth is set up.
             m_ButtonGroup.SetEnabled(false);
-            await AuthenticationWrapper.Authenticating();
-            SetMenuState(MainMenuPlayState.Ready);
+            m_AuthState = await AuthenticationWrapper.Authenticating();
+            if (m_AuthState == AuthState.Authenticated)
+                SetMenuState(MainMenuPlayState.Ready);
+            Debug.Log($"Initializing UI {m_AuthState}");
 
             #endregion
+        }
+
+        void SetName(string newName)
+        {
+            m_NameLabel.text = newName;
+        }
+
+        void OnNameFieldChanged(ChangeEvent<string> evt)
+        {
+            gameManager.matchplayUser.Name = evt.newValue;
+            m_RenameField.contentContainer.style.display = DisplayStyle.None;
+        }
+
+        void ExitApplication()
+        {
+            gameManager.ExitGame();
+        }
+
+        void ToggleRenameField()
+        {
+            m_RenameField.contentContainer.style.display = m_RenameField.contentContainer.style.display == DisplayStyle.Flex ? DisplayStyle.None : DisplayStyle.Flex;
         }
 
         void OnDestroy()
@@ -131,9 +175,14 @@ namespace Matchplay.Client.UI
         void SetMatchmakerMode()
         {
             m_LocalLaunchMode = false;
+            if (m_AuthState == AuthState.Authenticated)
+                m_ButtonGroup.contentContainer.SetEnabled(true);
+            else
+                m_ButtonGroup.contentContainer.SetEnabled(false);
+            m_PlayButton.text = "Matchmake";
             m_QueueGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.None;
-            if (gameManager.observableUser.QueuePreference == GameQueue.Competetive)
+            if (gameManager.matchplayUser.QueuePreference == GameQueue.Competetive)
                 m_GameSettings.contentContainer.style.display = DisplayStyle.None;
             else
                 m_GameSettings.contentContainer.style.display = DisplayStyle.Flex;
@@ -142,9 +191,11 @@ namespace Matchplay.Client.UI
         void SetLocalGameMode()
         {
             m_LocalLaunchMode = true;
+            m_ButtonGroup.contentContainer.SetEnabled(true);
             m_QueueGroup.contentContainer.style.display = DisplayStyle.None;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_GameSettings.contentContainer.style.display = DisplayStyle.None;
+            m_PlayButton.text = "Play";
         }
 
         void PlayButtonPressed()
@@ -157,7 +208,11 @@ namespace Matchplay.Client.UI
                     Debug.LogError("No valid port in Port Field");
             }
             else
-                gameManager.Matchmake(OnMatchmade);
+            {
+#pragma warning disable 4014
+                gameManager.MatchmakeAsync(OnMatchmade);
+#pragma warning restore 4014
+            }
 
             SetMenuState(MainMenuPlayState.Playing);
         }
@@ -175,7 +230,6 @@ namespace Matchplay.Client.UI
                 await gameManager.CancelMatchmaking();
                 SetMenuState(MainMenuPlayState.Ready);
             }
-
         }
 
         void OnMatchmade(MatchmakerPollingResult result)

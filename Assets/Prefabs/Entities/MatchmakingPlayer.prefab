@@ -47,6 +47,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 504e4423a1c791947806edd3a0d3a992, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PlayerColor:
+    m_InternalValue: {r: 0, g: 0, b: 0, a: 0}
   PlayerName:
     m_InternalValue:
       utf8LengthInBytes: 0
@@ -116,6 +118,7 @@ MonoBehaviour:
         byte0059: 0
         byte0060: 0
         byte0061: 0
+  playerRenderer: {fileID: 9222171158525413097}
 --- !u!114 &3439633038736912634
 MonoBehaviour:
   m_ObjectHideFlags: 0

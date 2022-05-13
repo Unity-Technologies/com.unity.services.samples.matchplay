@@ -22,8 +22,6 @@ namespace Matchplay.Client
     {
         public string ip;
         public int port;
-        public Map map;
-        public GameMode gameMode;
         public MatchmakerPollingResult result;
         public string resultMessage;
     }
@@ -36,6 +34,10 @@ namespace Matchplay.Client
         CancellationTokenSource m_CancelToken;
         const int k_GetTicketCooldown = 1000;
 
+        /// <summary>
+        /// Create a ticket for the one user and begin matchmaking with their preferences
+        /// </summary>
+        /// <param name="data">The Client's preferences and ID</param>
         public async Task<MatchmakingResult> Matchmake(UserData data)
         {
             m_CancelToken = new CancellationTokenSource();
@@ -60,20 +62,14 @@ namespace Matchplay.Client
                             {
                                 case MultiplayAssignment.StatusOptions.Found:
                                 {
-                                    //TEMP workaround a bug that causes tickets to hang out forever.
-                                    await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
                                     return ReturnMatchResult(MatchmakerPollingResult.Success, $"", matchAssignment);
                                 }
                                 case MultiplayAssignment.StatusOptions.Timeout:
                                 {
-                                    //TEMP workaround a bug that causes tickets to hang out forever.
-                                    await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
-                                    return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Ticket: {m_LastUsedTicket} Timed out.");
+                                    return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Ticket: {m_LastUsedTicket} Timed out - {matchAssignment.Message}");
                                 }
                                 case MultiplayAssignment.StatusOptions.Failed:
                                 {
-                                    //TEMP workaround a bug that causes tickets to hang out forever.
-                                    await MatchmakerService.Instance.DeleteTicketAsync(m_LastUsedTicket);
                                     return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Failed: {matchAssignment.Message}");
                                 }
                                 default:
@@ -81,7 +77,6 @@ namespace Matchplay.Client
                                     break;
                             }
                         }
-
                         await Task.Delay(k_GetTicketCooldown);
                     }
                 }

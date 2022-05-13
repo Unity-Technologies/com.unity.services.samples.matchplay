@@ -32,12 +32,6 @@ MonoBehaviour:
     - com.unity.services.multiplay
     - com.unity.services.authentication
     - com.unity.test-framework
-    m_IsDefault: 0
-    m_Capabilities: 0
-  - m_Id: scoped:Unity
-    m_Name: Unity
-    m_Url: http://packages.unity.com
-    m_Scopes:
     - com.unity.collections
     - com.unity.multiplayer.tools
     - com.unity.netcode.adapter.utp
@@ -50,13 +44,14 @@ MonoBehaviour:
     - com.unity.services.wire
     - com.unity.sysroot
     - com.unity.sysroot.linux-x86_64
+    - com.unity.ext.nunit
     m_IsDefault: 0
-    m_Capabilities: 7
+    m_Capabilities: 0
   m_UserSelectedRegistryName: Artifactory
   m_UserAddingNewScopedRegistry: 0
   m_RegistryInfoDraft:
     m_Modified: 0
     m_ErrorMessage: 
-    m_UserModificationsInstanceId: -824
-    m_OriginalInstanceId: -828
+    m_UserModificationsInstanceId: -842
+    m_OriginalInstanceId: -846
   m_LoadAssets: 0

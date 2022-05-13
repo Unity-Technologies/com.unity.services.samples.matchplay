@@ -2,7 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Matchplay.Server;
 using Matchplay.Shared;
+using Matchplay.Shared.Tools;
 using Unity.Services.Core;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,7 +15,7 @@ namespace Matchplay.Client
         public event Action<Matchplayer> MatchPlayerSpawned;
         public event Action<Matchplayer> MatchPlayerDespawned;
 
-        public ObservableUser observableUser { get; private set; }
+        public MatchplayUser matchplayUser { get; private set; }
 
         public MatchplayNetworkClient networkClient { get; set; }
 
@@ -21,30 +23,48 @@ namespace Matchplay.Client
 
         public ClientGameManager()
         {
-            //Starts an async task reliably.
+            //We can load the mainMenu while the client initializes
 #pragma warning disable 4014
-            Init();
+
+            //Disabled warning because we want to fire and forget.
+            InitAsync();
 #pragma warning restore 4014
         }
 
         /// <summary>
         /// We do service initialization in parrallel to starting the main menu scene
         /// </summary>
-        async Task Init()
+        async Task InitAsync()
         {
-            observableUser = new ObservableUser();
+            matchplayUser = new MatchplayUser();
+            var unityAuthenticationInitOptions = new InitializationOptions();
+            var profile = ProfileManager.Profile;
+            if (profile.Length > 0)
+            {
+                unityAuthenticationInitOptions.SetOption("com.unity.services.authentication.profile", profile);
+            }
 
-            await UnityServices.InitializeAsync();
+            await UnityServices.InitializeAsync(unityAuthenticationInitOptions);
+
+#pragma warning disable 4014
             AuthenticationWrapper.BeginAuth();
+#pragma warning restore 4014
 
             networkClient = new MatchplayNetworkClient();
             m_Matchmaker = new MatchplayMatchmaker();
-            observableUser.AuthId = await AuthenticationWrapper.GetClientId();
+            var authenticationResult = await AuthenticationWrapper.Authenticating();
+
+            //Catch for if the authentication fails, we can still do local server Testing
+            if (authenticationResult == AuthState.Authenticated)
+                matchplayUser.AuthId = AuthenticationWrapper.ClientId();
+            else
+                matchplayUser.AuthId = Guid.NewGuid().ToString();
+
         }
 
         public void BeginConnection(string ip, int port)
         {
-            Debug.Log($"Starting networkClient @ {ip}:{port}\nWith : {observableUser}");
+            Debug.Log($"Starting networkClient @ {ip}:{port}\nWith : {matchplayUser}");
             networkClient.StartClient(ip, port);
         }
 
@@ -53,7 +73,7 @@ namespace Matchplay.Client
             networkClient.DisconnectClient();
         }
 
-        public async void Matchmake(Action<MatchmakerPollingResult> onMatchmakerResponse = null)
+        public async Task MatchmakeAsync(Action<MatchmakerPollingResult> onMatchmakerResponse = null)
         {
             if (m_Matchmaker.IsMatchmaking)
             {
@@ -61,7 +81,7 @@ namespace Matchplay.Client
                 return;
             }
 
-            var matchResult = await MatchmakeAsync();
+            var matchResult = await GetMatchAsync();
             onMatchmakerResponse?.Invoke(matchResult);
         }
 
@@ -88,32 +108,32 @@ namespace Matchplay.Client
         public void SetGameModePreferencesFlag(GameMode gameMode, bool added)
         {
             if (added) //Add Flag if True, remove if not.
-                observableUser.GameModePreferences |= gameMode;
+                matchplayUser.GameModePreferences |= gameMode;
             else
             {
-                observableUser.GameModePreferences &= ~gameMode;
+                matchplayUser.GameModePreferences &= ~gameMode;
             }
         }
 
         public void SetMapPreferencesFlag(Map map, bool added)
         {
             if (added) //Add Flag if True ,remove if not.
-                observableUser.MapPreferences |= map;
+                matchplayUser.MapPreferences |= map;
             else
             {
-                observableUser.MapPreferences &= ~map;
+                matchplayUser.MapPreferences &= ~map;
             }
         }
 
         public void SetGameQueue(GameQueue queue)
         {
-            observableUser.QueuePreference = queue;
+            matchplayUser.QueuePreference = queue;
         }
 
-        async Task<MatchmakerPollingResult> MatchmakeAsync()
+        async Task<MatchmakerPollingResult> GetMatchAsync()
         {
-            Debug.Log($"Beginning Matchmaking with {observableUser}");
-            var matchmakingResult = await m_Matchmaker.Matchmake(observableUser.Data);
+            Debug.Log($"Beginning Matchmaking with {matchplayUser}");
+            var matchmakingResult = await m_Matchmaker.Matchmake(matchplayUser.Data);
 
             if (matchmakingResult.result == MatchmakerPollingResult.Success)
             {
@@ -131,6 +151,12 @@ namespace Matchplay.Client
         {
             networkClient?.Dispose();
             m_Matchmaker?.Dispose();
+        }
+
+        public void ExitGame()
+        {
+            Dispose();
+            Application.Quit();
         }
     }
 }

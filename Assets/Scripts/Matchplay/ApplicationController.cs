@@ -1,8 +1,6 @@
-using System;
 using System.Threading.Tasks;
 using Matchplay.Client;
 using Matchplay.Server;
-using Unity.Services.Core;
 using UnityEngine;
 
 namespace Matchplay.Shared
@@ -48,8 +46,8 @@ namespace Matchplay.Shared
             if (isServer)
             {
                 var serverInstance = Instantiate(m_ServerPrefab);
-                await serverInstance.StartServer();
-                await serverInstance.Manager.BeginServerAsync();
+                await serverInstance.CreateServer();
+                await serverInstance.Manager.StartGameServerAsync();
             }
             else
             {
