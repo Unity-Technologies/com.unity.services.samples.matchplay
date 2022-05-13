@@ -53,17 +53,12 @@ namespace Matchplay.Server
             await UnityServices.InitializeAsync();
             Debug.Log("Creating Server GameManager");
 
-            var matchplayServer = new MatchplayNetworkServer();
-
-            var allocationService = new MultiplayAllocationService();
 
 
             m_GameManager = new ServerGameManager(
                 ApplicationData.IP(),
                 ApplicationData.Port(),
-                ApplicationData.QPort(),
-                matchplayServer,
-                allocationService);
+                ApplicationData.QPort());
             Debug.Log(" Server GameManager created");
         }
 

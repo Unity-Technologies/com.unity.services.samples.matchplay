@@ -23,13 +23,13 @@ namespace Matchplay.Server
         MultiplayAllocationService m_MultiplayAllocationService;
         SynchedServerData m_SynchedServerData;
 
-        public ServerGameManager(string serverIP, int serverPort, int serverQPort, MatchplayNetworkServer networkServer, MultiplayAllocationService allocationService)
+        public ServerGameManager(string serverIP, int serverPort, int serverQPort)
         {
             m_ServerIP = serverIP;
             m_ServerPort = serverPort;
             m_QueryPort = serverQPort;
-            m_NetworkServer = networkServer;
-            m_MultiplayAllocationService = allocationService;
+            m_NetworkServer = new MatchplayNetworkServer();
+            m_MultiplayAllocationService = new MultiplayAllocationService();
         }
 
         /// <summary>
