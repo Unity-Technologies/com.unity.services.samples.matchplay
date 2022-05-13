@@ -20,23 +20,24 @@ namespace Matchplay.Server
         int m_QueryPort = 7787;
         const int k_MultiplayServiceTimeout = 15000;
         bool m_LocalServer;
-        MatchplayAllocationService m_MatchplayAllocationService;
+        MultiplayAllocationService m_MultiplayAllocationService;
         SynchedServerData m_SynchedServerData;
 
-        public ServerGameManager(string serverIP, int serverPort, int serverQPort, MatchplayNetworkServer networkServer, MatchplayAllocationService allocationService)
+        public ServerGameManager(string serverIP, int serverPort, int serverQPort, MatchplayNetworkServer networkServer, MultiplayAllocationService allocationService)
         {
             m_ServerIP = serverIP;
             m_ServerPort = serverPort;
             m_QueryPort = serverQPort;
             m_NetworkServer = networkServer;
-            m_MatchplayAllocationService = allocationService;
+            m_MultiplayAllocationService = allocationService;
         }
 
         /// <summary>
         /// Attempts to initialize the server with services (If we are on Multiplay) and if we time out, we move on to default setup for local testing.
         /// </summary>
-        public async Task BeginServerAsync()
+        public async Task StartGameServerAsync()
         {
+            Debug.Log("Beginning Server");
             var startingGameInfo = new GameInfo
             {
                 gameMode = GameMode.Staring,
@@ -76,8 +77,10 @@ namespace Matchplay.Server
 
         async Task<MatchmakerAllocationPayload> GetPayloadWithinTimeout(int timeout)
         {
+            if (m_MultiplayAllocationService == null)
+                return null;
             //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
-            var matchmakerPayloadTask = m_MatchplayAllocationService.BeginServerAndAwaitMatchmakerAllocation();
+            var matchmakerPayloadTask = m_MultiplayAllocationService.BeginMatchplayServerAndAwaitMatchmakerAllocation();
             if (await Task.WhenAny(matchmakerPayloadTask, Task.Delay(timeout)) == matchmakerPayloadTask)
             {
                 return matchmakerPayloadTask.Result;
@@ -88,8 +91,8 @@ namespace Matchplay.Server
 
         async Task StartAllocationService(GameInfo startingGameInfo, ushort playerCount)
         {
-            await m_MatchplayAllocationService.BeginServerCheck(startingGameInfo);
-            m_MatchplayAllocationService.SetPlayerCount(playerCount);
+            await m_MultiplayAllocationService.BeginServerCheck(startingGameInfo);
+            m_MultiplayAllocationService.SetPlayerCount(playerCount);
         }
 
         async Task CreateAndStartBackfilling(MatchmakerAllocationPayload payload, GameInfo startingGameInfo)
@@ -111,18 +114,18 @@ namespace Matchplay.Server
         //For now we don't have any mechanics to change the map or mode mid-game. But if we did, we would update the backfill ticket to reflect that too.
         void OnServerChangedMap(Map oldMap, Map newMap)
         {
-            m_MatchplayAllocationService.ChangedMap(newMap);
+            m_MultiplayAllocationService.ChangedMap(newMap);
         }
 
         void OnServerChangedMode(GameMode oldMode, GameMode newMode)
         {
-            m_MatchplayAllocationService.ChangedMode(newMode);
+            m_MultiplayAllocationService.ChangedMode(newMode);
         }
 
         void UserJoinedServer(UserData joinedUser)
         {
             m_Backfiller.AddPlayerToMatch(joinedUser);
-            m_MatchplayAllocationService.AddPlayer();
+            m_MultiplayAllocationService.AddPlayer();
             if (!m_Backfiller.NeedsPlayers() && m_Backfiller.Backfilling)
             {
 #pragma warning disable 4014
@@ -134,7 +137,7 @@ namespace Matchplay.Server
         void UserLeft(UserData leftUser)
         {
             m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
-            m_MatchplayAllocationService.RemovePlayer();
+            m_MultiplayAllocationService.RemovePlayer();
             var playerCount = m_NetworkServer.PlayerCount;
             if (playerCount <= 0)
             {
@@ -250,7 +253,7 @@ namespace Matchplay.Server
             }
 
             m_Backfiller?.Dispose();
-            m_MatchplayAllocationService?.Dispose();
+            m_MultiplayAllocationService?.Dispose();
             NetworkServer?.Dispose();
         }
     }

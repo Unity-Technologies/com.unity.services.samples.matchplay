@@ -32,7 +32,7 @@ namespace Matchplay.Client.UI
         void Awake()
         {
             //Remove UI if we are in server Mode
-            if (ApplicationData.IsBuildServerMode())
+            if (ApplicationData.IsServerMode)
             {
                 Destroy(gameObject);
                 return;
@@ -107,7 +107,7 @@ namespace Matchplay.Client.UI
             OnQueueChanged(GameQueue.None, m_SynchedServerData.gameQueue.Value);
         }
 
-        void OnServerChanged(FixedString64Bytes oldServerID, FixedString64Bytes newServerID)
+        void OnServerChanged(NetworkString oldServerID, NetworkString newServerID)
         {
             if (oldServerID == newServerID)
                 return;
@@ -142,7 +142,7 @@ namespace Matchplay.Client.UI
 
         void OnDestroy()
         {
-            if (ApplicationData.IsBuildServerMode())
+            if (ApplicationData.IsServerMode)
                 return;
             m_ClientGameManager.networkClient.OnLocalConnection -= OnLocalConnection;
             m_ClientGameManager.networkClient.OnLocalDisconnection -= OnLocalDisconnection;

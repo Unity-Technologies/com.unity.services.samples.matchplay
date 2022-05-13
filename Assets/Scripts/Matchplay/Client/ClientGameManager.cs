@@ -45,14 +45,17 @@ namespace Matchplay.Client
             }
 
             await UnityServices.InitializeAsync(unityAuthenticationInitOptions);
+
+#pragma warning disable 4014
             AuthenticationWrapper.BeginAuth();
+#pragma warning restore 4014
 
             networkClient = new MatchplayNetworkClient();
             m_Matchmaker = new MatchplayMatchmaker();
             var authenticationResult = await AuthenticationWrapper.Authenticating();
 
             //Catch for if the authentication fails, we can still do local server Testing
-            if (authenticationResult == AuthResult.Authenticated)
+            if (authenticationResult == AuthState.Authenticated)
                 matchplayUser.AuthId = AuthenticationWrapper.ClientId();
             else
                 matchplayUser.AuthId = Guid.NewGuid().ToString();
