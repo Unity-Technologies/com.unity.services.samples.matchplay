@@ -39,9 +39,9 @@ namespace Matchplay.Server
         /// </summary>
         Dictionary<ulong, string> m_NetworkIdToAuth = new Dictionary<ulong, string>();
 
-        public MatchplayNetworkServer()
+        public MatchplayNetworkServer(NetworkManager networkManager)
         {
-            m_NetworkManager = NetworkManager.Singleton;
+            m_NetworkManager = networkManager;
 
             // we add ApprovalCheck callback BEFORE OnNetworkSpawn to avoid spurious Netcode for GameObjects (Netcode)
             // warning: "No ConnectionApproval callback defined. Connection approval will timeout"
@@ -49,15 +49,19 @@ namespace Matchplay.Server
             m_NetworkManager.OnServerStarted += OnNetworkReady;
         }
 
-        public async Task<SynchedServerData> StartServer(string ip, int port, GameInfo startingGameInfo)
+        public bool StartServer(string ip, int port, GameInfo startingGameInfo)
         {
             var unityTransport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
             m_NetworkManager.NetworkConfig.NetworkTransport = unityTransport;
             unityTransport.SetConnectionData(ip, (ushort)port);
             Debug.Log($"Starting server at {ip}:{port}\nWith: {startingGameInfo}");
 
-            m_NetworkManager.StartServer();
-            ChangeMap(startingGameInfo.map);
+            return m_NetworkManager.StartServer();
+        }
+
+        public async Task<SynchedServerData> SetupServer(GameInfo startingGameInfo)
+        {
+            m_NetworkManager.SceneManager.LoadScene(startingGameInfo.ToScene, LoadSceneMode.Single);
 
             var getServerDataTries = 3;
             while (getServerDataTries > 0 && m_SynchedServerData == null)
@@ -69,7 +73,7 @@ namespace Matchplay.Server
 
             if (m_SynchedServerData == null)
             {
-                Debug.Log($"Could not find the SynchedServerData in the scene: {SceneManager.GetActiveScene()}");
+                Debug.LogWarning($"Could not find the SynchedServerData in the scene: {SceneManager.GetActiveScene()}");
                 return null;
             }
 
@@ -78,11 +82,7 @@ namespace Matchplay.Server
             m_SynchedServerData.gameQueue.Value = startingGameInfo.gameQueue;
             Debug.Log($"Synched Server Values: {m_SynchedServerData.map.Value} - {m_SynchedServerData.gameMode.Value} - {m_SynchedServerData.gameQueue.Value}");
             return m_SynchedServerData;
-
-
-
         }
-
         void OnNetworkReady()
         {
             m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
@@ -200,35 +200,6 @@ namespace Matchplay.Server
             writer.WriteValueSafe(status);
             Debug.Log($"Send networkClient Disconnected to : {networkId}");
             MatchplayNetworkMessenger.SendMessageTo(NetworkMessage.LocalClientDisconnected, networkId, writer);
-        }
-
-        void ChangeMap(Map newMap)
-        {
-            var sceneString = ToMap(newMap);
-            if (string.IsNullOrEmpty(sceneString))
-            {
-                Debug.LogError($"Cant Change map, no valid map selection in {newMap}.");
-                return;
-            }
-
-            m_NetworkManager.SceneManager.LoadScene(sceneString, LoadSceneMode.Single);
-        }
-
-        /// <summary>
-        /// Convert the map flag enum to a scene name.
-        /// </summary>
-        string ToMap(Map map)
-        {
-            switch (map)
-            {
-                case Map.Lab:
-                    return "game_lab";
-                case Map.Space:
-                    return "game_space";
-                default:
-                    Debug.LogWarning($"{map} - is not supported.");
-                    return "";
-            }
         }
 
         public void Dispose()

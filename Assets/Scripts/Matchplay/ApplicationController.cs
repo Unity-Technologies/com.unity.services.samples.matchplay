@@ -46,8 +46,16 @@ namespace Matchplay.Shared
             if (isServer)
             {
                 var serverInstance = Instantiate(m_ServerPrefab);
-                await serverInstance.CreateServer();
-                await serverInstance.Manager.StartGameServerAsync();
+                await serverInstance.CreateServer(); //run the init instead of relying on start.
+
+                var defaultGameInfo = new GameInfo
+                {
+                    gameMode = GameMode.Staring,
+                    map = Map.Lab,
+                    gameQueue = GameQueue.Casual
+                };
+
+                await serverInstance.Manager.StartGameServerAsync(defaultGameInfo);
             }
             else
             {

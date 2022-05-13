@@ -4,13 +4,16 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Shared.Tools;
+using Unity.Netcode;
 using Random = UnityEngine.Random;
 
 namespace Matchplay.Server
 {
     public class ServerGameManager : IDisposable
     {
+        public bool StartedServices => m_StartedServices;
         public MatchplayNetworkServer NetworkServer => m_NetworkServer;
+        public SynchedServerData ServerData => m_SynchedServerData;
 
         MatchplayNetworkServer m_NetworkServer;
         MatchplayBackfiller m_Backfiller;
@@ -19,50 +22,45 @@ namespace Matchplay.Server
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
         const int k_MultiplayServiceTimeout = 15000;
-        bool m_LocalServer;
+        bool m_StartedServices;
         MultiplayAllocationService m_MultiplayAllocationService;
         SynchedServerData m_SynchedServerData;
 
-        public ServerGameManager(string serverIP, int serverPort, int serverQPort, MatchplayNetworkServer networkServer, MultiplayAllocationService allocationService)
+        public ServerGameManager(string serverIP, int serverPort, int serverQPort, NetworkManager manager)
         {
             m_ServerIP = serverIP;
             m_ServerPort = serverPort;
             m_QueryPort = serverQPort;
-            m_NetworkServer = networkServer;
-            m_MultiplayAllocationService = allocationService;
+            m_NetworkServer = new MatchplayNetworkServer(manager);
+            m_MultiplayAllocationService = new MultiplayAllocationService();
         }
 
         /// <summary>
         /// Attempts to initialize the server with services (If we are on Multiplay) and if we time out, we move on to default setup for local testing.
         /// </summary>
-        public async Task StartGameServerAsync()
+        public async Task StartGameServerAsync(GameInfo startingGameInfo)
         {
-            Debug.Log("Beginning Server");
-            var startingGameInfo = new GameInfo
-            {
-                gameMode = GameMode.Staring,
-                map = Map.Lab,
-                gameQueue = GameQueue.Casual
-            };
+            Debug.Log($"Starting server with:{startingGameInfo}.");
 
             try
             {
                 var matchmakerPayload = await GetPayloadWithinTimeout(k_MultiplayServiceTimeout);
 
-                Debug.Log($"Got payload: {matchmakerPayload}");
+
                 if (matchmakerPayload != null)
                 {
+                    Debug.Log($"Got payload: {matchmakerPayload}");
                     startingGameInfo = PickSharedGameInfo(matchmakerPayload);
 
                     await StartAllocationService(startingGameInfo, (ushort)matchmakerPayload.MatchProperties.Players.Count);
                     await CreateAndStartBackfilling(matchmakerPayload, startingGameInfo);
                     m_NetworkServer.OnPlayerJoined += UserJoinedServer;
                     m_NetworkServer.OnPlayerLeft += UserLeft;
+                    m_StartedServices = true;
                 }
                 else
                 {
                     Debug.LogWarning("Connecting to Multiplay Timed out, starting with defaults.");
-                    m_LocalServer = true;
                 }
             }
             catch (Exception ex)
@@ -70,9 +68,24 @@ namespace Matchplay.Server
                 Debug.LogWarning($"Something went wrong trying to set up the Services:\n{ex} ");
             }
 
-            m_SynchedServerData = await m_NetworkServer.StartServer(m_ServerIP, m_ServerPort, startingGameInfo); //Use Network transforms on the chairs/players to sync positions
+            if (!m_NetworkServer.StartServer(m_ServerIP, m_ServerPort, startingGameInfo))
+            {
+                Debug.LogError("NetworkServer did not start as expected.");
+                return;
+            }
+
+            //Changes Map and sets the synched shared variables to the starting info
+            m_SynchedServerData = await m_NetworkServer.SetupServer(startingGameInfo);
+            if (m_SynchedServerData==null)
+            {
+                Debug.LogError("NetworkServer did not Set up as expected.");
+                return;
+            }
+
             m_SynchedServerData.map.OnValueChanged += OnServerChangedMap;
             m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
+
+
         }
 
         async Task<MatchmakerAllocationPayload> GetPayloadWithinTimeout(int timeout)
@@ -240,7 +253,7 @@ namespace Matchplay.Server
 
         public void Dispose()
         {
-            if (!m_LocalServer)
+            if (!m_StartedServices)
             {
                 if (m_NetworkServer.OnPlayerJoined != null) m_NetworkServer.OnPlayerJoined -= UserJoinedServer;
                 if (m_NetworkServer.OnPlayerLeft != null) m_NetworkServer.OnPlayerLeft -= UserLeft;

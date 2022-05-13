@@ -23,6 +23,8 @@ namespace Matchplay.Shared
 
 		public static bool IsServerMode => s_IsServerMode;
 
+		//Disables some behaviour we don't want to test with the serverTests
+		public static bool IsServerTesting;
 
 		public static string IP()
 		{

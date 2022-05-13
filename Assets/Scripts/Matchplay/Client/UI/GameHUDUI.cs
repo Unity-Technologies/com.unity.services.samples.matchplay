@@ -3,6 +3,7 @@ using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
 using Unity.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Label = UnityEngine.UIElements.Label;
@@ -31,8 +32,9 @@ namespace Matchplay.Client.UI
 
         void Awake()
         {
-            //Remove UI if we are in server Mode
-            if (ApplicationData.IsServerMode)
+
+            //Otherwise look to the bootstrap values
+            if (ApplicationData.IsServerMode||ApplicationData.IsServerTesting)
             {
                 Destroy(gameObject);
                 return;
@@ -142,7 +144,7 @@ namespace Matchplay.Client.UI
 
         void OnDestroy()
         {
-            if (ApplicationData.IsServerMode)
+            if (ApplicationData.IsServerMode||ApplicationData.IsServerTesting)
                 return;
             m_ClientGameManager.networkClient.OnLocalConnection -= OnLocalConnection;
             m_ClientGameManager.networkClient.OnLocalDisconnection -= OnLocalDisconnection;
