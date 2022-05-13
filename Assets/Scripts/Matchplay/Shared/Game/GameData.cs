@@ -128,6 +128,7 @@ namespace Matchplay.Shared
 
         //TODO YAGNI if we had different maxPlayers per gameMode i'd expand this to change with the mode type
         public int MaxUsers = 10;
+        public string ToScene => ConvertToScene(map);
 
         //QueueNames in the dashboard can be different than your local queue definitions (If you want nice names for them)
         const string k_MultiplayCasualQueue = "casual-queue";
@@ -146,6 +147,25 @@ namespace Matchplay.Shared
             sb.AppendLine($"- gameMode:   {gameMode}");
             sb.AppendLine($"- gameQueue:  {gameQueue}");
             return sb.ToString();
+        }
+
+
+
+        /// <summary>
+        /// Convert the map flag enum to a scene name.
+        /// </summary>
+        public static string ConvertToScene(Map map)
+        {
+            switch (map)
+            {
+                case Map.Lab:
+                    return "game_lab";
+                case Map.Space:
+                    return "game_space";
+                default:
+                    Debug.LogWarning($"{map} - is not supported.");
+                    return "";
+            }
         }
 
         /// <summary>

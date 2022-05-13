@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Matchplay.Shared;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -18,18 +19,19 @@ namespace Matchplay.Server
 
         public override void OnNetworkSpawn()
         {
-            if (!IsServer)
+            if (!IsServer||ApplicationData.IsServerTesting)
                 return;
+
             ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerSpawned += JoinSeat_Server;
             ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerDespawned += LeaveSeat_Server;
         }
 
+
         public override void OnNetworkDespawn()
         {
-            if (!IsServer)
+            if (!IsServer||ApplicationData.IsServerTesting||ServerSingleton.Instance == null)
                 return;
-            if (ServerSingleton.Instance == null)
-                return;
+            
             ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerSpawned -= JoinSeat_Server;
             ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerDespawned -= LeaveSeat_Server;
         }

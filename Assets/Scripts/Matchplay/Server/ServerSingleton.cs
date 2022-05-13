@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Matchplay.Shared;
+using Unity.Netcode;
 using Unity.Services.Core;
 using UnityEngine;
 
@@ -51,15 +52,12 @@ namespace Matchplay.Server
         public async Task CreateServer()
         {
             await UnityServices.InitializeAsync();
-            Debug.Log("Creating Server GameManager");
-
-
 
             m_GameManager = new ServerGameManager(
                 ApplicationData.IP(),
                 ApplicationData.Port(),
-                ApplicationData.QPort());
-            Debug.Log(" Server GameManager created");
+                ApplicationData.QPort(),
+                NetworkManager.Singleton);
         }
 
         void Start()
