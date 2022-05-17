@@ -1,0 +1,83 @@
+device_playmode_build_ios_2021_3:
+  name: Device Playmode Build [iOS, 2021.3]
+  agent:
+    image: mobile/macos-10.15-testing:v0.0.7-973555
+    type: Unity::VM::osx
+    flavor: b1.medium
+  commands:
+  - command: |-
+      if brew tap | grep unity/unity; then brew untap --force unity/unity; fi
+      brew tap --force-auto-update unity/unity git@github.cds.internal.unity3d.com:unity/homebrew-unity.git
+      brew install unity-config unity-downloader-cli
+    timeout: 10
+    retries: 10
+  - command: |-
+      curl -s https://artifactory.prd.it.unity3d.com/artifactory/unity-tools-local/utr-standalone/utr --output ./utr
+      chmod u+x ./utr
+  - command: unity-config project set registry candidates --project-path .
+    timeout: 2
+    retries: 5
+  - command: unity-downloader-cli --wait --fast --unity-version $UNITY_EDITOR_VERSION --path /Users/bokken/.Editor -c editor -c ios
+  - command: ./utr --artifacts_path=artifacts --timeout=1800 --editor-location=/Users/bokken/.Editor --testproject=. --reruncount=2 --clean-library-on-rerun --suite=playmode --platform=ios --architecture=arm64 --build-only --player-save-path=build/players --extra-editor-arg=-enablePackageManagerTraces
+  artifacts:
+    CrashDumps:
+      paths:
+      - CrashDumps/**
+    logs:
+      paths:
+      - '*.log'
+      - '*.xml'
+      - artifacts/**/*
+      - Logs/**
+      - Library/*.log
+      - Builds/*.log
+      - build/test-results/**
+    players:
+      paths:
+      - build/players/**
+  variables:
+    CI: true
+    UNITY_EDITOR_VERSION: 2021.3
+    UTR_VERSION: 1.4.1
+
+device_playmode_build_android_2021_3:
+  name: Device Playmode Build [Android, 2021.3]
+  agent:
+    image: package-ci/win10:stable
+    type: Unity::VM
+    flavor: b1.medium
+  commands:
+  - command: choco source add -n Unity -s https://artifactory-slo.bf.unity3d.com/artifactory/api/nuget/unity-choco-local --priority=1
+    timeout: 10
+    retries: 10
+  - command: choco install -y unity-config unity-downloader-cli
+    timeout: 10
+    retries: 10
+  - command: curl -s https://artifactory.prd.it.unity3d.com/artifactory/unity-tools-local/utr-standalone/utr.bat --output ./utr.bat
+  - command: unity-config project set registry candidates --project-path .
+    timeout: 2
+    retries: 5
+  - command: unity-downloader-cli --wait --fast --unity-version %UNITY_EDITOR_VERSION% --path C:\Users\bokken\.Editor -c editor -c android
+  - command: |-
+      set ANDROID_DEVICE_CONNECTION=%BOKKEN_DEVICE_IP%
+      ./utr.bat --artifacts_path=artifacts --timeout=1800 --editor-location=C:\Users\bokken\.Editor --testproject=. --reruncount=2 --clean-library-on-rerun --suite=playmode --platform=android --build-only --player-save-path=build/players --scripting-backend=il2cpp --extra-editor-arg=-enablePackageManagerTraces
+  artifacts:
+    CrashDumps:
+      paths:
+      - CrashDumps/**
+    logs:
+      paths:
+      - '*.log'
+      - '*.xml'
+      - artifacts/**/*
+      - Logs/**
+      - Library/*.log
+      - Builds/*.log
+      - build/test-results/**
+    players:
+      paths:
+      - build/players/**
+  variables:
+    CI: true
+    UNITY_EDITOR_VERSION: 2021.3
+    UTR_VERSION: 1.4.1
