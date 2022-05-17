@@ -18,7 +18,7 @@ namespace Matchplay.Client.UI
     {
         UIDocument m_Document;
         ClientGameManager gameManager;
-        AuthResult m_AuthResult;
+        AuthState m_AuthState;
         bool m_LocalLaunchMode;
         string m_LocalIP;
         string m_LocalPort;
@@ -73,8 +73,6 @@ namespace Matchplay.Client.UI
             m_MatchmakerButton = root.Q<Button>("matchmaking_button");
             m_MatchmakerButton.clicked += SetMatchmakerMode;
 
-            m_CancelButton = root.Q<Button>("cancel_button");
-            m_CancelButton.clicked += CancelButtonPressed;
 
             m_LocalButton = root.Q<Button>("local_button");
             m_LocalButton.clicked += SetLocalGameMode;
@@ -97,6 +95,9 @@ namespace Matchplay.Client.UI
 
             m_PlayButton = root.Q<Button>("play_button");
             m_PlayButton.clicked += PlayButtonPressed;
+
+            m_CancelButton = root.Q<Button>("cancel_button");
+            m_CancelButton.clicked += CancelButtonPressed;
 
             m_IPField = root.Q<TextField>("ip_text_field");
             m_LocalIP = m_IPField.value;
@@ -130,9 +131,10 @@ namespace Matchplay.Client.UI
 
             //We can't click play until the auth is set up.
             m_ButtonGroup.SetEnabled(false);
-            m_AuthResult = await AuthenticationWrapper.Authenticating();
-            if (m_AuthResult == AuthResult.Authenticated)
+            m_AuthState = await AuthenticationWrapper.Authenticating();
+            if (m_AuthState == AuthState.Authenticated)
                 SetMenuState(MainMenuPlayState.Ready);
+            Debug.Log($"Initializing UI {m_AuthState}");
 
             #endregion
         }
@@ -172,11 +174,11 @@ namespace Matchplay.Client.UI
         void SetMatchmakerMode()
         {
             m_LocalLaunchMode = false;
-            if (m_AuthResult == AuthResult.Authenticated)
-                m_ButtonGroup.SetEnabled(true);
+            if (m_AuthState == AuthState.Authenticated)
+                m_ButtonGroup.contentContainer.SetEnabled(true);
             else
-                m_ButtonGroup.SetEnabled(false);
-
+                m_ButtonGroup.contentContainer.SetEnabled(false);
+            m_PlayButton.text = "Matchmake";
             m_QueueGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.None;
             if (gameManager.matchplayUser.QueuePreference == GameQueue.Competetive)
@@ -188,10 +190,11 @@ namespace Matchplay.Client.UI
         void SetLocalGameMode()
         {
             m_LocalLaunchMode = true;
-            m_ButtonGroup.SetEnabled(true);
+            m_ButtonGroup.contentContainer.SetEnabled(true);
             m_QueueGroup.contentContainer.style.display = DisplayStyle.None;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_GameSettings.contentContainer.style.display = DisplayStyle.None;
+            m_PlayButton.text = "Play";
         }
 
         void PlayButtonPressed()

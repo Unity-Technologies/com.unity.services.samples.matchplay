@@ -1,5 +1,5 @@
 using System;
-using Unity.Collections;
+using Matchplay.Networking;
 using Unity.Netcode;
 
 namespace Matchplay.Shared
@@ -9,10 +9,10 @@ namespace Matchplay.Shared
     /// </summary>
     public class SynchedServerData : NetworkBehaviour
     {
-        public NetworkVariable<FixedString64Bytes> serverID = new NetworkVariable<FixedString64Bytes>(NetworkVariableReadPermission.Everyone);
-        public NetworkVariable<Map> map = new NetworkVariable<Map>(NetworkVariableReadPermission.Everyone);
-        public NetworkVariable<GameMode> gameMode = new NetworkVariable<GameMode>(NetworkVariableReadPermission.Everyone);
-        public NetworkVariable<GameQueue> gameQueue = new NetworkVariable<GameQueue>(NetworkVariableReadPermission.Everyone);
+        public NetworkVariable<NetworkString> serverID = new NetworkVariable<NetworkString>();
+        public NetworkVariable<Map> map = new NetworkVariable<Map>();
+        public NetworkVariable<GameMode> gameMode = new NetworkVariable<GameMode>();
+        public NetworkVariable<GameQueue> gameQueue = new NetworkVariable<GameQueue>();
         /// <summary>
         /// NetworkedVariables have no built-in callback for the initial client-server synch.
         /// This lets non-networked classes know when we are ready to read the values.
@@ -22,13 +22,6 @@ namespace Matchplay.Shared
         public override void OnNetworkSpawn()
         {
             OnNetworkSpawned?.Invoke();
-        }
-
-        public override void OnNetworkDespawn()
-        {
-            map.Value = Map.None;
-            gameMode.Value = GameMode.None;
-            gameQueue.Value = GameQueue.None;
         }
     }
 }

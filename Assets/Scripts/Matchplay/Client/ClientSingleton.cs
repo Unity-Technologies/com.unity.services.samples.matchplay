@@ -47,7 +47,7 @@ namespace Matchplay.Client
         // Update is called once per frame
         void OnDestroy()
         {
-            Manager.Dispose();
+            Manager?.Dispose();
         }
     }
 }
