@@ -119,8 +119,8 @@ namespace Matchplay.Client.UI
             #region initial_state_setup
 
             gameManager = ClientSingleton.Instance.Manager;
-            SetName(gameManager.matchplayUser.Name);
-            gameManager.matchplayUser.onNameChanged += SetName;
+            SetName(gameManager.User.Name);
+            gameManager.User.onNameChanged += SetName;
 
             //Set the game manager casual gameMode defaults to whatever the UI starts with
             gameManager.SetGameModePreferencesFlag(GameMode.Meditating, m_MeditationMode.value);
@@ -147,7 +147,7 @@ namespace Matchplay.Client.UI
 
         void OnNameFieldChanged(ChangeEvent<string> evt)
         {
-            gameManager.matchplayUser.Name = evt.newValue;
+            gameManager.User.Name = evt.newValue;
             m_RenameField.contentContainer.style.display = DisplayStyle.None;
         }
 
@@ -182,7 +182,7 @@ namespace Matchplay.Client.UI
             m_PlayButton.text = "Matchmake";
             m_QueueGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.None;
-            if (gameManager.matchplayUser.QueuePreference == GameQueue.Competetive)
+            if (gameManager.User.QueuePreference == GameQueue.Competetive)
                 m_GameSettings.contentContainer.style.display = DisplayStyle.None;
             else
                 m_GameSettings.contentContainer.style.display = DisplayStyle.Flex;

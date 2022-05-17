@@ -4,78 +4,79 @@ using Matchplay.Server;
 using Matchplay.Shared;
 using Matchplay.Shared.Tools;
 using Unity.Services.Core;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
 {
+
+    /// <summary>
+    /// Connecting manager of all the components that make a client work
+    /// </summary>
     public class ClientGameManager : IDisposable
     {
         public event Action<Matchplayer> MatchPlayerSpawned;
         public event Action<Matchplayer> MatchPlayerDespawned;
 
-        public MatchplayUser matchplayUser { get; private set; }
+        public MatchplayUser User { get; private set; }
+        public MatchplayNetworkClient NetworkClient { get; private set; }
+        public MatchplayMatchmaker Matchmaker { get; private set; }
+        public bool Initialized { get; private set; } = false;
 
-        public MatchplayNetworkClient networkClient { get; set; }
 
-        MatchplayMatchmaker m_Matchmaker;
-
-        public ClientGameManager()
+        public ClientGameManager(bool withServices = true)
         {
+            User = new MatchplayUser();
             //We can load the mainMenu while the client initializes
 #pragma warning disable 4014
-
             //Disabled warning because we want to fire and forget.
-            InitAsync();
+            InitAsync(withServices);
 #pragma warning restore 4014
         }
 
         /// <summary>
         /// We do service initialization in parrallel to starting the main menu scene
         /// </summary>
-        async Task InitAsync()
+        async Task InitAsync(bool withServices)
         {
-            matchplayUser = new MatchplayUser();
-            var unityAuthenticationInitOptions = new InitializationOptions();
-            var profile = ProfileManager.Profile;
-            if (profile.Length > 0)
+            if (withServices)
             {
-                unityAuthenticationInitOptions.SetOption("com.unity.services.authentication.profile", profile);
+                var unityAuthenticationInitOptions = new InitializationOptions();
+                var profile = ProfileManager.Profile;
+                if (profile.Length > 0)
+                {
+                    unityAuthenticationInitOptions.SetOption("com.unity.services.authentication.profile", profile);
+                }
+                await UnityServices.InitializeAsync(unityAuthenticationInitOptions);
             }
-
-            await UnityServices.InitializeAsync(unityAuthenticationInitOptions);
-
-#pragma warning disable 4014
-            AuthenticationWrapper.BeginAuth();
-#pragma warning restore 4014
-
-            networkClient = new MatchplayNetworkClient();
-            m_Matchmaker = new MatchplayMatchmaker();
-            var authenticationResult = await AuthenticationWrapper.Authenticating();
+            
+            NetworkClient = new MatchplayNetworkClient();
+            Matchmaker = new MatchplayMatchmaker();
+            var authenticationResult = await AuthenticationWrapper.DoAuth();
 
             //Catch for if the authentication fails, we can still do local server Testing
+            Debug.Log($"Got to the bottom of the init: {authenticationResult}");
             if (authenticationResult == AuthState.Authenticated)
-                matchplayUser.AuthId = AuthenticationWrapper.ClientId();
+                User.AuthId = AuthenticationWrapper.ClientId();
             else
-                matchplayUser.AuthId = Guid.NewGuid().ToString();
-
+                User.AuthId = Guid.NewGuid().ToString();
+            Initialized = true;
         }
 
         public void BeginConnection(string ip, int port)
         {
-            Debug.Log($"Starting networkClient @ {ip}:{port}\nWith : {matchplayUser}");
-            networkClient.StartClient(ip, port);
+            Debug.Log($"Starting networkClient @ {ip}:{port}\nWith : {User}");
+            NetworkClient.StartClient(ip, port);
         }
 
         public void Disconnect()
         {
-            networkClient.DisconnectClient();
+            NetworkClient.DisconnectClient();
         }
 
         public async Task MatchmakeAsync(Action<MatchmakerPollingResult> onMatchmakerResponse = null)
         {
-            if (m_Matchmaker.IsMatchmaking)
+            if (Matchmaker.IsMatchmaking)
             {
                 Debug.LogWarning("Already matchmaking, please wait or cancel.");
                 return;
@@ -87,7 +88,7 @@ namespace Matchplay.Client
 
         public async Task CancelMatchmaking()
         {
-            await m_Matchmaker.CancelMatchmaking();
+            await Matchmaker.CancelMatchmaking();
         }
 
         public void ToMainMenu()
@@ -108,32 +109,32 @@ namespace Matchplay.Client
         public void SetGameModePreferencesFlag(GameMode gameMode, bool added)
         {
             if (added) //Add Flag if True, remove if not.
-                matchplayUser.GameModePreferences |= gameMode;
+                User.GameModePreferences |= gameMode;
             else
             {
-                matchplayUser.GameModePreferences &= ~gameMode;
+                User.GameModePreferences &= ~gameMode;
             }
         }
 
         public void SetMapPreferencesFlag(Map map, bool added)
         {
             if (added) //Add Flag if True ,remove if not.
-                matchplayUser.MapPreferences |= map;
+                User.MapPreferences |= map;
             else
             {
-                matchplayUser.MapPreferences &= ~map;
+                User.MapPreferences &= ~map;
             }
         }
 
         public void SetGameQueue(GameQueue queue)
         {
-            matchplayUser.QueuePreference = queue;
+            User.QueuePreference = queue;
         }
 
         async Task<MatchmakerPollingResult> GetMatchAsync()
         {
-            Debug.Log($"Beginning Matchmaking with {matchplayUser}");
-            var matchmakingResult = await m_Matchmaker.Matchmake(matchplayUser.Data);
+            Debug.Log($"Beginning Matchmaking with {User}");
+            var matchmakingResult = await Matchmaker.Matchmake(User.Data);
 
             if (matchmakingResult.result == MatchmakerPollingResult.Success)
             {
@@ -149,8 +150,8 @@ namespace Matchplay.Client
 
         public void Dispose()
         {
-            networkClient?.Dispose();
-            m_Matchmaker?.Dispose();
+            NetworkClient?.Dispose();
+            Matchmaker?.Dispose();
         }
 
         public void ExitGame()

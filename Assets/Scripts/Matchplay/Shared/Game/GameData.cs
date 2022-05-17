@@ -31,7 +31,7 @@ namespace Matchplay.Shared
     }
 
     /// <summary>
-    /// Wrapping the userData into a class that will callback to listeners when changed, for example, UI.
+    /// Wrapping the "user" into a class that will callback to listeners when changed, for example, UI.
     /// </summary>
     public class MatchplayUser
     {

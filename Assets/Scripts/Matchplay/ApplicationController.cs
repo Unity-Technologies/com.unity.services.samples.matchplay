@@ -45,8 +45,8 @@ namespace Matchplay.Shared
 
             if (isServer)
             {
-                var serverInstance = Instantiate(m_ServerPrefab);
-                await serverInstance.CreateServer(); //run the init instead of relying on start.
+                var serverSingleton = Instantiate(m_ServerPrefab);
+                await serverSingleton.CreateServer(); //run the init instead of relying on start.
 
                 var defaultGameInfo = new GameInfo
                 {
@@ -55,15 +55,15 @@ namespace Matchplay.Shared
                     gameQueue = GameQueue.Casual
                 };
 
-                await serverInstance.Manager.StartGameServerAsync(defaultGameInfo);
+                await serverSingleton.Manager.StartGameServerAsync(defaultGameInfo);
             }
             else
             {
-                var clientInstance = Instantiate(m_ClientPrefab);
-                clientInstance.StartClient();
+                var clientSingleton = Instantiate(m_ClientPrefab);
+                clientSingleton.CreateClient();
 
-                //We want to load the main menu while the auth is still fetching over the next few frames to feel snappy.
-                clientInstance.Manager.ToMainMenu();
+                //We want to load the main menu while the client is still initializing.
+                clientSingleton.Manager.ToMainMenu();
             }
         }
     }

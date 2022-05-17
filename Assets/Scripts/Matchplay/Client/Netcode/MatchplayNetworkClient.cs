@@ -52,7 +52,7 @@ namespace Matchplay.Client
         /// </summary>
         void ConnectClient()
         {
-            var userData = ClientSingleton.Instance.Manager.matchplayUser.Data;
+            var userData = ClientSingleton.Instance.Manager.User.Data;
             var payload = JsonUtility.ToJson(userData);
 
             var payloadBytes = System.Text.Encoding.UTF8.GetBytes(payload);

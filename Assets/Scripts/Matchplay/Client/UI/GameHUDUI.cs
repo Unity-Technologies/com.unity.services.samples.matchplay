@@ -52,8 +52,8 @@ namespace Matchplay.Client.UI
 
             //GameManagerCallbacks
             m_ClientGameManager = ClientSingleton.Instance.Manager;
-            m_ClientGameManager.networkClient.OnLocalConnection += OnLocalConnection;
-            m_ClientGameManager.networkClient.OnLocalDisconnection += OnLocalDisconnection;
+            m_ClientGameManager.NetworkClient.OnLocalConnection += OnLocalConnection;
+            m_ClientGameManager.NetworkClient.OnLocalDisconnection += OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;
             m_ClientGameManager.MatchPlayerDespawned += RemovePlayerLabel;
 
@@ -146,8 +146,8 @@ namespace Matchplay.Client.UI
         {
             if (ApplicationData.IsServerMode||ApplicationData.IsServerTesting)
                 return;
-            m_ClientGameManager.networkClient.OnLocalConnection -= OnLocalConnection;
-            m_ClientGameManager.networkClient.OnLocalDisconnection -= OnLocalDisconnection;
+            m_ClientGameManager.NetworkClient.OnLocalConnection -= OnLocalConnection;
+            m_ClientGameManager.NetworkClient.OnLocalDisconnection -= OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned -= AddPlayerLabel;
             m_ClientGameManager.MatchPlayerDespawned -= RemovePlayerLabel;
             m_SynchedServerData.map.OnValueChanged -= OnMapChanged;
