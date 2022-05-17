@@ -31,7 +31,7 @@ namespace Matchplay.Server
         {
             if (!IsServer||ApplicationData.IsServerTesting||ServerSingleton.Instance == null)
                 return;
-            
+
             ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerSpawned -= JoinSeat_Server;
             ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerDespawned -= LeaveSeat_Server;
         }

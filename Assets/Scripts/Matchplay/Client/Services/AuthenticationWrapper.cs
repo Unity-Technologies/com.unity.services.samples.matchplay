@@ -16,16 +16,21 @@ namespace Matchplay.Client
 
     public static class AuthenticationWrapper
     {
-        static bool IsAuthenticated => UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn;
 
-        static AuthState s_AuthState = AuthState.Initialized;
+        public static AuthState AuthorizationState { get; private set; } = AuthState.Initialized;
 
-        public static async Task BeginAuth(int tries = 5)
+        public static async Task<AuthState> DoAuth(int tries = 5)
         {
-            if (IsAuthenticated)
-                return;
+            if (AuthorizationState == AuthState.Authenticating||AuthorizationState==AuthState.Authenticated)
+            {
+                Debug.LogWarning("Cant Authenticate if we are authenticating or authenticated");
+                return AuthorizationState;
+            }
+
             var signinResult = await SignInAnonymouslyAsync(tries);
             Debug.Log($"Auth attempts Finished : {signinResult.ToString()}");
+
+            return signinResult;
         }
 
         //Awaitable task that will pass the clientID once authentication is done.
@@ -37,26 +42,27 @@ namespace Matchplay.Client
         //Awaitable task that will pass once authentication is done.
         public static async Task<AuthState> Authenticating()
         {
-            while (s_AuthState == AuthState.Authenticating||s_AuthState==AuthState.Initialized)
+            while (AuthorizationState == AuthState.Authenticating||AuthorizationState==AuthState.Initialized)
             {
                 await Task.Delay(200);
             }
-
-            return s_AuthState;
+            return AuthorizationState;
         }
 
         static async Task<AuthState> SignInAnonymouslyAsync(int maxRetries)
         {
+            AuthorizationState = AuthState.Authenticating;
             var tries = 0;
-            while (!IsAuthenticated && tries < maxRetries)
+            while (AuthorizationState==AuthState.Authenticating && tries < maxRetries)
             {
                 try
                 {
-                    //To ensure staging login vs nonstaging
+                    //To ensure staging login vs non staging
                     await AuthenticationService.Instance.SignInAnonymouslyAsync();
-                    if (IsAuthenticated)
+
+                    if (AuthenticationService.Instance.IsSignedIn && AuthenticationService.Instance.IsAuthorized)
                     {
-                        s_AuthState = AuthState.Authenticated;
+                        AuthorizationState = AuthState.Authenticated;
                         break;
                     }
                 }
@@ -65,27 +71,32 @@ namespace Matchplay.Client
                     // Compare error code to AuthenticationErrorCodes
                     // Notify the player with the proper error message
                     Debug.LogException(ex);
-                    s_AuthState = AuthState.Error;
+                    AuthorizationState = AuthState.Error;
                 }
                 catch (RequestFailedException exception)
                 {
                     // Compare error code to CommonErrorCodes
                     // Notify the player with the proper error message
                     Debug.LogException(exception);
-                    s_AuthState = AuthState.Error;
+                    AuthorizationState = AuthState.Error;
                 }
 
                 tries++;
                 await Task.Delay(1000);
             }
 
-            if (!IsAuthenticated)
+            if (AuthorizationState!=AuthState.Authenticated )
             {
                 Debug.LogError($"Player was not signed in successfully after {tries} attempts");
-                s_AuthState = AuthState.TimedOut;
+                AuthorizationState = AuthState.TimedOut;
             }
 
-            return s_AuthState;
+            return AuthorizationState;
+        }
+
+        public static void ResetAuthForTests()
+        {
+            AuthorizationState = AuthState.Initialized;
         }
     }
 }

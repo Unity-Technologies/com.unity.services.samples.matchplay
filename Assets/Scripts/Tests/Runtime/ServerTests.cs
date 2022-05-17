@@ -26,7 +26,6 @@ namespace Matchplay.Tests
 		{
 			ApplicationData.IsServerTesting = true;
 			m_TestManager = TestResources.TestNetworkManager();
-			UnityServices.InitializeAsync(); // Needs to be intitialized in a unity thread.
 		}
 
 		[TearDown]
@@ -41,7 +40,7 @@ namespace Matchplay.Tests
 
 		[UnityTest]
 		[RequiresPlayMode]
-		public IEnumerator CreateLocalServer_Staring_Lab_Casual()
+		public IEnumerator Create_Local_Server_Staring_Lab_Casual()
 		{
 			var startingGameInfo = new GameInfo
 			{
@@ -65,7 +64,7 @@ namespace Matchplay.Tests
 
 		[UnityTest]
 		[RequiresPlayMode]
-		public IEnumerator CreateLocalServer_Meditating_Space_Competitive()
+		public IEnumerator Create_Local_Server_Meditating_Space_Competitive()
 		{
 			var startingGameInfo = new GameInfo
 			{

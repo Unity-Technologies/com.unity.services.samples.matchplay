@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using Unity.Services.Core;
 using UnityEngine;
 
 namespace Matchplay.Client
@@ -35,7 +35,7 @@ namespace Matchplay.Client
 
         ClientGameManager m_GameManager;
 
-        public void StartClient()
+        public void CreateClient()
         {
             m_GameManager = new ClientGameManager();
         }

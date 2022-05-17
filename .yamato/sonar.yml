@@ -1,0 +1,64 @@
+sonar_scan:
+  name: Sonar Scan
+  agent:
+    type: Unity::VM
+    flavor: b1.large
+    image: unity-ci/win10-dotnetcore:v0.4.0-1013193
+  variables:
+    CI: true
+    UNITY_EDITOR_VERSION: 2021.3
+  commands:
+  - dotnet nuget add source https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/nuget/nuget
+  - dotnet tool install --global dotnet-sonarscanner
+  - command: choco source add -n Unity -s https://artifactory-slo.bf.unity3d.com/artifactory/api/nuget/unity-choco-local --priority=1
+    timeout: 10
+    retries: 10
+  - command: choco install -y nodejs --version 15.14.0
+    timeout: 10
+    retries: 10
+  - command: choco install -y unity-downloader-cli unity-config vcredist2010 vcredist2013 vcredist2015 vcredist2017 vcredist140 shellcheck
+    timeout: 10
+    retries: 10
+  - unity-downloader-cli --wait --fast --unity-version %UNITY_EDITOR_VERSION% -c editor
+  - command: unity-config project set registry candidates --project-path .
+    timeout: 2
+    retries: 5
+  # The sonarscan program fails when it detects multiple csproj files, even if there's an sln file.
+  # Therefore we should move the Unity project into a subdirectory and run the scan on the parent directory with just the sln file in it.
+  - mkdir UnityProject
+  - PowerShell Move-Item Assets -Destination UnityProject/Assets
+  - PowerShell Move-Item Packages -Destination UnityProject/Packages
+  - PowerShell Move-Item ProjectSettings -Destination UnityProject/ProjectSettings
+  # Run Unity in headless mode to create the Library folder, import packages, create a C# solution/projects, etc.
+  - '%YAMATO_SOURCE_DIR%/.Editor/Unity.exe -projectPath ./UnityProject -batchmode -quit -nographics -logFile UnityLog.txt -executeMethod "Packages.Rider.Editor.RiderScriptEditor.SyncSolution"'
+  # We want to run sonarscanner and dotnet build in the parent directory, so let's get a copy of the sln in the parent directory.
+  - PowerShell -Command Copy-Item UnityProject/UnityProject.sln -Destination ./UnityProject.sln
+  # Update the solution file to point to the project files which were moved.
+  - PowerShell -Command "(Get-Content UnityProject.sln) -Replace 'Assembly-CSharp.csproj', 'UnityProject/Assembly-CSharp.csproj' | Out-File -encoding ASCII UnityProject.sln"
+  - PowerShell -Command "(Get-Content UnityProject.sln) -Replace 'Assembly-CSharp-Editor.csproj', 'UnityProject/Assembly-CSharp-Editor.csproj' | Out-File -encoding ASCII UnityProject.sln"
+  # Start the sonarscan process listening to the project build.
+  # Don't put the login token in plain text, use a Yamato secret.
+  # https://internaldocs.unity.com/yamato_continuous_integration/usage/secrets/
+  - >
+    dotnet sonarscanner begin /k:"unity-gaming-services-use-cases"
+    /d:sonar.host.url="https://sonarqube.internal.unity3d.com"
+    /d:sonar.login="%SONAR_TOKEN%"
+    /v:"https://unity-ci.cds.internal.unity3d.com/job/%YAMATO_JOB_ID%"
+    /d:sonar.buildString="%GIT_REVISION%"
+    /d:sonar.projectBaseDir="%YAMATO_SOURCE_DIR%/UnityProject"
+    /d:sonar.branch.name="%GIT_BRANCH%"
+  # Do the build.
+  - dotnet build UnityProject.sln /p:SonarQubeTestProject=false
+  # End the sonarscan process and it will then send its report to our SonarQube dashboard.
+  # https://sonarqube.internal.unity3d.com/dashboard?id=unity-gaming-services-use-cases
+  - dotnet sonarscanner end /d:sonar.login="%SONAR_TOKEN%"
+  artifacts:
+    CrashDumps:
+      paths:
+      - CrashDumps/**
+    logs:
+      paths:
+      - '*.log'
+      - UnityLog.txt
+      - UpmLog.txt
+      - SonarLog.txt

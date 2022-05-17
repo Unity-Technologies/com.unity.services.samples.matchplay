@@ -97,7 +97,14 @@ namespace Matchplay.Client
 
         public MatchplayMatchmaker()
         {
-            SetStagingEnvironment();
+            try
+            {
+                SetStagingEnvironment();
+            }
+            catch (Exception ex)
+            {
+                Debug.Log(ex);
+            }
         }
 
         public async Task CancelMatchmaking()
