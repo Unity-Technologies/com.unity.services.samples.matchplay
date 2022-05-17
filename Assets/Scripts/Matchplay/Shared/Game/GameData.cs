@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Matchplay.Shared
 {
