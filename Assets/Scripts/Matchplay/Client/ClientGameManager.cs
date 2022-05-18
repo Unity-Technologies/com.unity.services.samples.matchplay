@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 using Matchplay.Server;
 using Matchplay.Shared;
 using Matchplay.Shared.Tools;
+using Unity.Services.Authentication;
 using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Matchplay.Client
 {
-
     /// <summary>
     /// Connecting manager of all the components that make a client work
     /// </summary>
@@ -23,33 +23,30 @@ namespace Matchplay.Client
         public MatchplayMatchmaker Matchmaker { get; private set; }
         public bool Initialized { get; private set; } = false;
 
+        public string ProfileName { get; private set; }
 
-        public ClientGameManager(bool withServices = true)
+        public ClientGameManager(string profileName = "default")
         {
             User = new MatchplayUser();
+            ProfileName = profileName;
+
             //We can load the mainMenu while the client initializes
 #pragma warning disable 4014
+
             //Disabled warning because we want to fire and forget.
-            InitAsync(withServices);
+            InitAsync();
 #pragma warning restore 4014
         }
 
         /// <summary>
         /// We do service initialization in parrallel to starting the main menu scene
         /// </summary>
-        async Task InitAsync(bool withServices)
+        async Task InitAsync()
         {
-            if (withServices)
-            {
-                var unityAuthenticationInitOptions = new InitializationOptions();
-                var profile = ProfileManager.Profile;
-                if (profile.Length > 0)
-                {
-                    unityAuthenticationInitOptions.SetOption("com.unity.services.authentication.profile", profile);
-                }
-                await UnityServices.InitializeAsync(unityAuthenticationInitOptions);
-            }
-            
+            var unityAuthenticationInitOptions = new InitializationOptions();
+            unityAuthenticationInitOptions.SetProfile(ProfileName);
+            await UnityServices.InitializeAsync(unityAuthenticationInitOptions);
+
             NetworkClient = new MatchplayNetworkClient();
             Matchmaker = new MatchplayMatchmaker();
             var authenticationResult = await AuthenticationWrapper.DoAuth();
