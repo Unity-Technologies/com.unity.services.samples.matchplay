@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Threading.Tasks;
+using System.Web.ApplicationServices;
 using Matchplay.Client;
+using Matchplay.Shared;
 using NUnit.Framework;
 using Unity.Netcode;
 using UnityEngine;
@@ -23,6 +25,7 @@ namespace Matchplay.Tests
         [RequiresPlayMode]
         public void TearDown()
         {
+            AuthenticationWrapper.SignOut();
             if (m_TestManager.IsListening)
             {
                 m_TestManager.Shutdown();
@@ -31,9 +34,9 @@ namespace Matchplay.Tests
 
         [UnityTest]
         [RequiresPlayMode]
-        public IEnumerator Client_Initializes()
+        public IEnumerator Client_Initialization_With_Services()
         {
-            ClientGameManager clientManager = new ClientGameManager();
+            ClientGameManager clientManager = new ClientGameManager("timeInClient");
             var awaitClientInitialization = AwaitClientInitializedOrTimeout(clientManager, 6);
             yield return new WaitUntil(()=>awaitClientInitialization.IsCompleted);
 
@@ -47,16 +50,17 @@ namespace Matchplay.Tests
 
         [UnityTest]
         [RequiresPlayMode]
-        public IEnumerator Client_Initialization_Service_Time_Out()
+        public IEnumerator Client_Initialization_With_Services_Time_Out()
         {
-            ClientGameManager  clientManager = new ClientGameManager(false);
+            ApplicationData.AuthTimeoutUnitTest = true;
+            ClientGameManager  clientManager = new ClientGameManager("timeoutClient");
+            AuthenticationWrapper.SignOut();
             var awaitClientInitialization = AwaitClientInitializedOrTimeout(clientManager, 6);
             yield return new WaitUntil(()=>awaitClientInitialization.IsCompleted);
 
             Assert.NotNull(clientManager.User);
             Assert.NotNull(clientManager.NetworkClient);
             Assert.NotNull(clientManager.Matchmaker);
-
             Assert.AreNotEqual(AuthState.Authenticated, AuthenticationWrapper.AuthorizationState);
             Debug.Log("Client started without services");
         }

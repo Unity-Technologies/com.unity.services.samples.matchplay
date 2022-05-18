@@ -38,10 +38,10 @@ namespace Matchplay.Shared
         /// <summary>
         /// Main project launcher, launched in Awake() for builds, and via the EditorApplicationController in-editor
         /// </summary>
-        async Task LaunchInMode(bool isServer)
+        async Task LaunchInMode(bool isServer, string profileName = "default")
         {
             //init the command parser, get launch args
-            m_AppData = new ApplicationData(isServer);
+            m_AppData = new ApplicationData();
 
             if (isServer)
             {
@@ -60,7 +60,7 @@ namespace Matchplay.Shared
             else
             {
                 var clientSingleton = Instantiate(m_ClientPrefab);
-                clientSingleton.CreateClient();
+                clientSingleton.CreateClient(profileName);
 
                 //We want to load the main menu while the client is still initializing.
                 clientSingleton.Manager.ToMainMenu();

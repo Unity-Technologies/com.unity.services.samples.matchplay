@@ -24,7 +24,7 @@ namespace Matchplay.Tests
 		[RequiresPlayMode]
 		public void OneTimeSetup()
 		{
-			ApplicationData.IsServerTesting = true;
+			ApplicationData.IsServerUnitTest = true;
 			m_TestManager = TestResources.TestNetworkManager();
 		}
 
