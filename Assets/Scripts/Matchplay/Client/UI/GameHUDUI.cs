@@ -34,7 +34,7 @@ namespace Matchplay.Client.UI
         {
 
             //Otherwise look to the bootstrap values
-            if (ApplicationData.IsServerMode||ApplicationData.IsServerTesting)
+            if (ApplicationData.IsServerUnitTest||ApplicationData.IsServerUnitTest)
             {
                 Destroy(gameObject);
                 return;
@@ -144,7 +144,7 @@ namespace Matchplay.Client.UI
 
         void OnDestroy()
         {
-            if (ApplicationData.IsServerMode||ApplicationData.IsServerTesting)
+            if (ApplicationData.IsServerUnitTest||ApplicationData.IsServerUnitTest)
                 return;
             m_ClientGameManager.NetworkClient.OnLocalConnection -= OnLocalConnection;
             m_ClientGameManager.NetworkClient.OnLocalDisconnection -= OnLocalDisconnection;

@@ -41,7 +41,7 @@ namespace Matchplay.Server
         {
             if (IsServer && !IsHost)
                 return;
-            if (ApplicationData.IsServerMode)
+            if (ApplicationData.IsServerUnitTest)
                 return;
 
             ClientSingleton.Instance.Manager.RemoveMatchPlayer(this);

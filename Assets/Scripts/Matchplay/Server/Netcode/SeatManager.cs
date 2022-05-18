@@ -19,7 +19,7 @@ namespace Matchplay.Server
 
         public override void OnNetworkSpawn()
         {
-            if (!IsServer||ApplicationData.IsServerTesting)
+            if (!IsServer||ApplicationData.IsServerUnitTest)
                 return;
 
             ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerSpawned += JoinSeat_Server;
@@ -29,7 +29,7 @@ namespace Matchplay.Server
 
         public override void OnNetworkDespawn()
         {
-            if (!IsServer||ApplicationData.IsServerTesting||ServerSingleton.Instance == null)
+            if (!IsServer||ApplicationData.IsServerUnitTest||ServerSingleton.Instance == null)
                 return;
 
             ServerSingleton.Instance.Manager.NetworkServer.OnServerPlayerSpawned -= JoinSeat_Server;

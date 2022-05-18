@@ -35,9 +35,9 @@ namespace Matchplay.Client
 
         ClientGameManager m_GameManager;
 
-        public void CreateClient()
+        public void CreateClient(string profileName = "default")
         {
-            m_GameManager = new ClientGameManager();
+            m_GameManager = new ClientGameManager(profileName);
         }
 
         void Start()
