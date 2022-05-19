@@ -35,7 +35,7 @@ namespace Matchplay.Server
 
         public async Task BeginBackfilling()
         {
-            SetStagingEnvironment();
+           // SetStagingEnvironment(); for internal unity testing only.
 
             if (Backfilling)
             {
@@ -120,6 +120,7 @@ namespace Matchplay.Server
         {
             var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
             sdkConfiguration.SetBasePath("https://matchmaker-stg.services.api.unity.com");
+            Debug.LogWarning("CAUTION: Setting Backfill environment to Staging!");
         }
 
         Player GetPlayerById(string userID)

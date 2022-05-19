@@ -104,7 +104,7 @@ namespace Matchplay.Client
 
         public static void SignOut()
         {
-            AuthenticationService.Instance.SignOut(true);
+            AuthenticationService.Instance.SignOut(false);
             AuthorizationState = AuthState.Initialized;
         }
     }

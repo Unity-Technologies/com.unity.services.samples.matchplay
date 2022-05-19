@@ -134,7 +134,6 @@ namespace Matchplay.Client.UI
             m_AuthState = await AuthenticationWrapper.Authenticating();
             if (m_AuthState == AuthState.Authenticated)
                 SetMenuState(MainMenuPlayState.Ready);
-            Debug.Log($"Initializing UI {m_AuthState}");
 
             #endregion
         }

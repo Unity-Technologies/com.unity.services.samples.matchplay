@@ -7,13 +7,13 @@ using ParrelSync;
 
 namespace Matchplay.Shared.Tools
 {
-    public static class ProfileManager
+    public static class LocalProfileTool
     {
-        static string s_Profile;
+        static string s_LocalProfileSuffix;
 
-        public static string Profile => s_Profile ??= GetProfile();
+        public static string LocalProfileSuffix => s_LocalProfileSuffix ??= CreateParrelSyncSuffix();
 
-        static string GetProfile()
+        static string CreateParrelSyncSuffix()
         {
 #if UNITY_EDITOR
 
@@ -21,11 +21,10 @@ namespace Matchplay.Shared.Tools
             //This allows us to test services integration locally by utilising Parrelsync.
             if (ClonesManager.IsClone())
             {
-                var customArguments = ClonesManager.GetArgument().Split(',');
                 var cloneSuffix = ClonesManager.CloneNameSuffix;
                 //second argument is our custom ID, but if it's not set we would just use some default.
 
-                var hardcodedProfileID = customArguments.Length > 1 ? customArguments[1] : $"clone_{cloneSuffix}";
+                var hardcodedProfileID = $"_clone_{cloneSuffix}";
 
                 return hardcodedProfileID;
             }

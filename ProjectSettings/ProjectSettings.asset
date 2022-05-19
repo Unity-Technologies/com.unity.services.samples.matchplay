@@ -704,11 +704,11 @@ PlayerSettings:
     m_VersionName: 
   apiCompatibilityLevel: 6
   activeInputHandler: 1
-  cloudProjectId: 
+  cloudProjectId: 311f4f68-d43a-4631-86d8-60c36bd8b442
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: Unity Matchmaker Sample
+  organizationId: operate-samples
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 
