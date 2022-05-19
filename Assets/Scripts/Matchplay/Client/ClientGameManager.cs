@@ -43,16 +43,17 @@ namespace Matchplay.Client
         /// </summary>
         async Task InitAsync()
         {
+
             var unityAuthenticationInitOptions = new InitializationOptions();
-            unityAuthenticationInitOptions.SetProfile(ProfileName);
+            unityAuthenticationInitOptions.SetProfile($"{ProfileName}{LocalProfileTool.LocalProfileSuffix}");
             await UnityServices.InitializeAsync(unityAuthenticationInitOptions);
 
             NetworkClient = new MatchplayNetworkClient();
             Matchmaker = new MatchplayMatchmaker();
             var authenticationResult = await AuthenticationWrapper.DoAuth();
 
+            Debug.Log(AuthenticationService.Instance.AccessToken);
             //Catch for if the authentication fails, we can still do local server Testing
-            Debug.Log($"Got to the bottom of the init: {authenticationResult}");
             if (authenticationResult == AuthState.Authenticated)
                 User.AuthId = AuthenticationWrapper.ClientId();
             else

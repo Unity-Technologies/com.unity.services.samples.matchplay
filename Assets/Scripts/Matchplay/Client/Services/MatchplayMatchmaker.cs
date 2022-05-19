@@ -70,7 +70,7 @@ namespace Matchplay.Client
                                 }
                                 case MultiplayAssignment.StatusOptions.Failed:
                                 {
-                                    return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Failed: {matchAssignment.Message}");
+                                    return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Ticket: {m_LastUsedTicket} Failed: {matchAssignment.Message}");
                                 }
                                 default:
                                     Debug.Log($"Polled Ticket: {m_LastUsedTicket} Status: {matchAssignment.Status} ");
@@ -99,7 +99,7 @@ namespace Matchplay.Client
         {
             try
             {
-                SetStagingEnvironment();
+               // SetStagingEnvironment(); for internal unity testing only
             }
             catch (Exception ex)
             {
@@ -162,6 +162,7 @@ namespace Matchplay.Client
             await AuthenticationWrapper.Authenticating();
             var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
             sdkConfiguration.SetBasePath("https://matchmaker-stg.services.api.unity.com");
+            Debug.LogWarning("CAUTION: Setting Matchmaker environment to Staging!");
         }
 
         /// <summary>
