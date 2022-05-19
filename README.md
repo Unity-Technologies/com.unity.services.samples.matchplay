@@ -1,8 +1,6 @@
 # Matchplay - Matchmaker + Multiplay Sample
 
 
-## Currently Only Works in Staging, to test, follow the staging setup guide [here](https://confluence.unity3d.com/display/DEV/Guide%3A+Staging+Unity+Services+in+a+Unity+Editor+Project)
-
 _Tested with Unity 2021.2 for PC and OSX clients, and Linux Headless servers._
 
 This sample demonstrates how to create a "Matchmake" button; a basic networked client/server game with a matchmaking feature from end to end using the Unity Engine and Cloud Services SDK.
@@ -33,6 +31,11 @@ Once you have an ID, link it to your project under **Edit **>** Project Settings
 
 
 ### Service overview
+
+#### **Authentication**
+Matchmaker and Multiplay depend on Unity Authentication 2.0 for credentials. This sample uses Unity Auth’s anonymous login feature to create semi-permanent credentials that are unique to each player but do not require developers to maintain a persistent account for them. 
+More information about Authentication here:
+[https://docs.unity3d.com/Manual/com.unity.services.authentication.html](https://docs.unity3d.com/Manual/com.unity.services.authentication.html)
 
 
 #### **Matchmaker**
@@ -66,11 +69,32 @@ In this sample, once players are connected to a server, they are connected throu
 
 #### **Setup**
 
-The Matchmaker and Multiplay sections of the Unity Dashboard contain their own setup instructions. Select **About & Support **>** Get Started** and follow the provided steps to integrate the services into your project.
+The Matchmaker and Multiplay sections of the Unity Dashboard contain their own setup instructions. Select About & Support > Get Started and follow the provided steps to integrate the services into your project.
 
-With those services set up and your project linked to your cloud organization, open the **bootStrap** scene in the Editor and begin using the Matchplay Sample.
+The sample requires that you have:
+* Configured and Uploaded a build to Multiplay as detailed above.
+* Configured a Matchmaker pool as detailed above.
 
 
-### Running the sample
 
-You will need two “players” to demonstrate the full sample functionality. Create a second build, or use the included Parrelsync plugin to create "clones" of the project to test.
+### **Running the sample**
+**Scenes:**
+* **bootStrap** - First scene that determines if the game runs in client or server mode
+* **mainMenu** - Client UX, shows the matchmaker and local connection buttons.
+* **game_lab** - One of the game scenes, with a table.
+* **game_space** - Another one of the game scenes, features floating players.
+ 
+**Client**
+Start the project in the “Bootstrap” scene, it should by default run as a client, and bring you to the mainMenu scene.
+
+**For Matchmaking:**
+Select the game settings you wish to play and hit “Matchmake”, after a short while you should either find a server with compatible settings, or spin up a new one with settings that fit your preferences.
+With those services set up and your project linked to your cloud organization, open the bootStrap scene in the Editor and begin using the Matchplay Sample.
+
+**For Local Connection:**
+Start a local unity server build, or use ParrelSync to clone your project and run it with a “server” tag.
+ 
+**Local Server build:**
+Build the project as a Server build for your local OS, and run it when done before trying to connect.
+ParrelSync Local Server:
+Open Parrelsync > Clones Manager and Create then “Open in a New Editor” with the argument: “server”.
