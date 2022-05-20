@@ -14,7 +14,7 @@ namespace Matchplay.Shared
         ClientSingleton m_ClientPrefab;
 
         ApplicationData m_AppData;
-
+        public static bool IsServer;
         async void Start()
         {
             Application.targetFrameRate = 60;
@@ -42,7 +42,7 @@ namespace Matchplay.Shared
         {
             //init the command parser, get launch args
             m_AppData = new ApplicationData();
-
+            IsServer = isServer;
             if (isServer)
             {
                 var serverSingleton = Instantiate(m_ServerPrefab);

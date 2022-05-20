@@ -12,87 +12,84 @@ using UnityEngine.TestTools;
 
 namespace Matchplay.Tests
 {
-	public class ServerTests
-	{
-		NetworkManager m_TestManager;
+    public class ServerTests
+    {
+        NetworkManager m_TestManager;
 
-		const string k_LocalIP = "127.0.0.1";
-		const int k_DefaultPort = 7777;
-		const int k_DefaultQPort = 7787;
+        const string k_LocalIP = "127.0.0.1";
+        const int k_DefaultPort = 7777;
+        const int k_DefaultQPort = 7787;
 
-		[OneTimeSetUp]
-		[RequiresPlayMode]
-		public void OneTimeSetup()
-		{
-			ApplicationData.IsServerUnitTest = true;
-			m_TestManager = TestResources.TestNetworkManager();
-		}
+        [OneTimeSetUp]
+        [RequiresPlayMode]
+        public void OneTimeSetup()
+        {
+            ApplicationData.IsServerUnitTest = true;
+            m_TestManager = TestResources.TestNetworkManager();
+        }
 
-		[TearDown]
-		[RequiresPlayMode]
-		public void TearDown()
-		{
-			if (m_TestManager.IsListening)
-			{
-				m_TestManager.Shutdown();
-			}
-		}
+        [TearDown]
+        [RequiresPlayMode]
+        public void TearDown()
+        {
+            if (m_TestManager.IsListening)
+            {
+                m_TestManager.Shutdown();
+            }
+        }
 
-		[UnityTest]
-		[RequiresPlayMode]
-		public IEnumerator Create_Local_Server_Staring_Lab_Casual()
-		{
-			var startingGameInfo = new GameInfo
-			{
-				gameMode = GameMode.Staring,
-				map = Map.Lab,
-				gameQueue = GameQueue.Casual
-			};
+        [UnityTest]
+        [RequiresPlayMode]
+        public IEnumerator Create_Local_Server_Staring_Lab_Casual()
+        {
+            var startingGameInfo = new GameInfo
+            {
+                gameMode = GameMode.Staring,
+                map = Map.Lab,
+                gameQueue = GameQueue.Casual
+            };
 
-			var createServerTask = CreateServerAsync(k_LocalIP, k_DefaultPort, k_DefaultQPort,
-				startingGameInfo);
+            var createServerTask = CreateServerAsync(k_LocalIP, k_DefaultPort, k_DefaultQPort,
+                startingGameInfo);
 
-			yield return new WaitUntil(() => createServerTask.IsCompleted);
-			var createdServer = createServerTask.Result;
-			Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToScene));
-			Assert.NotNull(createdServer.ServerData);
-			Assert.AreEqual(startingGameInfo.gameMode, createdServer.ServerData.gameMode.Value);
-			Assert.AreEqual(startingGameInfo.map, createdServer.ServerData.map.Value);
-			Assert.AreEqual(startingGameInfo.gameQueue, createdServer.ServerData.gameQueue.Value);
-			Assert.IsFalse(createdServer.StartedServices);
-		}
+            yield return new WaitUntil(() => createServerTask.IsCompleted);
+            var createdServer = createServerTask.Result;
+            Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToScene));
+            Assert.NotNull(createdServer.ServerData);
+            Assert.AreEqual(startingGameInfo.gameMode, createdServer.ServerData.gameMode.Value);
+            Assert.AreEqual(startingGameInfo.map, createdServer.ServerData.map.Value);
+            Assert.AreEqual(startingGameInfo.gameQueue, createdServer.ServerData.gameQueue.Value);
+            Assert.IsFalse(createdServer.StartedServices);
+        }
 
-		[UnityTest]
-		[RequiresPlayMode]
-		public IEnumerator Create_Local_Server_Meditating_Space_Competitive()
-		{
-			var startingGameInfo = new GameInfo
-			{
-				gameMode = GameMode.Meditating,
-				map = Map.Space,
-				gameQueue = GameQueue.Competetive
-			};
-			var createServerTask = CreateServerAsync(k_LocalIP, k_DefaultPort, k_DefaultQPort,
-				startingGameInfo);
+        [UnityTest]
+        [RequiresPlayMode]
+        public IEnumerator Create_Local_Server_Meditating_Space_Competitive()
+        {
+            var startingGameInfo = new GameInfo
+            {
+                gameMode = GameMode.Meditating,
+                map = Map.Space,
+                gameQueue = GameQueue.Competetive
+            };
+            var createServerTask = CreateServerAsync(k_LocalIP, k_DefaultPort, k_DefaultQPort,
+                startingGameInfo);
 
-			yield return new WaitUntil(() => createServerTask.IsCompleted);
-			var createdServer = createServerTask.Result;
-			Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToScene));
-			Assert.NotNull(createdServer.ServerData);
-			Assert.AreEqual(startingGameInfo.gameMode, createdServer.ServerData.gameMode.Value);
-			Assert.AreEqual(startingGameInfo.map, createdServer.ServerData.map.Value);
-			Assert.AreEqual(startingGameInfo.gameQueue, createdServer.ServerData.gameQueue.Value);
-			Assert.IsFalse(createdServer.StartedServices);
-		}
+            yield return new WaitUntil(() => createServerTask.IsCompleted);
+            var createdServer = createServerTask.Result;
+            Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToScene));
+            Assert.NotNull(createdServer.ServerData);
+            Assert.AreEqual(startingGameInfo.gameMode, createdServer.ServerData.gameMode.Value);
+            Assert.AreEqual(startingGameInfo.map, createdServer.ServerData.map.Value);
+            Assert.AreEqual(startingGameInfo.gameQueue, createdServer.ServerData.gameQueue.Value);
+            Assert.IsFalse(createdServer.StartedServices);
+        }
 
-
-		async Task<ServerGameManager> CreateServerAsync(string ip, int port, int qport, GameInfo gameInfo)
-		{
-			var serverGameManager = new ServerGameManager(ip, port, qport, NetworkManager.Singleton);
-			await serverGameManager.StartGameServerAsync(gameInfo);
-			return serverGameManager;
-		}
-
-
-	}
+        async Task<ServerGameManager> CreateServerAsync(string ip, int port, int qport, GameInfo gameInfo)
+        {
+            var serverGameManager = new ServerGameManager(ip, port, qport, NetworkManager.Singleton);
+            await serverGameManager.StartGameServerAsync(gameInfo);
+            return serverGameManager;
+        }
+    }
 }
