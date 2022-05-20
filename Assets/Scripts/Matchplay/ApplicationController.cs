@@ -15,6 +15,7 @@ namespace Matchplay.Shared
 
         ApplicationData m_AppData;
         public static bool IsServer;
+
         async void Start()
         {
             Application.targetFrameRate = 60;
@@ -48,12 +49,7 @@ namespace Matchplay.Shared
                 var serverSingleton = Instantiate(m_ServerPrefab);
                 await serverSingleton.CreateServer(); //run the init instead of relying on start.
 
-                var defaultGameInfo = new GameInfo
-                {
-                    gameMode = GameMode.Staring,
-                    map = Map.Lab,
-                    gameQueue = GameQueue.Casual
-                };
+                var defaultGameInfo = new GameInfo();
 
                 await serverSingleton.Manager.StartGameServerAsync(defaultGameInfo);
             }

@@ -14,7 +14,7 @@ namespace Matchplay.Tests
     public class MatchmakerTests
     {
         /// <summary>
-        ///Pick a random game mode and map
+        ///Pick a random game mode and gameMap
         /// </summary>
         [Test]
         public void AllocationPayloadToGameInfo_TwoAnyPlayers()
@@ -23,9 +23,10 @@ namespace Matchplay.Tests
 
             var returnedGameInfo = ServerGameManager.PickSharedGameInfo(simplePayload);
 
-            Debug.Log($"Users Shared All preferences, randomly picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
-            Assert.IsTrue(returnedGameInfo.map != Map.None && returnedGameInfo.gameMode != GameMode.None,
-                $"Users Shared All preferences, randomly picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
+            Debug.Log(
+                $"Users Shared All preferences, randomly picked {returnedGameInfo.GetMap()} and {returnedGameInfo.GetMode()}");
+            Assert.IsTrue(returnedGameInfo.GetMap() != Map.None && returnedGameInfo.GetMode() != GameMode.None,
+                $"Users Shared All preferences, randomly picked {returnedGameInfo.GetMap()} and {returnedGameInfo.GetMode()}");
         }
 
         /// <summary>
@@ -48,13 +49,14 @@ namespace Matchplay.Tests
 
             var returnedGameInfo = ServerGameManager.PickSharedGameInfo(simulatedPayload);
 
-            Debug.Log($"Users Shared Lab and Staring, picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
-            Assert.IsTrue(returnedGameInfo.map == Map.Lab && returnedGameInfo.gameMode == GameMode.Staring,
-                $"Users Shared Map.Lab and GameMode.Staring, picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
+            Debug.Log(
+                $"Users Shared Lab and Staring, picked {returnedGameInfo.GetMap()} and {returnedGameInfo.GetMode()}");
+            Assert.IsTrue(returnedGameInfo.GetMap() == Map.Lab && returnedGameInfo.GetMode() == GameMode.Staring,
+                $"Users Shared gameMap.Lab and gameMode.Staring, picked {returnedGameInfo.GetMap()} and {returnedGameInfo.GetMode()}");
         }
 
         /// <summary>
-        /// Pick the game mode and map which all the players share.
+        /// Pick the game mode and gameMap which all the players share.
         /// </summary>
         [Test]
         public void AllocationPayloadToGameInfo_SharedGameInfo()
@@ -72,13 +74,14 @@ namespace Matchplay.Tests
 
             var returnedGameInfo = ServerGameManager.PickSharedGameInfo(simulatedPayload);
 
-            Debug.Log($"Users shared map and mode, picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
-            Assert.IsTrue(returnedGameInfo.map == Map.Space && returnedGameInfo.gameMode == GameMode.Meditating,
-                $"Users shared Space and Meditating, picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
+            Debug.Log(
+                $"Users shared gameMap and mode, picked {returnedGameInfo.GetMap()} and {returnedGameInfo.GetMode()}");
+            Assert.IsTrue(returnedGameInfo.GetMap() == Map.Space && returnedGameInfo.GetMode() == GameMode.Meditating,
+                $"Users shared Space and Meditating, picked {returnedGameInfo.GetMap()} and {returnedGameInfo.GetMode()}");
         }
 
         /// <summary>
-        /// Pick a random game mode and map since there is a tie in preferences
+        /// Pick a random game mode and gameMap since there is a tie in preferences
         /// </summary>
         [Test]
         public void AllocationPayloadToGameInfo_NoSharedGameInfo()
@@ -96,9 +99,10 @@ namespace Matchplay.Tests
 
             var returnedGameInfo = ServerGameManager.PickSharedGameInfo(simulatedPayload);
 
-            Debug.Log($"Users did not share map or mode, randomly picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}.");
-            Assert.IsTrue(returnedGameInfo.map != Map.None && returnedGameInfo.gameMode != GameMode.None,
-                $"Users did not share map or mode, randomly picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
+            Debug.Log(
+                $"Users did not share gameMap or mode, randomly picked {returnedGameInfo.GetMap()} and {returnedGameInfo.GetMode()}.");
+            Assert.IsTrue(returnedGameInfo.GetMap() != Map.None && returnedGameInfo.GetMode() != GameMode.None,
+                $"Users did not share gameMap or mode, randomly picked {returnedGameInfo.GetMap()} and {returnedGameInfo.GetMode()}");
         }
 
         MatchmakerAllocationPayload SimplePayload()
@@ -138,7 +142,8 @@ namespace Matchplay.Tests
             };
         }
 
-        public Player NewRandomMatchmakingPlayer(GameQueue queue, Map chosenMap = Map.None, GameMode chosenMode = GameMode.None)
+        public Player NewRandomMatchmakingPlayer(GameQueue queue, Map chosenMap = Map.None,
+            GameMode chosenMode = GameMode.None)
         {
             Map playerMap = chosenMap;
             if (playerMap == Map.None)
@@ -152,12 +157,7 @@ namespace Matchplay.Tests
                 playerMode = (GameMode)Random.Range(1, 4);
             }
 
-            GameInfo randomUserGameInfo = new GameInfo
-            {
-                map = playerMap,
-                gameMode = playerMode,
-                gameQueue = queue,
-            };
+            GameInfo randomUserGameInfo = new GameInfo(queue, playerMap, playerMode);
 
             var fakeAuthId = FakeId();
 

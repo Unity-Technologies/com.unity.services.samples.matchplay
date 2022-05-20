@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace Matchplay.Shared
@@ -11,6 +12,8 @@ namespace Matchplay.Shared
         None = 0,
         Lab = 1,
         Space = 2
+
+        //Any = 0 or 3 (None or Both)
     }
 
     [Flags]
@@ -19,6 +22,8 @@ namespace Matchplay.Shared
         None = 0,
         Staring = 1,
         Meditating = 2
+
+        //Any = 0 or 3 (None or Both)
     }
 
     public enum GameQueue
@@ -60,14 +65,14 @@ namespace Matchplay.Shared
 
         public Map MapPreferences
         {
-            get => Data.userGamePreferences.map;
-            set { Data.userGamePreferences.map = value; }
+            get => Data.userGamePreferences.GetMap();
+            set { Data.userGamePreferences.SetMap(value); }
         }
 
         public GameMode GameModePreferences
         {
-            get => Data.userGamePreferences.gameMode;
-            set => Data.userGamePreferences.gameMode = value;
+            get => Data.userGamePreferences.GetMode();
+            set => Data.userGamePreferences.SetMode(value);
         }
 
         public GameQueue QueuePreference
@@ -115,18 +120,48 @@ namespace Matchplay.Shared
     }
 
     /// <summary>
-    /// Subset of information that sets up the map and gameplay
+    /// Subset of information that sets up the gameMap and gameplay
     /// </summary>
     [Serializable]
     public class GameInfo
     {
-        public Map map = Map.None;
-        public GameMode gameMode = GameMode.None;
+        //In order to serialize this we can't have properties, hence the cumbersome Get and Set Methods
+        //
+        [SerializeField]
+        Map gameMap;
+        [SerializeField]
+        int[] mapRules;
+
+        public void SetMap(Map map)
+        {
+            gameMap = map;
+            mapRules = MapRules();//Ensures the Data for the matchmaker is in synch
+        }
+        public Map GetMap()
+        {
+            return gameMap;
+        }
+
+        [SerializeField]
+        GameMode gameMode;
+        [SerializeField]
+        int[] modeRules;
+
+        public void SetMode(GameMode mode)
+        {
+            gameMode = mode;
+            modeRules = ModeRules();
+        }
+        public GameMode GetMode()
+        {
+            return gameMode;
+        }
+
         public GameQueue gameQueue = GameQueue.None;
 
         //TODO YAGNI if we had different maxPlayers per gameMode i'd expand this to change with the mode type
         public int MaxUsers = 10;
-        public string ToScene => ConvertToScene(map);
+        public string ToScene => ConvertToScene(gameMap);
 
         //QueueNames in the dashboard can be different than your local queue definitions (If you want nice names for them)
         const string k_MultiplayCasualQueue = "casual-queue";
@@ -137,20 +172,25 @@ namespace Matchplay.Shared
             { k_MultiplayCompetetiveQueue, GameQueue.Competetive }
         };
 
+        public GameInfo(GameQueue queue = GameQueue.Casual, Map map = Map.Lab, GameMode mode = GameMode.Staring)
+        {
+            gameQueue = queue;
+            SetMap(map);
+            SetMode(mode);
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("GameInfo: ");
-            sb.AppendLine($"- map:        {map}");
+            sb.AppendLine($"- gameMap:        {gameMap}");
             sb.AppendLine($"- gameMode:   {gameMode}");
             sb.AppendLine($"- gameQueue:  {gameQueue}");
             return sb.ToString();
         }
 
-
-
         /// <summary>
-        /// Convert the map flag enum to a scene name.
+        /// Convert the gameMap flag enum to a scene name.
         /// </summary>
         public static string ConvertToScene(Map map)
         {
@@ -164,6 +204,25 @@ namespace Matchplay.Shared
                     Debug.LogWarning($"{map} - is not supported.");
                     return "";
             }
+        }
+
+        public int[] MapRules()
+        {
+            return FlagsToMatchmakerRules((int)gameMap);
+        }
+
+        public int[] ModeRules()
+        {
+            return FlagsToMatchmakerRules((int)gameMode);
+        }
+
+        int[] FlagsToMatchmakerRules(int flagRule)
+        {
+            if (flagRule == 1)
+                return new[] { 1 };
+            if (flagRule == 2)
+                return new[] { 2 };
+            return new[] { 1, 2 };
         }
 
         /// <summary>

@@ -26,7 +26,7 @@ namespace Matchplay.Server
             {
                 m_MultiplayService = MultiplayService.Instance;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogWarning($"Error creating Multiplay allocation service.\n{ex}");
             }
@@ -55,7 +55,8 @@ namespace Matchplay.Server
         {
             if (m_MultiplayService == null)
                 return;
-            m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync((ushort)info.MaxUsers, "Matchplay Server", info.gameMode.ToString(), "0", info.map.ToString());
+            m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync((ushort)info.MaxUsers,
+                "Matchplay Server", info.GetMode().ToString(), "0", info.GetMap().ToString());
         }
 
         public void SetPlayerCount(ushort count)
@@ -89,20 +90,19 @@ namespace Matchplay.Server
 
         async Task<string> AwaitAllocationID()
         {
-
             var config = m_MultiplayService.ServerConfig;
             Debug.Log($"Awaiting Allocation. Server Config is:\n" +
-                      $"-ServerID: { config.ServerId}\n" +
-                      $"-AllocationID: {config.AllocatedUuid}\n" +
-                      $"-Port: {config.Port}\n" +
-                      $"-QPort: {config.QueryPort}");
+                $"-ServerID: {config.ServerId}\n" +
+                $"-AllocationID: {config.AllocatedUuid}\n" +
+                $"-Port: {config.Port}\n" +
+                $"-QPort: {config.QueryPort}");
 
             //Waiting on OnMultiplayAllocation() event (Probably wont ever happen in a matchmaker scenario)
             while (string.IsNullOrEmpty(m_AllocationId))
             {
                 var configID = config.AllocatedUuid;
 
-                if (!string.IsNullOrEmpty(configID)&&string.IsNullOrEmpty(m_AllocationId))
+                if (!string.IsNullOrEmpty(configID) && string.IsNullOrEmpty(m_AllocationId))
                 {
                     Debug.Log($"Config had AllocationID: {configID}");
                     m_AllocationId = configID;
@@ -136,7 +136,8 @@ namespace Matchplay.Server
             switch (webRequest.result)
             {
                 case UnityWebRequest.Result.ConnectionError:
-                    Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": ConnectionError: " + webRequest.error);
+                    Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": ConnectionError: " +
+                        webRequest.error);
                     break;
                 case UnityWebRequest.Result.DataProcessingError:
                     Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": Error: " + webRequest.error);
@@ -145,7 +146,8 @@ namespace Matchplay.Server
                     Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": HTTP Error: " + webRequest.error);
                     break;
                 case UnityWebRequest.Result.Success:
-                    Debug.Log(nameof(GetMatchmakerAllocationPayloadAsync) + ":\nReceived: " + webRequest.downloadHandler.text);
+                    Debug.Log(nameof(GetMatchmakerAllocationPayloadAsync) + ":\nReceived: " +
+                        webRequest.downloadHandler.text);
                     break;
                 case UnityWebRequest.Result.InProgress:
                     break;
@@ -172,14 +174,14 @@ namespace Matchplay.Server
 
         void OnMultiplayDeAllocation(MultiplayDeallocation deallocation)
         {
-            Debug.Log($"Multiplay Deallocated : ID: {deallocation.AllocationId}\nEvent: {deallocation.EventId}\nServer{deallocation.ServerId}");
+            Debug.Log(
+                $"Multiplay Deallocated : ID: {deallocation.AllocationId}\nEvent: {deallocation.EventId}\nServer{deallocation.ServerId}");
         }
 
         void OnMultiplayError(MultiplayError error)
         {
             Debug.Log($"MultiplayError : {error.Reason}\n{error.Detail}");
         }
-
 
         public void Dispose()
         {

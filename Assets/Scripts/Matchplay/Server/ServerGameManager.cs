@@ -46,13 +46,13 @@ namespace Matchplay.Server
             {
                 var matchmakerPayload = await GetPayloadWithinTimeout(k_MultiplayServiceTimeout);
 
-
                 if (matchmakerPayload != null)
                 {
                     Debug.Log($"Got payload: {matchmakerPayload}");
                     startingGameInfo = PickSharedGameInfo(matchmakerPayload);
 
-                    await StartAllocationService(startingGameInfo, (ushort)matchmakerPayload.MatchProperties.Players.Count);
+                    await StartAllocationService(startingGameInfo,
+                        (ushort)matchmakerPayload.MatchProperties.Players.Count);
                     await CreateAndStartBackfilling(matchmakerPayload, startingGameInfo);
                     m_NetworkServer.OnPlayerJoined += UserJoinedServer;
                     m_NetworkServer.OnPlayerLeft += UserLeft;
@@ -74,9 +74,9 @@ namespace Matchplay.Server
                 return;
             }
 
-            //Changes Map and sets the synched shared variables to the starting info
+            //Changes gameMap and sets the synched shared variables to the starting info
             m_SynchedServerData = await m_NetworkServer.SetupServer(startingGameInfo);
-            if (m_SynchedServerData==null)
+            if (m_SynchedServerData == null)
             {
                 Debug.LogError("NetworkServer did not Set up as expected.");
                 return;
@@ -84,14 +84,13 @@ namespace Matchplay.Server
 
             m_SynchedServerData.map.OnValueChanged += OnServerChangedMap;
             m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
-
-
         }
 
         async Task<MatchmakerAllocationPayload> GetPayloadWithinTimeout(int timeout)
         {
             if (m_MultiplayAllocationService == null)
                 return null;
+
             //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
             var matchmakerPayloadTask = m_MultiplayAllocationService.BeginMatchplayServerAndAwaitMatchmakerAllocation();
             if (await Task.WhenAny(matchmakerPayloadTask, Task.Delay(timeout)) == matchmakerPayloadTask)
@@ -110,7 +109,8 @@ namespace Matchplay.Server
 
         async Task CreateAndStartBackfilling(MatchmakerAllocationPayload payload, GameInfo startingGameInfo)
         {
-            m_Backfiller = new MatchplayBackfiller(connectionString, payload.QueueName, payload.MatchProperties, startingGameInfo.MaxUsers);
+            m_Backfiller = new MatchplayBackfiller(connectionString, payload.QueueName, payload.MatchProperties,
+                startingGameInfo.MaxUsers);
 
             if (m_Backfiller.NeedsPlayers())
             {
@@ -124,7 +124,7 @@ namespace Matchplay.Server
         //The Netcode Game Server is the source of truth, and we need to propagate the state of it to the multiplay server.
         //For the matchmaking ticket, it should already have knowledge of the players, unless a player joined outside of matchmaking.
 
-        //For now we don't have any mechanics to change the map or mode mid-game. But if we did, we would update the backfill ticket to reflect that too.
+        //For now we don't have any mechanics to change the gameMap or mode mid-game. But if we did, we would update the backfill ticket to reflect that too.
         void OnServerChangedMap(Map oldMap, Map newMap)
         {
             m_MultiplayAllocationService.ChangedMap(newMap);
@@ -166,7 +166,6 @@ namespace Matchplay.Server
                 m_Backfiller.BeginBackfilling();
 #pragma warning restore 4014
             }
-
         }
 
         #endregion
@@ -184,8 +183,8 @@ namespace Matchplay.Server
             {
                 var playerGameInfo = player.CustomData.GetAs<GameInfo>();
 
-                //Since we are using flags, each player might have more than one map selected.
-                foreach (var map in playerGameInfo.map.GetUniqueFlags())
+                //Since we are using flags, each player might have more than one gameMap selected.
+                foreach (var map in playerGameInfo.GetMap().GetUniqueFlags())
                 {
                     if (mapCounter.ContainsKey(map))
                         mapCounter[map] += 1;
@@ -193,7 +192,7 @@ namespace Matchplay.Server
                         mapCounter[map] = 1;
                 }
 
-                foreach (var mode in playerGameInfo.gameMode.GetUniqueFlags())
+                foreach (var mode in playerGameInfo.GetMode().GetUniqueFlags())
                     if (modeCounter.ContainsKey(mode))
                         modeCounter[mode] += 1;
                     else
@@ -224,7 +223,7 @@ namespace Matchplay.Server
             highestCount = 0;
             foreach (var (gameMode, count) in modeCounter)
             {
-                //Flip a coin for equally popular maps
+                //Flip a coin for equally popular modes
                 if (count == highestCount)
                 {
                     if (Random.Range(0, 2) != 0)
@@ -241,7 +240,9 @@ namespace Matchplay.Server
 
             //Convert from the multiplay queue values to local enums
             var queue = GameInfo.ToGameQueue(mmAllocation.QueueName);
-            return new GameInfo { map = mostPopularMap, gameMode = mostPopularMode, gameQueue = queue };
+            var gameInfo = new GameInfo(queue, mostPopularMap, mostPopularMode);
+
+            return gameInfo;
         }
 
         async Task CloseServer()
@@ -261,8 +262,10 @@ namespace Matchplay.Server
 
             if (m_SynchedServerData != null)
             {
-                if (m_SynchedServerData.map.OnValueChanged != null) m_SynchedServerData.map.OnValueChanged -= OnServerChangedMap;
-                if (m_SynchedServerData.gameMode.OnValueChanged != null) m_SynchedServerData.gameMode.OnValueChanged -= OnServerChangedMode;
+                if (m_SynchedServerData.map.OnValueChanged != null)
+                    m_SynchedServerData.map.OnValueChanged -= OnServerChangedMap;
+                if (m_SynchedServerData.gameMode.OnValueChanged != null)
+                    m_SynchedServerData.gameMode.OnValueChanged -= OnServerChangedMode;
             }
 
             m_Backfiller?.Dispose();

@@ -42,12 +42,7 @@ namespace Matchplay.Tests
         [RequiresPlayMode]
         public IEnumerator Create_Local_Server_Staring_Lab_Casual()
         {
-            var startingGameInfo = new GameInfo
-            {
-                gameMode = GameMode.Staring,
-                map = Map.Lab,
-                gameQueue = GameQueue.Casual
-            };
+            var startingGameInfo = new GameInfo();
 
             var createServerTask = CreateServerAsync(k_LocalIP, k_DefaultPort, k_DefaultQPort,
                 startingGameInfo);
@@ -56,8 +51,8 @@ namespace Matchplay.Tests
             var createdServer = createServerTask.Result;
             Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToScene));
             Assert.NotNull(createdServer.ServerData);
-            Assert.AreEqual(startingGameInfo.gameMode, createdServer.ServerData.gameMode.Value);
-            Assert.AreEqual(startingGameInfo.map, createdServer.ServerData.map.Value);
+            Assert.AreEqual(startingGameInfo.GetMode(), createdServer.ServerData.gameMode.Value);
+            Assert.AreEqual(startingGameInfo.GetMap(), createdServer.ServerData.map.Value);
             Assert.AreEqual(startingGameInfo.gameQueue, createdServer.ServerData.gameQueue.Value);
             Assert.IsFalse(createdServer.StartedServices);
         }
@@ -66,12 +61,8 @@ namespace Matchplay.Tests
         [RequiresPlayMode]
         public IEnumerator Create_Local_Server_Meditating_Space_Competitive()
         {
-            var startingGameInfo = new GameInfo
-            {
-                gameMode = GameMode.Meditating,
-                map = Map.Space,
-                gameQueue = GameQueue.Competetive
-            };
+            var startingGameInfo = new GameInfo(GameQueue.Competetive, Map.Space, GameMode.Meditating);
+
             var createServerTask = CreateServerAsync(k_LocalIP, k_DefaultPort, k_DefaultQPort,
                 startingGameInfo);
 
@@ -79,8 +70,8 @@ namespace Matchplay.Tests
             var createdServer = createServerTask.Result;
             Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToScene));
             Assert.NotNull(createdServer.ServerData);
-            Assert.AreEqual(startingGameInfo.gameMode, createdServer.ServerData.gameMode.Value);
-            Assert.AreEqual(startingGameInfo.map, createdServer.ServerData.map.Value);
+            Assert.AreEqual(startingGameInfo.GetMode(), createdServer.ServerData.gameMode.Value);
+            Assert.AreEqual(startingGameInfo.GetMap(), createdServer.ServerData.map.Value);
             Assert.AreEqual(startingGameInfo.gameQueue, createdServer.ServerData.gameQueue.Value);
             Assert.IsFalse(createdServer.StartedServices);
         }

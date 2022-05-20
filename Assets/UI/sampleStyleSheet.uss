@@ -46,6 +46,7 @@
     -unity-text-align: upper-left;
     justify-content: space-between;
     flex-grow: 0;
+    -unity-font-style: bold;
 }
 
 .subMenuButton {
@@ -53,7 +54,7 @@
     font-size: 22px;
     flex-shrink: 0;
     justify-content: space-around;
-    background-color: rgb(102, 102, 102);
+    background-color: rgb(126, 161, 171);
     margin-left: 0;
     margin-right: 0;
     margin-top: 0;
@@ -137,7 +138,7 @@
     letter-spacing: 5px;
     word-spacing: 0;
     text-shadow: 0 0 0 rgb(0, 0, 0);
-    background-color: rgb(73, 166, 82);
+    background-color: rgb(73, 166, 109);
     border-left-width: 5px;
     border-right-width: 5px;
     border-top-width: 5px;
@@ -159,9 +160,9 @@
     -unity-text-outline-color: rgb(0, 0, 0);
     color: rgb(255, 255, 255);
     -unity-text-align: middle-center;
-    letter-spacing: 15px;
+    letter-spacing: 5px;
     word-spacing: 0;
-    background-color: rgb(164, 164, 164);
+    background-color: rgb(74, 144, 81);
     border-left-width: 7px;
     border-right-width: 7px;
     border-top-width: 7px;
@@ -182,8 +183,8 @@
     -unity-text-outline-color: rgb(0, 0, 0);
     color: rgb(255, 255, 255);
     -unity-text-align: middle-center;
-    letter-spacing: 15px;
-    background-color: rgb(137, 137, 137);
+    letter-spacing: 5px;
+    background-color: rgb(126, 226, 108);
     border-left-width: 7px;
     border-right-width: 7px;
     border-top-width: 7px;

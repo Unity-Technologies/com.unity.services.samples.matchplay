@@ -30,12 +30,12 @@ namespace Matchplay.Server
         const int k_MaxConnectPayload = 1024;
 
         /// <summary>
-        /// map a given client guid to the data for a given client player.
+        /// gameMap a given client guid to the data for a given client player.
         /// </summary>
         Dictionary<string, UserData> m_ClientData = new Dictionary<string, UserData>();
 
         /// <summary>
-        /// map to allow us to cheaply map from guid to player data.
+        /// gameMap to allow us to cheaply gameMap from guid to player data.
         /// </summary>
         Dictionary<ulong, string> m_NetworkIdToAuth = new Dictionary<ulong, string>();
 
@@ -77,8 +77,8 @@ namespace Matchplay.Server
                 return null;
             }
 
-            m_SynchedServerData.map.Value = startingGameInfo.map;
-            m_SynchedServerData.gameMode.Value = startingGameInfo.gameMode;
+            m_SynchedServerData.map.Value = startingGameInfo.GetMap();
+            m_SynchedServerData.gameMode.Value = startingGameInfo.GetMode();
             m_SynchedServerData.gameQueue.Value = startingGameInfo.gameQueue;
             Debug.Log($"Synched Server Values: {m_SynchedServerData.map.Value} - {m_SynchedServerData.gameMode.Value} - {m_SynchedServerData.gameQueue.Value}");
             return m_SynchedServerData;
