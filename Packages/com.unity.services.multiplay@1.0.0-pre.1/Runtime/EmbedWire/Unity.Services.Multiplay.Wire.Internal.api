@@ -1,0 +1,101 @@
+// This file is generated. Do not modify by hand.
+// XML documentation file not found. To check if public methods have XML comments,
+// make sure the XML doc file is present and located next to the scraped dll
+namespace Unity.Services.Wire.Internal
+{
+    public class AlreadySubscribedException : Unity.Services.Core.RequestFailedException
+    {
+        public AlreadySubscribedException(string alias) {}
+    }
+
+    public class AlreadyUnsubscribedException : Unity.Services.Core.RequestFailedException
+    {
+        public AlreadyUnsubscribedException(string alias) {}
+    }
+
+    public enum CentrifugeCloseCode
+    {
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode BadRequest = 3003;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode ChannelLimit = 3014;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode ConnectionLimit = 3013;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode Expired = 3005;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode ForceNoReconnect = 3012;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode ForceReconnect = 3011;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode InsufficientState = 3010;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode InternalServerError = 3004;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode InvalidToken = 3002;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode Normal = 3000;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode Shutdown = 3001;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode Slow = 3008;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode Stale = 3007;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode SubscriptionExpired = 3006;
+        public int value__;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketAbnormal = 1006;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketAway = 1001;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketInvalidData = 1007;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketMandatoryExtension = 1010;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketNormal = 1000;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketNoStatus = 1005;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketNotSet = 0;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketPolicyViolation = 1008;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketProtocolError = 1002;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketServerError = 1011;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketTlsHandshakeFailure = 1015;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketTooBig = 1009;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketUndefined = 1004;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WebsocketUnsupportedData = 1003;
+        public const Unity.Services.Wire.Internal.CentrifugeCloseCode WriteError = 3009;
+    }
+
+    public class ChannelChangedException : Unity.Services.Core.RequestFailedException
+    {
+        public ChannelChangedException(string newAlias, string oldAlias) {}
+    }
+
+    public class CommandInterruptedException : Unity.Services.Core.RequestFailedException
+    {
+        public Unity.Services.Wire.Internal.CentrifugeCloseCode m_Code { get; }
+        public CommandInterruptedException(string reason, Unity.Services.Wire.Internal.CentrifugeCloseCode code) {}
+    }
+
+    public class ConnectionFailedException : Unity.Services.Core.RequestFailedException
+    {
+        public ConnectionFailedException(string reason) {}
+    }
+
+    public class EmptyChannelException : Unity.Services.Core.RequestFailedException
+    {
+        public EmptyChannelException() {}
+    }
+
+    public class EmptyTokenException : Unity.Services.Core.RequestFailedException
+    {
+        public EmptyTokenException() {}
+    }
+
+    public interface IWireDirect : Unity.Services.Core.Internal.IServiceComponent
+    {
+        public abstract Unity.Services.Wire.Internal.IChannel CreateChannel(string address, Unity.Services.Wire.Internal.IChannelTokenProvider tokenProvider);
+    }
+
+    public class WebSocketException : System.Exception
+    {
+        public WebSocketException() {}
+        public WebSocketException(string message) {}
+        public WebSocketException(string message, System.Exception inner) {}
+    }
+
+    public enum WireErrorCode
+    {
+        public const Unity.Services.Wire.Internal.WireErrorCode AlreadySubscribed = 23008;
+        public const Unity.Services.Wire.Internal.WireErrorCode AlreadyUnsubscribed = 23009;
+        public const Unity.Services.Wire.Internal.WireErrorCode CommandFailed = 23002;
+        public const Unity.Services.Wire.Internal.WireErrorCode ConnectionFailed = 23003;
+        public const Unity.Services.Wire.Internal.WireErrorCode InvalidChannelName = 23005;
+        public const Unity.Services.Wire.Internal.WireErrorCode InvalidToken = 23004;
+        public const Unity.Services.Wire.Internal.WireErrorCode TokenRetrieverFailed = 23006;
+        public const Unity.Services.Wire.Internal.WireErrorCode Unauthorized = 23007;
+        public const Unity.Services.Wire.Internal.WireErrorCode Unknown = 23000;
+        public int value__;
+    }
+}

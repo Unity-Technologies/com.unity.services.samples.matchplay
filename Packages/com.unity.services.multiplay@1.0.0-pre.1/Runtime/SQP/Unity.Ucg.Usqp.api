@@ -1,0 +1,139 @@
+// This file is generated. Do not modify by hand.
+// XML documentation file not found. To check if public methods have XML comments,
+// make sure the XML doc file is present and located next to the scraped dll
+namespace Unity.Ucg.Usqp
+{
+    public struct ChallengeRequest : Unity.Ucg.Usqp.IUsqpMessage
+    {
+        public Unity.Ucg.Usqp.UsqpHeader Header;
+        public virtual void FromStream(ref Unity.Ucg.Usqp.DataStreamReader reader);
+        public virtual void ToStream(ref Unity.Ucg.Usqp.DataStreamWriter writer);
+    }
+
+    public struct ChallengeResponse
+    {
+        public Unity.Ucg.Usqp.UsqpHeader Header;
+        public void FromStream(ref Unity.Ucg.Usqp.DataStreamReader reader);
+        public void ToStream(ref Unity.Ucg.Usqp.DataStreamWriter writer);
+    }
+
+    public struct DataStreamReader
+    {
+        public DataStreamReader(Unity.Collections.NativeArray<byte> array) {}
+        public int GetBytesRead();
+        public byte ReadByte();
+        public void ReadBytes(byte* data, int length);
+        public int ReadIntNetworkByteOrder();
+        public short ReadShortNetworkByteOrder();
+        public System.UInt32 ReadUIntNetworkByteOrder();
+        public System.UInt16 ReadUShortNetworkByteOrder();
+    }
+
+    public struct DataStreamWriter
+    {
+        public int Capacity { get; }
+        public int Length { get; }
+        public DataStreamWriter(Unity.Collections.NativeArray<byte> data) {}
+        public Unity.Collections.NativeArray<byte> AsNativeArray();
+        public void Flush();
+        public bool WriteByte(byte value);
+        public bool WriteBytes(byte* data, int bytes);
+        public bool WriteIntNetworkByteOrder(int value);
+        public bool WriteShortNetworkByteOrder(short value);
+        public bool WriteUIntNetworkByteOrder(System.UInt32 value);
+        public bool WriteUShortNetworkByteOrder(System.UInt16 value);
+    }
+
+    public interface IUsqpMessage
+    {
+        public abstract void FromStream(ref Unity.Ucg.Usqp.DataStreamReader reader);
+        public abstract void ToStream(ref Unity.Ucg.Usqp.DataStreamWriter writer);
+    }
+
+    public struct QueryRequest
+    {
+        public Unity.Ucg.Usqp.UsqpHeader Header;
+        public byte RequestedChunks;
+        public System.UInt16 Version;
+        public void FromStream(ref Unity.Ucg.Usqp.DataStreamReader reader, bool header = True);
+        public void ToStream(ref Unity.Ucg.Usqp.DataStreamWriter writer);
+    }
+
+    public struct QueryResponseHeader
+    {
+        public byte CurrentPacket;
+        public Unity.Ucg.Usqp.UsqpHeader Header;
+        public byte LastPacket;
+        public System.UInt16 Length;
+        public System.UInt16 Version;
+        public void FromStream(ref Unity.Ucg.Usqp.DataStreamReader reader, bool header = True);
+        public void ToStream(ref Unity.Ucg.Usqp.DataStreamWriter writer);
+        public void UpdateLength(System.UInt16 length);
+    }
+
+    public class ServerInfo
+    {
+        public System.UInt32 ChunkLen;
+        public Unity.Ucg.Usqp.QueryResponseHeader QueryHeader;
+        public Unity.Ucg.Usqp.ServerInfo.Data ServerInfoData;
+        public ServerInfo() {}
+        public void FromStream(ref Unity.Ucg.Usqp.DataStreamReader reader, bool header = True);
+        public void ToStream(ref Unity.Ucg.Usqp.DataStreamWriter writer);
+        public class Data
+        {
+            public string BuildId;
+            public System.UInt16 CurrentPlayers;
+            public string GameType;
+            public string Map;
+            public System.UInt16 MaxPlayers;
+            public System.UInt16 Port;
+            public string ServerName;
+            public Data() {}
+            public void FromStream(ref Unity.Ucg.Usqp.DataStreamReader reader);
+            public void ToStream(ref Unity.Ucg.Usqp.DataStreamWriter writer);
+        }
+    }
+
+    public class SqpException : System.Exception
+    {
+        public SqpException() {}
+        public SqpException(string message) {}
+        public SqpException(string message, System.Exception inner) {}
+    }
+
+    [System.Flags] public enum UsqpChunkType
+    {
+        public const Unity.Ucg.Usqp.UsqpChunkType PlayerInfo = 4;
+        public const Unity.Ucg.Usqp.UsqpChunkType ServerInfo = 1;
+        public const Unity.Ucg.Usqp.UsqpChunkType ServerRules = 2;
+        public const Unity.Ucg.Usqp.UsqpChunkType TeamInfo = 8;
+        public int value__;
+    }
+
+    public struct UsqpHeader : Unity.Ucg.Usqp.IUsqpMessage
+    {
+        public System.UInt32 ChallengeId;
+        public byte Type { get; }
+        public virtual void FromStream(ref Unity.Ucg.Usqp.DataStreamReader reader);
+        public virtual void ToStream(ref Unity.Ucg.Usqp.DataStreamWriter writer);
+    }
+
+    public enum UsqpMessageType
+    {
+        public const Unity.Ucg.Usqp.UsqpMessageType ChallengeRequest = 0;
+        public const Unity.Ucg.Usqp.UsqpMessageType ChallengeResponse = 0;
+        public const Unity.Ucg.Usqp.UsqpMessageType QueryRequest = 1;
+        public const Unity.Ucg.Usqp.UsqpMessageType QueryResponse = 1;
+        public byte value__;
+    }
+
+    public class UsqpServer : System.IDisposable
+    {
+        public System.Net.IPEndPoint ServerEndpoint { get; }
+        public Unity.Ucg.Usqp.ServerInfo.Data ServerInfoData { get; set; }
+        public UsqpServer(System.Net.IPEndPoint endpoint) {}
+        public UsqpServer(System.UInt16 port) {}
+        public virtual void Dispose();
+        public void Update();
+    }
+}
