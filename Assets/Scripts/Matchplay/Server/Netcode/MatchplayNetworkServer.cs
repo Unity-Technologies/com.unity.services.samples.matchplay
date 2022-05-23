@@ -49,7 +49,7 @@ namespace Matchplay.Server
             m_NetworkManager.OnServerStarted += OnNetworkReady;
         }
 
-        public bool StartServer(string ip, int port, GameInfo startingGameInfo)
+        public bool OpenConnection(string ip, int port, GameInfo startingGameInfo)
         {
             var unityTransport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
             m_NetworkManager.NetworkConfig.NetworkTransport = unityTransport;
@@ -59,30 +59,49 @@ namespace Matchplay.Server
             return m_NetworkManager.StartServer();
         }
 
-        public async Task<SynchedServerData> SetupServer(GameInfo startingGameInfo)
+        /// <summary>
+        /// Sets the map and mode for the server.
+        /// </summary>
+        public async Task<SynchedServerData> ConfigureServer(GameInfo startingGameInfo)
         {
-            m_NetworkManager.SceneManager.LoadScene(startingGameInfo.ToScene, LoadSceneMode.Single);
+            m_NetworkManager.SceneManager.LoadScene(startingGameInfo.ToSceneName, LoadSceneMode.Single);
 
-            var getServerDataTries = 3;
-            while (getServerDataTries > 0 && m_SynchedServerData == null)
+            m_NetworkManager.SceneManager.OnLoadComplete += CreateAndSetSynchServerData;
+
+            void CreateAndSetSynchServerData(ulong clientId, string sceneName, LoadSceneMode sceneMode)
             {
-                m_SynchedServerData = Object.FindObjectOfType<SynchedServerData>();
-                getServerDataTries--;
-                await Task.Delay(150);
+                if (clientId != m_NetworkManager.LocalClientId)
+                    return;
+
+                m_SynchedServerData = GameObject.Instantiate(ServerSingleton.Instance.SynchedServerDataPrefab);
+                m_SynchedServerData.GetComponent<NetworkObject>().Spawn();
+
+                m_NetworkManager.SceneManager.OnLoadComplete -= CreateAndSetSynchServerData;
             }
 
-            if (m_SynchedServerData == null)
+            var waitTask = WaitUntilLoaded();
+
+            async Task WaitUntilLoaded()
             {
-                Debug.LogWarning($"Could not find the SynchedServerData in the scene: {SceneManager.GetActiveScene()}");
+                while (m_SynchedServerData == null)
+                    await Task.Delay(50);
+            }
+
+            if (await Task.WhenAny(waitTask, Task.Delay(5000)) != waitTask)
+            {
+                Debug.LogWarning($"Timed out waiting for Server Scene Loading: Not able to get SynchedServerData");
                 return null;
             }
 
             m_SynchedServerData.map.Value = startingGameInfo.map;
             m_SynchedServerData.gameMode.Value = startingGameInfo.gameMode;
             m_SynchedServerData.gameQueue.Value = startingGameInfo.gameQueue;
-            Debug.Log($"Synched Server Values: {m_SynchedServerData.map.Value} - {m_SynchedServerData.gameMode.Value} - {m_SynchedServerData.gameQueue.Value}");
+            Debug.Log(
+                $"Synched Server Values: {m_SynchedServerData.map.Value} - {m_SynchedServerData.gameMode.Value} - {m_SynchedServerData.gameQueue.Value}",
+                m_SynchedServerData.gameObject);
             return m_SynchedServerData;
         }
+
         void OnNetworkReady()
         {
             m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
@@ -95,7 +114,8 @@ namespace Matchplay.Server
         /// <param name="connectionData">binary data passed into BootClient. In our case this is the client's GUID, which is a unique identifier for their install of the game that persists across app restarts. </param>
         /// <param name="networkId">This is the networkId that Netcode assigned us on login. It does not persist across multiple logins from the same client. </param>
         /// <param name="connectionApprovedCallback">The delegate we must invoke to signal that the connection was approved or not. </param>
-        void ApprovalCheck(byte[] connectionData, ulong networkId, NetworkManager.ConnectionApprovedDelegate connectionApprovedCallback)
+        void ApprovalCheck(byte[] connectionData, ulong networkId,
+            NetworkManager.ConnectionApprovedDelegate connectionApprovedCallback)
         {
             if (connectionData.Length > k_MaxConnectPayload)
             {
@@ -209,7 +229,7 @@ namespace Matchplay.Server
             m_NetworkManager.ConnectionApprovalCallback -= ApprovalCheck;
             m_NetworkManager.OnClientDisconnectCallback -= OnClientDisconnect;
             m_NetworkManager.OnServerStarted -= OnNetworkReady;
-            if(m_NetworkManager.IsListening)
+            if (m_NetworkManager.IsListening)
                 m_NetworkManager.Shutdown();
         }
     }

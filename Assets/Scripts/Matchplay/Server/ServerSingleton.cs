@@ -4,6 +4,7 @@ using Matchplay.Shared;
 using Unity.Netcode;
 using Unity.Services.Core;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Matchplay.Server
 {
@@ -13,6 +14,8 @@ namespace Matchplay.Server
     /// </summary>
     public class ServerSingleton : MonoBehaviour
     {
+        public SynchedServerData SynchedServerDataPrefab;
+
         public static ServerSingleton Instance
         {
             get
@@ -39,7 +42,7 @@ namespace Matchplay.Server
                     return m_GameManager;
                 }
 
-                Debug.LogError($"Server Manager is missing, did you run StartServer?");
+                Debug.LogError($"Server Manager is missing, did you run OpenConnection?");
                 return null;
             }
         }

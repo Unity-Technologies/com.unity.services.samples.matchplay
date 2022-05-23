@@ -52,7 +52,6 @@ namespace Matchplay.Client
             Matchmaker = new MatchplayMatchmaker();
             var authenticationResult = await AuthenticationWrapper.DoAuth();
 
-            Debug.Log(AuthenticationService.Instance.AccessToken);
             //Catch for if the authentication fails, we can still do local server Testing
             if (authenticationResult == AuthState.Authenticated)
                 User.AuthId = AuthenticationWrapper.ClientId();
@@ -104,24 +103,14 @@ namespace Matchplay.Client
             MatchPlayerDespawned?.Invoke(player);
         }
 
-        public void SetGameModePreferencesFlag(GameMode gameMode, bool added)
+        public void SetGameMode(GameMode gameMode)
         {
-            if (added) //Add Flag if True, remove if not.
-                User.GameModePreferences |= gameMode;
-            else
-            {
-                User.GameModePreferences &= ~gameMode;
-            }
+            User.GameModePreferences = gameMode;
         }
 
-        public void SetMapPreferencesFlag(Map map, bool added)
+        public void SetGameMap(Map map)
         {
-            if (added) //Add Flag if True ,remove if not.
-                User.MapPreferences |= map;
-            else
-            {
-                User.MapPreferences &= ~map;
-            }
+            User.MapPreferences = map;
         }
 
         public void SetGameQueue(GameQueue queue)
@@ -133,15 +122,11 @@ namespace Matchplay.Client
         {
             Debug.Log($"Beginning Matchmaking with {User}");
             var matchmakingResult = await Matchmaker.Matchmake(User.Data);
-
             if (matchmakingResult.result == MatchmakerPollingResult.Success)
-            {
                 BeginConnection(matchmakingResult.ip, matchmakingResult.port);
-            }
             else
-            {
                 Debug.LogWarning($"{matchmakingResult.result} : {matchmakingResult.resultMessage}");
-            }
+
 
             return matchmakingResult.result;
         }

@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Matchplay.Networking;
 using Matchplay.Server;
 using Matchplay.Shared;
@@ -32,9 +34,8 @@ namespace Matchplay.Client.UI
 
         void Awake()
         {
-
             //Otherwise look to the bootstrap values
-            if (ApplicationData.IsServerUnitTest||ApplicationController.IsServer)
+            if (ApplicationData.IsServerUnitTest || ApplicationController.IsServer)
             {
                 Destroy(gameObject);
                 return;
@@ -56,14 +57,29 @@ namespace Matchplay.Client.UI
             m_ClientGameManager.NetworkClient.OnLocalDisconnection += OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;
             m_ClientGameManager.MatchPlayerDespawned += RemovePlayerLabel;
+        }
+
+        async void Start()
+        {
+            await AwaitSynchedServerData();
+        }
+
+        async Task AwaitSynchedServerData()
+        {
+            while (m_SynchedServerData == null)
+            {
+                m_SynchedServerData = FindObjectOfType<SynchedServerData>();
+                await Task.Delay(100);
+            }
 
             //Synched Variables, since the Game HUD is not networked
-            m_SynchedServerData.OnNetworkSpawned += OnSynchSpawned;
+            m_SynchedServerData.OnNetworkSpawned += SetUIToSynchedVariables;
+
             m_SynchedServerData.serverID.OnValueChanged += OnServerChanged;
             m_SynchedServerData.map.OnValueChanged += OnMapChanged;
             m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
             m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
-            OnSynchSpawned();
+            SetUIToSynchedVariables();
         }
 
         void OnLocalConnection(ConnectStatus status)
@@ -101,39 +117,32 @@ namespace Matchplay.Client.UI
             m_PlayerLabels.Remove(instanceId);
         }
 
-        void OnSynchSpawned()
+        void SetUIToSynchedVariables()
         {
-            OnServerChanged("",m_SynchedServerData.serverID.Value.ToString());
-            OnMapChanged(Map.None, m_SynchedServerData.map.Value);
-            OnModeChanged(GameMode.None, m_SynchedServerData.gameMode.Value);
-            OnQueueChanged(GameQueue.None, m_SynchedServerData.gameQueue.Value);
+            OnServerChanged(new NetworkString(), m_SynchedServerData.serverID.Value);
+            OnMapChanged(Map.Lab, m_SynchedServerData.map.Value);
+            OnModeChanged(GameMode.Meditating, m_SynchedServerData.gameMode.Value);
+            OnQueueChanged(GameQueue.Casual, m_SynchedServerData.gameQueue.Value);
         }
 
-        void OnServerChanged(NetworkString oldServerID, NetworkString newServerID)
+        void OnServerChanged(NetworkString oldServerID,
+            NetworkString newServerID)
         {
-            if (oldServerID == newServerID)
-                return;
             m_ServerLabel.text = newServerID.ToString();
         }
 
         void OnMapChanged(Map oldMap, Map newMap)
         {
-            if (oldMap == newMap)
-                return;
             m_MapValue.text = newMap.ToString();
         }
 
         void OnModeChanged(GameMode oldGameMode, GameMode newGameMode)
         {
-            if (oldGameMode == newGameMode)
-                return;
             m_GameModeValue.text = newGameMode.ToString();
         }
 
         void OnQueueChanged(GameQueue oldQueue, GameQueue newQueue)
         {
-            if (oldQueue == newQueue)
-                return;
             m_QueueValue.text = newQueue.ToString();
         }
 
@@ -144,7 +153,7 @@ namespace Matchplay.Client.UI
 
         void OnDestroy()
         {
-            if (ApplicationData.IsServerUnitTest||ApplicationController.IsServer)
+            if (ApplicationData.IsServerUnitTest || ApplicationController.IsServer)
                 return;
             m_ClientGameManager.NetworkClient.OnLocalConnection -= OnLocalConnection;
             m_ClientGameManager.NetworkClient.OnLocalDisconnection -= OnLocalDisconnection;

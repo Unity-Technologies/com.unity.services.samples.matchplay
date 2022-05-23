@@ -54,7 +54,7 @@ namespace Matchplay.Tests
 
             yield return new WaitUntil(() => createServerTask.IsCompleted);
             var createdServer = createServerTask.Result;
-            Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToScene));
+            Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToSceneName));
             Assert.NotNull(createdServer.ServerData);
             Assert.AreEqual(startingGameInfo.gameMode, createdServer.ServerData.gameMode.Value);
             Assert.AreEqual(startingGameInfo.map, createdServer.ServerData.map.Value);
@@ -77,7 +77,7 @@ namespace Matchplay.Tests
 
             yield return new WaitUntil(() => createServerTask.IsCompleted);
             var createdServer = createServerTask.Result;
-            Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToScene));
+            Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToSceneName));
             Assert.NotNull(createdServer.ServerData);
             Assert.AreEqual(startingGameInfo.gameMode, createdServer.ServerData.gameMode.Value);
             Assert.AreEqual(startingGameInfo.map, createdServer.ServerData.map.Value);

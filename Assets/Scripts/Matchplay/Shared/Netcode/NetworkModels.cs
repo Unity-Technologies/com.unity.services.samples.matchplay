@@ -15,7 +15,7 @@ namespace Matchplay.Networking
     }
 
 
-    public struct NetworkString :  INetworkSerializeByMemcpy
+    public struct NetworkString :  INetworkSerializable
     {
         private ForceNetworkSerializeByMemcpy<FixedString32Bytes> _info;
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter

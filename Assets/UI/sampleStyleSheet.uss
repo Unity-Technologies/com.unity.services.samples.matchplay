@@ -152,6 +152,7 @@
     border-bottom-color: rgb(0, 0, 0);
     justify-content: center;
     display: flex;
+    font-size: 30px;
 }
 
 .playButton:hover:active {
@@ -159,9 +160,9 @@
     -unity-text-outline-color: rgb(0, 0, 0);
     color: rgb(255, 255, 255);
     -unity-text-align: middle-center;
-    letter-spacing: 15px;
+    letter-spacing: 5px;
     word-spacing: 0;
-    background-color: rgb(164, 164, 164);
+    background-color: rgb(78, 144, 85);
     border-left-width: 7px;
     border-right-width: 7px;
     border-top-width: 7px;
@@ -180,10 +181,9 @@
 .playButton:hover {
     -unity-font-style: bold;
     -unity-text-outline-color: rgb(0, 0, 0);
-    color: rgb(255, 255, 255);
     -unity-text-align: middle-center;
-    letter-spacing: 15px;
-    background-color: rgb(137, 137, 137);
+    letter-spacing: 5px;
+    background-color: rgb(100, 197, 109);
     border-left-width: 7px;
     border-right-width: 7px;
     border-top-width: 7px;

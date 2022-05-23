@@ -56,7 +56,7 @@ namespace Matchplay.Shared
         void ProcessCommandLinearguments(string[] args)
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Evaluating Args: ");
+            sb.AppendLine("Launch Args: ");
             for (var i = 0; i < args.Length; i++)
             {
                 var arg = args[i];
@@ -64,16 +64,13 @@ namespace Matchplay.Shared
                 if (i + 1 < args.Length) // if we are evaluating the last item in the array, it must be a flag
                     nextArg = args[i + 1];
 
-                sb.Append(arg);
-                sb.Append(" : ");
-                sb.Append(nextArg);
                 if (EvaluatedArgs(arg, nextArg))
                 {
-                    sb.Append("- FOUND CMD - ");
+                    sb.Append(arg);
+                    sb.Append(" : ");
+                    sb.AppendLine(nextArg);
                     i++;
                 }
-
-                sb.AppendLine();
             }
 
             Debug.Log(sb);
