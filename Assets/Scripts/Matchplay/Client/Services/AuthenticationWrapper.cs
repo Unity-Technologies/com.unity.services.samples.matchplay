@@ -80,14 +80,14 @@ namespace Matchplay.Client
                     {
                         // Compare error code to AuthenticationErrorCodes
                         // Notify the player with the proper error message
-                        Debug.LogException(ex);
+                        Debug.LogError(ex);
                         AuthorizationState = AuthState.Error;
                     }
                     catch (RequestFailedException exception)
                     {
                         // Compare error code to CommonErrorCodes
                         // Notify the player with the proper error message
-                        Debug.LogException(exception);
+                        Debug.LogError(exception);
                         AuthorizationState = AuthState.Error;
                     }
 
