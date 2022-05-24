@@ -5,25 +5,20 @@ using UnityEngine;
 
 namespace Matchplay.Shared
 {
-    [Flags]
     public enum Map
     {
-        None = 0,
-        Lab = 1,
-        Space = 2
+        Lab,
+        Space
     }
 
-    [Flags]
     public enum GameMode
     {
-        None = 0,
-        Staring = 1,
-        Meditating = 2
+        Staring,
+        Meditating
     }
 
     public enum GameQueue
     {
-        None,
         Casual,
         Competetive
     }
@@ -120,13 +115,13 @@ namespace Matchplay.Shared
     [Serializable]
     public class GameInfo
     {
-        public Map map = Map.None;
-        public GameMode gameMode = GameMode.None;
-        public GameQueue gameQueue = GameQueue.None;
+        public Map map;
+        public GameMode gameMode;
+        public GameQueue gameQueue;
 
         //TODO YAGNI if we had different maxPlayers per gameMode i'd expand this to change with the mode type
         public int MaxUsers = 10;
-        public string ToScene => ConvertToScene(map);
+        public string ToSceneName => ConvertToScene(map);
 
         //QueueNames in the dashboard can be different than your local queue definitions (If you want nice names for them)
         const string k_MultiplayCasualQueue = "casual-queue";
@@ -146,8 +141,6 @@ namespace Matchplay.Shared
             sb.AppendLine($"- gameQueue:  {gameQueue}");
             return sb.ToString();
         }
-
-
 
         /// <summary>
         /// Convert the map flag enum to a scene name.
@@ -185,7 +178,7 @@ namespace Matchplay.Shared
             if (!k_MultiplayToLocalQueueNames.ContainsKey(multiplayQueue))
             {
                 Debug.LogWarning($"No QueuePreference that maps to {multiplayQueue}");
-                return GameQueue.None;
+                return GameQueue.Casual;
             }
 
             return k_MultiplayToLocalQueueNames[multiplayQueue];

@@ -22,7 +22,6 @@ namespace Matchplay.Shared.Tools
             if (ClonesManager.IsClone())
             {
                 var cloneSuffix = ClonesManager.CloneNameSuffix;
-                //second argument is our custom ID, but if it's not set we would just use some default.
 
                 var hardcodedProfileID = $"_clone_{cloneSuffix}";
 

@@ -30,7 +30,7 @@ namespace Matchplay.Client
     {
         string m_LastUsedTicket;
         bool m_IsMatchmaking = false;
-        const string k_ModeAttribute = "game_mode";
+
         CancellationTokenSource m_CancelToken;
         const int k_GetTicketCooldown = 1000;
 
@@ -41,12 +41,13 @@ namespace Matchplay.Client
         public async Task<MatchmakingResult> Matchmake(UserData data)
         {
             m_CancelToken = new CancellationTokenSource();
-            var createTicketOptions = UserDataToTicketOptions(data);
+            var createTicketOptions = UserDataToTicketRuleOptions(data);
             var players = new List<Player> { new Player(data.userAuthId, data.userGamePreferences) };
             try
             {
                 m_IsMatchmaking = true;
                 var createResult = await MatchmakerService.Instance.CreateTicketAsync(players, createTicketOptions);
+
                 m_LastUsedTicket = createResult.Id;
                 try
                 {
@@ -58,25 +59,17 @@ namespace Matchplay.Client
                         if (checkTicket.Type == typeof(MultiplayAssignment))
                         {
                             var matchAssignment = (MultiplayAssignment)checkTicket.Value;
-                            switch (matchAssignment.Status)
-                            {
-                                case MultiplayAssignment.StatusOptions.Found:
-                                {
-                                    return ReturnMatchResult(MatchmakerPollingResult.Success, $"", matchAssignment);
-                                }
-                                case MultiplayAssignment.StatusOptions.Timeout:
-                                {
-                                    return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Ticket: {m_LastUsedTicket} Timed out - {matchAssignment.Message}");
-                                }
-                                case MultiplayAssignment.StatusOptions.Failed:
-                                {
-                                    return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError, $"Ticket: {m_LastUsedTicket} Failed: {matchAssignment.Message}");
-                                }
-                                default:
-                                    Debug.Log($"Polled Ticket: {m_LastUsedTicket} Status: {matchAssignment.Status} ");
-                                    break;
-                            }
+
+                            if (matchAssignment.Status == MultiplayAssignment.StatusOptions.Found)
+                                return ReturnMatchResult(MatchmakerPollingResult.Success, "", matchAssignment);
+                            if (matchAssignment.Status == MultiplayAssignment.StatusOptions.Timeout ||
+                                matchAssignment.Status == MultiplayAssignment.StatusOptions.Failed)
+                                return ReturnMatchResult(MatchmakerPollingResult.MatchAssignmentError,
+                                    $"Ticket: {m_LastUsedTicket} - {matchAssignment.Status} - {matchAssignment.Message}");
+
+                            Debug.Log($"Polled Ticket: {m_LastUsedTicket} Status: {matchAssignment.Status} ");
                         }
+
                         await Task.Delay(k_GetTicketCooldown);
                     }
                 }
@@ -99,7 +92,7 @@ namespace Matchplay.Client
         {
             try
             {
-               // SetStagingEnvironment(); for internal unity testing only
+                // SetStagingEnvironment(); for internal unity testing only
             }
             catch (Exception ex)
             {
@@ -123,7 +116,8 @@ namespace Matchplay.Client
         }
 
         //Make sure we exit the matchmaking cycle through this method every time.
-        MatchmakingResult ReturnMatchResult(MatchmakerPollingResult resultErrorType, string message = "", MultiplayAssignment assignment = null)
+        MatchmakingResult ReturnMatchResult(MatchmakerPollingResult resultErrorType, string message = "",
+            MultiplayAssignment assignment = null)
         {
             m_IsMatchmaking = false;
 
@@ -168,11 +162,14 @@ namespace Matchplay.Client
         /// <summary>
         /// From Game player to matchmaking player
         /// </summary>
-        public static CreateTicketOptions UserDataToTicketOptions(UserData data)
+        static CreateTicketOptions UserDataToTicketRuleOptions(UserData data)
         {
+            //TODO Come up with a good use case for attributes (Skill?)
             var attributes = new Dictionary<string, object>
             {
-                { k_ModeAttribute, (double)data.userGamePreferences.gameMode }
+                //Moved these to Player Preferences
+                //{ k_ModeRuleName, data.userGamePreferences.ModeRules()},
+                // { k_MapRuleName, data.userGamePreferences.MapRules() }
             };
 
             var queueName = data.userGamePreferences.ToMultiplayQueue();

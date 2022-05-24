@@ -44,3 +44,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c566983ffd513c4eb2184dce31ae714, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SynchedServerDataPrefab: {fileID: 7137697522663392195, guid: fdddb954c22b442458426023cd31253d, type: 3}

@@ -165,9 +165,9 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.services.multiplay": {
-      "version": "1.0.0-pre.1",
+      "version": "file:com.unity.services.multiplay@1.0.0-pre.1",
       "depth": 0,
-      "source": "registry",
+      "source": "embedded",
       "dependencies": {
         "com.unity.services.core": "1.2.0",
         "com.unity.services.wire": "1.0.0",
@@ -177,8 +177,7 @@
         "com.unity.modules.unitywebrequesttexture": "1.0.0",
         "com.unity.modules.unitywebrequestwww": "1.0.0",
         "com.unity.nuget.newtonsoft-json": "3.0.1"
-      },
-      "url": "https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-candidates"
+      }
     },
     "com.unity.services.wire": {
       "version": "1.0.0",

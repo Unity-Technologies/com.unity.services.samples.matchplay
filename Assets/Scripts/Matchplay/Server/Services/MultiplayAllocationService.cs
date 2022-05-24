@@ -35,7 +35,7 @@ namespace Matchplay.Server
         /// <summary>
         /// Should be wrapped in a timeout function
         /// </summary>
-        public async Task<MatchmakerAllocationPayload> BeginMatchplayServerAndAwaitMatchmakerAllocation()
+        public async Task<MatchmakerAllocationPayload> SubscribeAndAwaitMatchmakerAllocation()
         {
             if (m_MultiplayService == null)
                 return null;

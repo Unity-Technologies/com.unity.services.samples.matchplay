@@ -50,8 +50,8 @@ namespace Matchplay.Shared
 
                 var defaultGameInfo = new GameInfo
                 {
-                    gameMode = GameMode.Staring,
-                    map = Map.Lab,
+                    gameMode = GameMode.Meditating,
+                    map = Map.Space,
                     gameQueue = GameQueue.Casual
                 };
 
