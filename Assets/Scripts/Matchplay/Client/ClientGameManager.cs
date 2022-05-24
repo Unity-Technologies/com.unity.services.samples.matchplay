@@ -17,7 +17,6 @@ namespace Matchplay.Client
     {
         public event Action<Matchplayer> MatchPlayerSpawned;
         public event Action<Matchplayer> MatchPlayerDespawned;
-
         public MatchplayUser User { get; private set; }
         public MatchplayNetworkClient NetworkClient { get; private set; }
         public MatchplayMatchmaker Matchmaker { get; private set; }
@@ -43,7 +42,6 @@ namespace Matchplay.Client
         /// </summary>
         async Task InitAsync()
         {
-
             var unityAuthenticationInitOptions = new InitializationOptions();
             unityAuthenticationInitOptions.SetProfile($"{ProfileName}{LocalProfileTool.LocalProfileSuffix}");
             await UnityServices.InitializeAsync(unityAuthenticationInitOptions);
@@ -122,11 +120,11 @@ namespace Matchplay.Client
         {
             Debug.Log($"Beginning Matchmaking with {User}");
             var matchmakingResult = await Matchmaker.Matchmake(User.Data);
+
             if (matchmakingResult.result == MatchmakerPollingResult.Success)
                 BeginConnection(matchmakingResult.ip, matchmakingResult.port);
             else
                 Debug.LogWarning($"{matchmakingResult.result} : {matchmakingResult.resultMessage}");
-
 
             return matchmakingResult.result;
         }

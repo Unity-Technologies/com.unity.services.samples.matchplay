@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Matchplay.Networking;
 using Matchplay.Shared;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -8,11 +9,13 @@ namespace Matchplay.Client.UI
 {
     enum MainMenuPlayState
     {
+        Authenticating,
+        Error,
         Ready,
         MatchMaking,
         Cancelling,
-        Connecting
-
+        Connecting,
+        Connected
     }
 
     [RequireComponent(typeof(UIDocument))]
@@ -38,13 +41,13 @@ namespace Matchplay.Client.UI
         DropdownField m_ModeDropDown;
         DropdownField m_MapDropDown;
 
-
         VisualElement m_ButtonGroup;
         VisualElement m_IPPortGroup;
         VisualElement m_QueueGroup;
         VisualElement m_MapGroup;
         VisualElement m_ModeGroup;
         Label m_NameLabel;
+        Label m_MessageLabel;
 
         TextField m_IPField;
         TextField m_PortField;
@@ -110,6 +113,7 @@ namespace Matchplay.Client.UI
             m_RenameField.RegisterValueChangedCallback(OnNameFieldChanged);
 
             m_NameLabel = root.Q<Label>("name_label");
+            m_MessageLabel = root.Q<Label>("message_label");
 
             #endregion
 
@@ -119,19 +123,26 @@ namespace Matchplay.Client.UI
 
             SetName(gameManager.User.Name);
             gameManager.User.onNameChanged += SetName;
+            gameManager.NetworkClient.OnLocalConnection += OnConnectionChanged;
+            gameManager.NetworkClient.OnLocalDisconnection += OnConnectionChanged;
 
             //Set the game manager casual gameMode defaults to whatever the UI starts with
             gameManager.SetGameMode(Enum.Parse<GameMode>(m_ModeDropDown.value));
             gameManager.SetGameMap(Enum.Parse<Map>(m_MapDropDown.value));
             gameManager.SetGameQueue(Enum.Parse<GameQueue>(m_QueueDropDown.value));
 
+            //Default mode is Matchmaker
             SetMatchmakerMode();
 
-            //We can't click play until the auth is set up.
-            m_ButtonGroup.SetEnabled(false);
             m_AuthState = await AuthenticationWrapper.Authenticating();
+
             if (m_AuthState == AuthState.Authenticated)
-                SetMenuState(MainMenuPlayState.Ready);
+                SetMenuState(MainMenuPlayState.Ready, "Authenticated!");
+            else
+            {
+                SetMenuState(MainMenuPlayState.Error, "Error Authenticating: Check the Console for more details.\n" +
+                    "(Did you remember to link the editor with the Unity cloud Project?)");
+            }
 
             #endregion
         }
@@ -165,6 +176,9 @@ namespace Matchplay.Client.UI
             m_QueueDropDown.UnregisterValueChangedCallback(QueueDropDownChanged);
             m_MapDropDown.UnregisterValueChangedCallback(MapDropDownChanged);
             m_ModeDropDown.UnregisterValueChangedCallback(GameModeDropDownChanged);
+            gameManager.User.onNameChanged -= SetName;
+            gameManager.NetworkClient.OnLocalConnection -= OnConnectionChanged;
+            gameManager.NetworkClient.OnLocalDisconnection -= OnConnectionChanged;
         }
 
         #region buttonPresses
@@ -230,25 +244,83 @@ namespace Matchplay.Client.UI
 
         void OnMatchmade(MatchmakerPollingResult result)
         {
-            SetMenuState(MainMenuPlayState.Ready);
+            switch (result)
+            {
+                case MatchmakerPollingResult.Success:
+                    SetMenuState(MainMenuPlayState.Connecting);
+                    break;
+                case MatchmakerPollingResult.TicketCreationError:
+                    SetMenuState(MainMenuPlayState.Error,
+                        "Matchmaking Error while Creating a ticket.\n Check Console for more details.");
+                    break;
+                case MatchmakerPollingResult.TicketCancellationError:
+                    SetMenuState(MainMenuPlayState.Error,
+                        "Matchmaking Error while Cancelling a ticket.\n Check Console for more details.");
+                    break;
+                case MatchmakerPollingResult.TicketRetrievalError:
+                    SetMenuState(MainMenuPlayState.Error,
+                        "Matchmaking Error while Retrieving a ticket.\n Check Console for more details.");
+                    break;
+                case MatchmakerPollingResult.MatchAssignmentError:
+                    SetMenuState(MainMenuPlayState.Error,
+                        "Matchmaking Error while Assigning a ticket.\n Check Console for more details.");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(result), result, null);
+            }
         }
 
-        void SetMenuState(MainMenuPlayState state)
+        void OnConnectionChanged(ConnectStatus status)
+        {
+            if (status == ConnectStatus.Success)
+                SetMenuState(MainMenuPlayState.Connected);
+            else if (status == ConnectStatus.UserRequestedDisconnect)
+                SetMenuState(MainMenuPlayState.Ready, $"Succsefully Disconnected!");
+            else
+                SetMenuState(MainMenuPlayState.Error, $"Connection Error: {status}");
+        }
+
+        void SetLabelMessage(string message, Color messageColor)
+        {
+            m_MessageLabel.text = message;
+            m_MessageLabel.style.color = messageColor;
+        }
+
+        void SetMenuState(MainMenuPlayState state, string message = "")
         {
             switch (state)
             {
-                case MainMenuPlayState.Ready:
+                case MainMenuPlayState.Authenticating:
+                    //We can't click play until the auth is set up.
+                    m_ButtonGroup.SetEnabled(false);
+                    SetLabelMessage("Authenticating...", Color.white);
+                    break;
+                case MainMenuPlayState.Error:
+                    SetLabelMessage(message, new Color(1, .2f, .2f, 1));
                     m_PlayButton.contentContainer.style.display = DisplayStyle.Flex;
                     m_ButtonGroup.contentContainer.SetEnabled(true);
                     m_CancelButton.contentContainer.style.display = DisplayStyle.None;
                     break;
+                case MainMenuPlayState.Ready:
+                    m_PlayButton.contentContainer.style.display = DisplayStyle.Flex;
+                    m_ButtonGroup.contentContainer.SetEnabled(true);
+                    m_CancelButton.contentContainer.style.display = DisplayStyle.None;
+                    SetLabelMessage(message, new Color(.2f, 1, .2f, 1));
+                    break;
                 case MainMenuPlayState.MatchMaking:
                     m_PlayButton.contentContainer.style.display = DisplayStyle.None;
                     m_CancelButton.contentContainer.style.display = DisplayStyle.Flex;
+                    SetLabelMessage("Matchmaking...", Color.white);
                     break;
                 case MainMenuPlayState.Connecting:
                     m_PlayButton.contentContainer.style.display = DisplayStyle.None;
                     m_CancelButton.contentContainer.style.display = DisplayStyle.Flex;
+                    SetLabelMessage("Connecting...", Color.white);
+                    break;
+                case MainMenuPlayState.Connected:
+                    m_PlayButton.contentContainer.style.display = DisplayStyle.None;
+                    m_CancelButton.contentContainer.style.display = DisplayStyle.None;
+                    SetLabelMessage("Connected!", Color.white);
                     break;
                 case MainMenuPlayState.Cancelling:
                     m_ButtonGroup.contentContainer.SetEnabled(false);

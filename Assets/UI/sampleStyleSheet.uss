@@ -66,6 +66,18 @@
     width: 50%;
     flex-direction: column;
     flex-grow: 0;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-left-color: rgba(51, 51, 51, 255);
+    border-right-color: rgba(51, 51, 51, 255);
+    border-top-color: rgba(51, 51, 51, 255);
+    border-bottom-color: rgba(51, 51, 51, 255);
 }
 
 .subMenuButton:hover {
@@ -146,10 +158,10 @@
     border-bottom-left-radius: 3px;
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
-    border-left-color: rgb(0, 0, 0);
-    border-right-color: rgb(0, 0, 0);
-    border-top-color: rgb(0, 0, 0);
-    border-bottom-color: rgb(0, 0, 0);
+    border-left-color: rgb(51, 51, 51);
+    border-right-color: rgb(51, 51, 51);
+    border-top-color: rgb(51, 51, 51);
+    border-bottom-color: rgb(51, 51, 51);
     justify-content: center;
     display: flex;
     font-size: 30px;
@@ -192,10 +204,10 @@
     border-bottom-left-radius: 3px;
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
-    border-left-color: rgb(36, 36, 36);
-    border-right-color: rgb(36, 36, 36);
-    border-top-color: rgb(36, 36, 36);
-    border-bottom-color: rgb(36, 36, 36);
+    border-left-color: rgb(102, 102, 102);
+    border-right-color: rgb(102, 102, 102);
+    border-top-color: rgb(102, 102, 102);
+    border-bottom-color: rgb(102, 102, 102);
     justify-content: center;
 }
 
@@ -208,7 +220,7 @@
     letter-spacing: 5px;
     word-spacing: 0;
     text-shadow: 0 0 0 rgb(0, 0, 0);
-    background-color: rgb(76, 99, 76);
+    background-color: rgba(77, 102, 77, 0.8);
     border-left-width: 5px;
     border-right-width: 5px;
     border-top-width: 5px;
