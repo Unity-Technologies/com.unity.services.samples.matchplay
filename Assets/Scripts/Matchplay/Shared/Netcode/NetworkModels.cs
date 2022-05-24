@@ -14,14 +14,13 @@ namespace Matchplay.Networking
         Timeout //networkClient timed out while connecting
     }
 
-
-    public struct NetworkString :  INetworkSerializable
+    public struct NetworkString : INetworkSerializable
     {
         private ForceNetworkSerializeByMemcpy<FixedString32Bytes> _info;
+
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref _info);
-
         }
 
         public override string ToString()
@@ -30,6 +29,8 @@ namespace Matchplay.Networking
         }
 
         public static implicit operator string(NetworkString s) => s.ToString();
-        public static implicit operator NetworkString(string s) => new NetworkString() { _info = new FixedString32Bytes(s) };
+
+        public static implicit operator NetworkString(string s) =>
+            new NetworkString() { _info = new FixedString32Bytes(s) };
     }
 }

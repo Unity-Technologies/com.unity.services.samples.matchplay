@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 315928197}
   - component: {fileID: 315928199}
   m_Layer: 0
-  m_Name: Directional Light
+  m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -152,11 +152,11 @@ Light:
   serializedVersion: 10
   m_Type: 0
   m_Shape: 0
-  m_Color: {r: 0.9386792, g: 1, b: 0.9987991, a: 1}
+  m_Color: {r: 0.9811321, g: 0.9673289, b: 0.85617656, a: 1}
   m_Intensity: 45
-  m_Range: 55
-  m_SpotAngle: 65
-  m_InnerSpotAngle: 65
+  m_Range: 15
+  m_SpotAngle: 91.56766
+  m_InnerSpotAngle: 73.84489
   m_CookieSize: 10
   m_Shadows:
     m_Type: 1

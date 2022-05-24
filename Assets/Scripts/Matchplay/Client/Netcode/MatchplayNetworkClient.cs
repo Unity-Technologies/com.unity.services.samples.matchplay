@@ -65,8 +65,10 @@ namespace Matchplay.Client
             if (m_NetworkManager.StartClient())
             {
                 Debug.Log("Starting Client!");
-                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected, ReceiveLocalClientConnectStatus);
-                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected, ReceiveLocalClientDisconnectStatus);
+                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientConnected,
+                    ReceiveLocalClientConnectStatus);
+                MatchplayNetworkMessenger.RegisterListener(NetworkMessage.LocalClientDisconnected,
+                    ReceiveLocalClientDisconnectStatus);
             }
             else
             {
@@ -100,7 +102,6 @@ namespace Matchplay.Client
             if (clientId == m_NetworkManager.LocalClientId)
                 return;
             NetworkShutdown();
-
         }
 
         void NetworkShutdown()
@@ -119,7 +120,6 @@ namespace Matchplay.Client
             MatchplayNetworkMessenger.UnRegisterListener(NetworkMessage.LocalClientDisconnected);
             SceneManager.LoadScene("mainMenu");
         }
-
 
         public void Dispose()
         {
