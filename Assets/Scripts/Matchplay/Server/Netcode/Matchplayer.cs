@@ -1,9 +1,9 @@
 using Matchplay.Client;
 using Matchplay.Networking;
 using Matchplay.Shared;
+using Matchplay.Shared.Tools;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Matchplay.Server
 {
@@ -15,16 +15,14 @@ namespace Matchplay.Server
     {
         public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>();
         public NetworkVariable<NetworkString> PlayerName = new NetworkVariable<NetworkString>();
-
-        [FormerlySerializedAs("playerRenderer")]
-        [SerializeField] Renderer m_PlayerRenderer;
+        public RendererColorer colorSwitcher;
 
         public override void OnNetworkSpawn()
         {
             if (IsServer && !IsHost)
                 return;
 
-            SetColor(Color.black,PlayerColor.Value);
+            SetColor(Color.black, PlayerColor.Value);
             PlayerColor.OnValueChanged += SetColor;
             ClientSingleton.Instance.Manager.AddMatchPlayer(this);
         }
@@ -34,7 +32,7 @@ namespace Matchplay.Server
             if (oldColor == newColor)
                 return;
 
-            m_PlayerRenderer.material.color = newColor;
+            colorSwitcher.SetColor(newColor);
         }
 
         public override void OnNetworkDespawn()

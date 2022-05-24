@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Matchplay.Shared.Tools;
 using UnityEngine;
 
 namespace Matchplay.Shared
@@ -30,7 +31,8 @@ namespace Matchplay.Shared
     {
         public MatchplayUser()
         {
-            Data = new UserData("Player", Guid.NewGuid().ToString(), 0, new GameInfo());
+            var tempId = Guid.NewGuid().ToString();
+            Data = new UserData(NameGenerator.GetName(tempId), tempId, 0, new GameInfo());
         }
 
         public UserData Data { get; }

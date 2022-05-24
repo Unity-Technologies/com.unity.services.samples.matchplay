@@ -5,7 +5,7 @@ namespace Matchplay.Shared.Tools
 {
 	public class Customization
 	{
-		static List<Color> s_Colors = new()
+		static List<Color> s_Colors = new List<Color>()
 		{
 			new Color(0.7f,0.2f, 0.2f),
 			new Color(0.7f,0.4f, 0.2f),

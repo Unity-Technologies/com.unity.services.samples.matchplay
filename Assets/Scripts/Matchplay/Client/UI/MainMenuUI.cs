@@ -10,6 +10,7 @@ namespace Matchplay.Client.UI
     enum MainMenuPlayState
     {
         Authenticating,
+        AuthentionError,
         Error,
         Ready,
         MatchMaking,
@@ -55,6 +56,9 @@ namespace Matchplay.Client.UI
 
         async void Start()
         {
+            if (ClientSingleton.Instance == null)
+                return;
+
             m_Document = GetComponent<UIDocument>();
             var root = m_Document.rootVisualElement;
 
@@ -140,7 +144,8 @@ namespace Matchplay.Client.UI
                 SetMenuState(MainMenuPlayState.Ready, "Authenticated!");
             else
             {
-                SetMenuState(MainMenuPlayState.Error, "Error Authenticating: Check the Console for more details.\n" +
+                SetMenuState(MainMenuPlayState.AuthentionError,
+                    "Error Authenticating: Check the Console for more details.\n" +
                     "(Did you remember to link the editor with the Unity cloud Project?)");
             }
 
@@ -213,18 +218,23 @@ namespace Matchplay.Client.UI
             if (m_LocalLaunchMode)
             {
                 if (int.TryParse(m_LocalPort, out var localIntPort))
+                {
                     gameManager.BeginConnection(m_LocalIP, localIntPort);
+                    SetMenuState(MainMenuPlayState.Connecting);
+                }
                 else
+                {
+                    SetMenuState(MainMenuPlayState.Error, "No valid port in Port Field");
                     Debug.LogError("No valid port in Port Field");
+                }
             }
             else
             {
 #pragma warning disable 4014
                 gameManager.MatchmakeAsync(OnMatchmade);
 #pragma warning restore 4014
+                SetMenuState(MainMenuPlayState.MatchMaking);
             }
-
-            SetMenuState(MainMenuPlayState.MatchMaking);
         }
 
         async void CancelButtonPressed()
@@ -294,6 +304,12 @@ namespace Matchplay.Client.UI
                     //We can't click play until the auth is set up.
                     m_ButtonGroup.SetEnabled(false);
                     SetLabelMessage("Authenticating...", Color.white);
+                    break;
+                case MainMenuPlayState.AuthentionError:
+                    SetLabelMessage(message, new Color(1, .2f, .2f, 1));
+                    m_PlayButton.contentContainer.style.display = DisplayStyle.Flex;
+                    m_ButtonGroup.contentContainer.SetEnabled(false);
+                    m_CancelButton.contentContainer.style.display = DisplayStyle.None;
                     break;
                 case MainMenuPlayState.Error:
                     SetLabelMessage(message, new Color(1, .2f, .2f, 1));
