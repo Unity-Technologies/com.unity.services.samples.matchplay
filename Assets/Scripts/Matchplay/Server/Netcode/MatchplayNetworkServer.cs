@@ -66,32 +66,33 @@ namespace Matchplay.Server
         {
             m_NetworkManager.SceneManager.LoadScene(startingGameInfo.ToSceneName, LoadSceneMode.Single);
 
-            m_NetworkManager.SceneManager.OnLoadComplete += CreateAndSetSynchServerData;
+            var localNetworkedSceneLoaded = false;
+            m_NetworkManager.SceneManager.OnLoadComplete += CreateAndSetSynchedServerData;
 
-            void CreateAndSetSynchServerData(ulong clientId, string sceneName, LoadSceneMode sceneMode)
+            void CreateAndSetSynchedServerData(ulong clientId, string sceneName, LoadSceneMode sceneMode)
             {
                 if (clientId != m_NetworkManager.LocalClientId)
                     return;
-
-                m_SynchedServerData = GameObject.Instantiate(ServerSingleton.Instance.SynchedServerDataPrefab);
-                m_SynchedServerData.GetComponent<NetworkObject>().Spawn();
-
-                m_NetworkManager.SceneManager.OnLoadComplete -= CreateAndSetSynchServerData;
+                localNetworkedSceneLoaded = true;
+                m_NetworkManager.SceneManager.OnLoadComplete -= CreateAndSetSynchedServerData;
             }
 
-            var waitTask = WaitUntilLoaded();
+            var waitTask = WaitUntilSceneLoaded();
 
-            async Task WaitUntilLoaded()
+            async Task WaitUntilSceneLoaded()
             {
-                while (m_SynchedServerData == null)
+                while (!localNetworkedSceneLoaded)
                     await Task.Delay(50);
             }
 
             if (await Task.WhenAny(waitTask, Task.Delay(5000)) != waitTask)
             {
-                Debug.LogWarning($"Timed out waiting for Server Scene Loading: Not able to get SynchedServerData");
+                Debug.LogWarning($"Timed out waiting for Server Scene Loading: Not able to Load Scene");
                 return null;
             }
+
+            m_SynchedServerData = GameObject.Instantiate(ServerSingleton.Instance.SynchedServerDataPrefab);
+            m_SynchedServerData.GetComponent<NetworkObject>().Spawn();
 
             m_SynchedServerData.map.Value = startingGameInfo.map;
             m_SynchedServerData.gameMode.Value = startingGameInfo.gameMode;

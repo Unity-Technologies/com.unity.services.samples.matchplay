@@ -38,9 +38,12 @@ namespace Matchplay.Client.UI
         DropdownField m_ModeDropDown;
         DropdownField m_MapDropDown;
 
+
         VisualElement m_ButtonGroup;
         VisualElement m_IPPortGroup;
         VisualElement m_QueueGroup;
+        VisualElement m_MapGroup;
+        VisualElement m_ModeGroup;
         Label m_NameLabel;
 
         TextField m_IPField;
@@ -56,6 +59,8 @@ namespace Matchplay.Client.UI
 
             m_ButtonGroup = root.Q<VisualElement>("play_button_group");
             m_QueueGroup = root.Q<VisualElement>("queue_group");
+            m_MapGroup = root.Q<VisualElement>("map_group");
+            m_ModeGroup = root.Q<VisualElement>("mode_group");
             m_IPPortGroup = root.Q<VisualElement>("ip_port_group");
 
             #endregion
@@ -172,8 +177,8 @@ namespace Matchplay.Client.UI
             else
                 m_ButtonGroup.contentContainer.SetEnabled(false);
             m_PlayButton.text = "Matchmake";
-            m_ModeDropDown.contentContainer.style.display = DisplayStyle.Flex;
-            m_MapDropDown.contentContainer.style.display = DisplayStyle.Flex;
+            m_ModeGroup.contentContainer.style.display = DisplayStyle.Flex;
+            m_MapGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_QueueGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.None;
         }
@@ -182,8 +187,8 @@ namespace Matchplay.Client.UI
         {
             m_LocalLaunchMode = true;
             m_ButtonGroup.contentContainer.SetEnabled(true);
-            m_ModeDropDown.contentContainer.style.display = DisplayStyle.None;
-            m_MapDropDown.contentContainer.style.display = DisplayStyle.None;
+            m_ModeGroup.contentContainer.style.display = DisplayStyle.None;
+            m_MapGroup.contentContainer.style.display = DisplayStyle.None;
             m_QueueGroup.contentContainer.style.display = DisplayStyle.None;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_PlayButton.text = "Play";
