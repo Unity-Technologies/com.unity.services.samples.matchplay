@@ -118,8 +118,8 @@ In your Matchplay project, go to the top bar and select BuildTools  Linux Server
 ![Build Tool Tab](~Documentation/Images/Build_1.png "Build Tool Tab")
 
 
-It should automatically build out your project as a server build, and output it to 
-&lt;project rootBuildsMatchplay-&lt;_platformBuildType_&lt;DateTime
+It should automatically build out your project as a server build, and output it to \
+<_project root_>/Builds/Matchplay-<_platformBuildType_>_<_dateTime_>
 
 
 ![Build Dir](~Documentation/Images/Build_2.PNG "Build Directory")
