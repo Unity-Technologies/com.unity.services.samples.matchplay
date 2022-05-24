@@ -63,11 +63,10 @@ The Server is fire-and-forget. It will either get its configuration from the mat
 
 To use Unity’s multiplayer services, you need a cloud organization ID for your project. Follow the guide below to  set up your org if you don't have one
 
-[httpssupport.unity.comhcen-usarticles208592876-How-do-I-create-a-new-Organization-](httpssupport.unity.comhcen-usarticles208592876-How-do-I-create-a-new-Organization-)
-
+[https://support.unity.com/hc/en-us/articles/208592876-How-do-I-create-a-new-Organization-](https://support.unity.com/hc/en-us/articles/208592876-How-do-I-create-a-new-Organization-) \
 For connecting your project with services, follow this guide
 
-[httpsdocs.unity3d.comManualSettingUpProjectServices.html](httpsdocs.unity3d.comManualSettingUpProjectServices.html)
+[https://docs.unity3d.com/ManualSettingUpProjectServices.html](https://docs.unity3d.com/ManualSettingUpProjectServices.html)
 
 
 ### Services
@@ -75,30 +74,33 @@ For connecting your project with services, follow this guide
 
 #### Authentication
 
-Matchmaker and Multiplay depend on Unity Authentication 2.0 for credentials. This sample uses Unity Auth’s anonymous login feature to create semi-permanent credentials that are unique to each player but do not require developers to maintain a persistent account for them. More information about Authentication here [httpsdocs.unity3d.comManualcom.unity.services.authentication.html](httpsdocs.unity3d.comManualcom.unity.services.authentication.html)
+Matchmaker and Multiplay depend on Unity Authentication 2.0 for credentials. This sample uses Unity Auth’s anonymous login feature to create semi-permanent credentials that are unique to each player but do not require developers to maintain a persistent account for them. \
+More information about Authentication here \
+[https://docs.unity3d.com/Manual/com.unity.services.authentication.html](https://docs.unity3d.com/Manual/com.unity.services.authentication.html)
 
 
 #### Matchmaker
 
 The Matchmaker service allows players to search for other players with the same preferences as them and put them in a match together. It is the best way to allow your players a Find me a good match button.
 
-The Matchmaker documentation contains code samples and additional information about the service. It includes comprehensive details for using the Matchmaker along with additional code samples, and it might help you better understand the Matchplay [httpdocumentation.cloud.unity3d.comencollections3349749-unity-matchmaker](httpdocumentation.cloud.unity3d.comencollections3349749-unity-matchmaker)
+The Matchmaker documentation contains code samples and additional information about the service. It includes comprehensive details for using the Matchmaker along with additional code samples, and it might help you better understand the Matchplay \
+[http://documentation.cloud.unity3d.com/en/collections/3349749-unity-matchmaker](http://documentation.cloud.unity3d.com/en/collections/3349749-unity-matchmaker)
 
-The Lobby service can be managed in the Unity Dashboard 
-[httpsdashboard.unity3d.commatchmaker](httpsdashboard.unity3d.commatchmaker)
+The Lobby service can be managed in the Unity Dashboard \
+[https://dashboard.unity3d.com/matchmaker](https://dashboard.unity3d.com/matchmaker)
 
 
 #### Multiplay
 
 The Multiplay Service hosts game servers in the cloud to allow for easy connection between players from around the world with the best pingperformance possible.
 
-The Multiplay documentation contains code samples and additional information about the service. It includes comprehensive details for using Multiplay along with additional code samples, and it might help you better understand the Matchplay Sample
+The Multiplay documentation contains code samples and additional information about the service. It includes comprehensive details for using Multiplay along with additional code samples, and it might help you better understand the Matchplay Sample \
 
-[httpdocumentation.cloud.unity3d.comencollections3254305-multiplay-self-serve](httpdocumentation.cloud.unity3d.comencollections3254305-multiplay-self-serve)
+[http://documentation.cloud.unity3d.com/en/collections/3254305-multiplay-self-serve](http://documentation.cloud.unity3d.com/en/collections/3254305-multiplay-self-serve)
 
-The Relay service can be managed in the Unity Dashboard
+The Relay service can be managed in the Unity Dashboard \
 
-[httpsdashboard.unity3d.commultiplay](httpsdashboard.unity3d.commultiplay)
+[https://dashboard.unity3d.com/multiplay](https://dashboard.unity3d.com/multiplay)
 
 
 ## Sample Setup Guide
@@ -113,14 +115,14 @@ If you have not already done so, hook up your Editor project to the Cloud Projec
 
 In your Matchplay project, go to the top bar and select BuildTools  Linux Server
 
-![Build Tool Tab](~DocumentationImagesBuild_1.png Build Tool Tab)
+![Build Tool Tab](~Documentation/Images/Build_1.png "Build Tool Tab")
 
 
 It should automatically build out your project as a server build, and output it to 
 &lt;project rootBuildsMatchplay-&lt;_platformBuildType_&lt;DateTime
 
 
-![Build Dir](~DocumentationImagesBuild_2.PNG Build Directory)
+![Build Dir](~Documentation/Images/Build_2.PNG "Build Directory")
 
 
 Next we will upload the server to Multiplay and configure server hosting.
@@ -132,7 +134,7 @@ In your Unity Dashboard, go to Multiplay  Setup Guide and select Create a build.
 Fill in some Details and move to Upload Files. 
 Drag your Linux Headless Build into the Drop Box.
 
-![Drag and Drop](~DocumentationImagesMultiplay_1.PNG Drag and drop)
+![Drag and Drop](~Documentation/Images/Multiplay_1.PNG "Drag and drop")
 
 
 Once Uploaded, continue the Setup Guide to Build Configuration
@@ -144,12 +146,12 @@ Choose SQP for your Query type, and fill in the following as Custom launch param
 _-ip 0.0.0.0 -port $$port$$ -queryPort $$query_port$$ -logFile $$server_log_dir$$matchplaylog.log_
 
 
-![Build Settings](~DocumentationImagesMultiplay_2.PNG Build Settings!)
+![Build Settings](~Documentation/Images/Multiplay_2.PNG "Build Settings!")
 
 
 Finally we configure the fleet, choose a fleet name, and select the previously created build configuration. For the scaling settings, select 1 minimum available, and 5 max. 
 
-![Fleet Settings](~DocumentationImagesMultiplay_3.PNG Fleet Settings!)
+![Fleet Settings](~Documentation/Images/Multiplay_3.PNG "Fleet Settings!")
 
 
 And you’ve got your Multiplay Fleet ready to go!
@@ -164,15 +166,15 @@ You can click through Integrate Matchmaker for this guide, as the sample already
 Click on Create Queue, 
 Important name the queue casual-queue, and set the max players on a ticket to 10.
 
-![Matchmaker Queue](~DocumentationImagesMatchmaker_1.PNG Matchmaker Queue)
+![Matchmaker Queue](~Documentation/Images/Matchmaker_1.PNG "Matchmaker Queue")
 
 The exact string queue name needs to match an input string in the SDK
 
-![Queue string in code](~DocumentationImagesMatchmaker_1b.PNG Queue String in code)
+![Queue string in code](~Documentation/Images/Matchmaker_1b.PNG "Queue String in code")
 
 Next create a Pool, select your previously created Multiplay Fleet and Build Configuration. Set the timeout to 15 seconds.
 
-![Matchmaker Pool](~DocumentationImagesMatchmaker_2.PNG Matchmaker Pool)
+![Matchmaker Pool](~Documentation/Images/Matchmaker_2.PNG "Matchmaker Pool")
 
 
 #### Match definition Rules
@@ -180,14 +182,14 @@ Next create a Pool, select your previously created Multiplay Fleet and Build Con
 Set up the region you are playing from. (Should be same as your Server Fleet Region) 
 Set up the basic team definitions, and skip the advanced rules for now.
 
-![Team Rules](~DocumentationImagesMatchmaker_3.PNG Team Rules)
+![Team Rules](~Documentation/Images/Matchmaker_3.PNG "Team Rules")
 
 
 The Match rules are the filters that we use in the sample to match the players by their preferences. 
 Within the pools and queues, every player will have their settings evaluated against every other player. Since the sample is trying to be simple, and does not have a way to easily test large-scale matchmaking. 
 
 
-![Match Rules](~DocumentationImagesMatchmaker_4.PNG Match Rules)
+![Match Rules](~Documentation/Images/Matchmaker_4.PNG "Match Rules")
 
 Click finish and you’ll have configured the matchmaker! 
 
