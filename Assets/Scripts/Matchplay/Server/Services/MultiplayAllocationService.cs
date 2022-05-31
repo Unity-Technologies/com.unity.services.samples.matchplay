@@ -1,7 +1,7 @@
 using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Matchplay.Shared;
 using Newtonsoft.Json;
 using Unity.Services.Matchmaker.Models;
 using Unity.Services.Multiplay;
@@ -17,6 +17,8 @@ namespace Matchplay.Server
         IServerCheckManager m_ServerCheckManager;
         IServerEvents m_ServerEvents;
         string m_AllocationId;
+        bool m_LocalServerValuesChanged = false;
+        CancellationTokenSource m_ServerCheckCancel;
 
         const string k_PayloadProxyUrl = "http://localhost:8086";
 
@@ -25,8 +27,9 @@ namespace Matchplay.Server
             try
             {
                 m_MultiplayService = MultiplayService.Instance;
+                m_ServerCheckCancel = new CancellationTokenSource();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.LogWarning($"Error creating Multiplay allocation service.\n{ex}");
             }
@@ -51,58 +54,101 @@ namespace Matchplay.Server
         }
 
         //The networked server is our source of truth for what is going on, so we update our multiplay check server with values from there.
-        public async Task BeginServerCheck(GameInfo info)
+        public async Task BeginServerCheck()
         {
             if (m_MultiplayService == null)
                 return;
-            m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync((ushort)info.MaxUsers, "Matchplay Server", info.gameMode.ToString(), "0", info.map.ToString());
+            m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync((ushort)10,
+                "", "", "0", "");
+
+#pragma warning disable 4014
+            ServerCheckLoop(m_ServerCheckCancel.Token);
+#pragma warning restore 4014
+        }
+
+        public void SetServerName(string name)
+        {
+            m_ServerCheckManager.ServerName = name;
+            m_LocalServerValuesChanged = true;
+        }
+
+        public void SetBuildID(string id)
+        {
+            m_ServerCheckManager.BuildId = id;
+            m_LocalServerValuesChanged = true;
+        }
+
+        public void SetMaxPlayers(ushort players)
+        {
+            m_ServerCheckManager.MaxPlayers = players;
         }
 
         public void SetPlayerCount(ushort count)
         {
             m_ServerCheckManager.CurrentPlayers = count;
+            m_LocalServerValuesChanged = true;
         }
 
         public void AddPlayer()
         {
             m_ServerCheckManager.CurrentPlayers += 1;
+            m_LocalServerValuesChanged = true;
         }
 
         public void RemovePlayer()
         {
             m_ServerCheckManager.CurrentPlayers -= 1;
+            m_LocalServerValuesChanged = true;
         }
 
-        public void ChangedMap(Map newMap)
+        public void SetMap(string newMap)
         {
-            if (m_ServerCheckManager?.Map == null)
-                return;
-            m_ServerCheckManager.Map = newMap.ToString();
+
+            m_ServerCheckManager.Map = newMap;
+            m_LocalServerValuesChanged = true;
         }
 
-        public void ChangedMode(GameMode mode)
+        public void SetMode(string mode)
         {
-            if (m_ServerCheckManager?.GameType == null)
-                return;
-            m_ServerCheckManager.GameType = mode.ToString();
+
+            m_ServerCheckManager.GameType = mode;
+            m_LocalServerValuesChanged = true;
+        }
+
+        public void UpdateServerIfChanged()
+        {
+            if (m_LocalServerValuesChanged)
+            {
+                m_ServerCheckManager.UpdateServerCheck();
+                m_LocalServerValuesChanged = false;
+            }
+        }
+
+        async Task ServerCheckLoop(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                UpdateServerIfChanged();
+                await Task.Delay(1000);
+            }
         }
 
         async Task<string> AwaitAllocationID()
         {
-
             var config = m_MultiplayService.ServerConfig;
             Debug.Log($"Awaiting Allocation. Server Config is:\n" +
-                      $"-ServerID: { config.ServerId}\n" +
-                      $"-AllocationID: {config.AllocatedUuid}\n" +
-                      $"-Port: {config.Port}\n" +
-                      $"-QPort: {config.QueryPort}");
+                $"-ServerID: {config.ServerId}\n" +
+                $"-AllocationID: {config.AllocatedUuid}\n" +
+                $"-Port: {config.Port}\n" +
+                $"-QPort: {config.QueryPort}\n" +
+                $"-logs: {config.ServerLogDirectory}");
 
             //Waiting on OnMultiplayAllocation() event (Probably wont ever happen in a matchmaker scenario)
             while (string.IsNullOrEmpty(m_AllocationId))
             {
                 var configID = config.AllocatedUuid;
 
-                if (!string.IsNullOrEmpty(configID)&&string.IsNullOrEmpty(m_AllocationId))
+                if (!string.IsNullOrEmpty(configID) && string.IsNullOrEmpty(m_AllocationId))
                 {
                     Debug.Log($"Config had AllocationID: {configID}");
                     m_AllocationId = configID;
@@ -136,7 +182,8 @@ namespace Matchplay.Server
             switch (webRequest.result)
             {
                 case UnityWebRequest.Result.ConnectionError:
-                    Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": ConnectionError: " + webRequest.error);
+                    Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": ConnectionError: " +
+                        webRequest.error);
                     break;
                 case UnityWebRequest.Result.DataProcessingError:
                     Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": Error: " + webRequest.error);
@@ -145,7 +192,8 @@ namespace Matchplay.Server
                     Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": HTTP Error: " + webRequest.error);
                     break;
                 case UnityWebRequest.Result.Success:
-                    Debug.Log(nameof(GetMatchmakerAllocationPayloadAsync) + ":\nReceived: " + webRequest.downloadHandler.text);
+                    Debug.Log(nameof(GetMatchmakerAllocationPayloadAsync) + ":\nReceived: " +
+                        webRequest.downloadHandler.text);
                     break;
                 case UnityWebRequest.Result.InProgress:
                     break;
@@ -172,14 +220,14 @@ namespace Matchplay.Server
 
         void OnMultiplayDeAllocation(MultiplayDeallocation deallocation)
         {
-            Debug.Log($"Multiplay Deallocated : ID: {deallocation.AllocationId}\nEvent: {deallocation.EventId}\nServer{deallocation.ServerId}");
+            Debug.Log(
+                $"Multiplay Deallocated : ID: {deallocation.AllocationId}\nEvent: {deallocation.EventId}\nServer{deallocation.ServerId}");
         }
 
         void OnMultiplayError(MultiplayError error)
         {
             Debug.Log($"MultiplayError : {error.Reason}\n{error.Detail}");
         }
-
 
         public void Dispose()
         {
@@ -189,6 +237,9 @@ namespace Matchplay.Server
                 m_Servercallbacks.Deallocate -= OnMultiplayDeAllocation;
                 m_Servercallbacks.Error -= OnMultiplayError;
             }
+
+            if (m_ServerCheckCancel != null)
+                m_ServerCheckCancel.Cancel();
 
             m_ServerEvents?.UnsubscribeAsync();
         }

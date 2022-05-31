@@ -9,7 +9,6 @@ using Matchplay.Shared;
 using Matchplay.Shared.Tools;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 namespace Matchplay.Server
 {
@@ -91,7 +90,7 @@ namespace Matchplay.Server
                 return null;
             }
 
-            m_SynchedServerData = GameObject.Instantiate(ServerSingleton.Instance.SynchedServerDataPrefab);
+            m_SynchedServerData = GameObject.Instantiate(Resources.Load<SynchedServerData>("SynchedServerData"));
             m_SynchedServerData.GetComponent<NetworkObject>().Spawn();
 
             m_SynchedServerData.map.Value = startingGameInfo.map;
