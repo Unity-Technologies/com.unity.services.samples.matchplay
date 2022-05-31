@@ -9,7 +9,6 @@ using Matchplay.Shared;
 using Matchplay.Shared.Tools;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 namespace Matchplay.Server
 {
