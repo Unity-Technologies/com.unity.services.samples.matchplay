@@ -36,15 +36,14 @@ namespace Matchplay.Tests
         public IEnumerator Client_Initialization_With_Services()
         {
             ClientGameManager clientManager = new ClientGameManager("timeInClient");
-            var awaitClientInitialization = AwaitClientInitializedOrTimeout(clientManager, 6);
-            yield return new WaitUntil(()=>awaitClientInitialization.IsCompleted);
 
+            var awaitClientInitialization = AwaitClientInitializedOrTimeout(clientManager, 6);
+            yield return new WaitUntil(() => awaitClientInitialization.IsCompleted);
             Assert.NotNull(clientManager.User);
             Assert.NotNull(clientManager.NetworkClient);
             Assert.NotNull(clientManager.Matchmaker);
-            Assert.AreEqual(AuthState.Authenticated,AuthenticationWrapper.AuthorizationState);
+            Assert.AreEqual(AuthState.Authenticated, AuthenticationWrapper.AuthorizationState);
             Debug.Log("Client started with services");
-
         }
 
         [UnityTest]
@@ -52,10 +51,10 @@ namespace Matchplay.Tests
         public IEnumerator Client_Initialization_With_Services_Time_Out()
         {
             ApplicationData.AuthTimeoutUnitTest = true;
-            ClientGameManager  clientManager = new ClientGameManager("timeoutClient");
+            ClientGameManager clientManager = new ClientGameManager("timeoutClient");
             AuthenticationWrapper.SignOut();
             var awaitClientInitialization = AwaitClientInitializedOrTimeout(clientManager, 6);
-            yield return new WaitUntil(()=>awaitClientInitialization.IsCompleted);
+            yield return new WaitUntil(() => awaitClientInitialization.IsCompleted);
 
             Assert.NotNull(clientManager.User);
             Assert.NotNull(clientManager.NetworkClient);
@@ -74,7 +73,5 @@ namespace Matchplay.Tests
                 }
             }), Task.Delay(timeOutSeconds * 1000));
         }
-
-
     }
 }
