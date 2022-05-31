@@ -116,6 +116,10 @@ namespace Matchplay.Server
             return MatchPlayerCount < m_MaxPlayers;
         }
 
+
+        /// <summary>
+        /// Internal use Only TODO Remove before shipping
+        /// </summary>
         void SetStagingEnvironment()
         {
             var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;

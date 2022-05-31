@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.12731713, g: 0.13414736, b: 0.121078536, a: 1}
+  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.1210787, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -447,13 +447,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2004524346269018206, guid: 3db265d2f6a5da94aa08ca082eae9094, type: 3}
+      propertyPath: rotationSpeed
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 2004524346269018207, guid: 3db265d2f6a5da94aa08ca082eae9094, type: 3}
       propertyPath: m_Name
       value: planet
       objectReference: {fileID: 0}
     - target: {fileID: 7856396370006918698, guid: 3db265d2f6a5da94aa08ca082eae9094, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 1404748305
+      value: 3312246064
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3db265d2f6a5da94aa08ca082eae9094, type: 3}
@@ -508,13 +512,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2004524346269018206, guid: 3db265d2f6a5da94aa08ca082eae9094, type: 3}
+      propertyPath: rotationSpeed
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 2004524346269018207, guid: 3db265d2f6a5da94aa08ca082eae9094, type: 3}
       propertyPath: m_Name
       value: NetworkedSeatManager
       objectReference: {fileID: 0}
     - target: {fileID: 7856396370006918698, guid: 3db265d2f6a5da94aa08ca082eae9094, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 691318916
+      value: 4071960993
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3db265d2f6a5da94aa08ca082eae9094, type: 3}

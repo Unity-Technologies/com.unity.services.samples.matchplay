@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
@@ -25,6 +26,7 @@ namespace Matchplay.Server
         bool m_StartedServices;
         MultiplayAllocationService m_MultiplayAllocationService;
         SynchedServerData m_SynchedServerData;
+        string m_ServerName = "Matchplay Server";
 
         public ServerGameManager(string serverIP, int serverPort, int serverQPort, NetworkManager manager)
         {
@@ -33,6 +35,7 @@ namespace Matchplay.Server
             m_QueryPort = serverQPort;
             m_NetworkServer = new MatchplayNetworkServer(manager);
             m_MultiplayAllocationService = new MultiplayAllocationService();
+            m_ServerName = NameGenerator.GetName(Guid.NewGuid().ToString());
         }
 
         /// <summary>
@@ -82,6 +85,8 @@ namespace Matchplay.Server
                 return;
             }
 
+            m_SynchedServerData.serverID.Value = m_ServerName;
+
             m_SynchedServerData.map.OnValueChanged += OnServerChangedMap;
             m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
         }
@@ -105,8 +110,16 @@ namespace Matchplay.Server
 
         async Task StartAllocationService(GameInfo startingGameInfo, ushort playerCount)
         {
-            await m_MultiplayAllocationService.BeginServerCheck(startingGameInfo);
+            await m_MultiplayAllocationService.BeginServerCheck();
+
+            //Create a unique name for the server to show that we are joining the same one
+
+            m_MultiplayAllocationService.SetServerName(m_ServerName);
             m_MultiplayAllocationService.SetPlayerCount(playerCount);
+            m_MultiplayAllocationService.SetMaxPlayers(10);
+            m_MultiplayAllocationService.SetBuildID("0");
+            m_MultiplayAllocationService.SetMap(startingGameInfo.map.ToString());
+            m_MultiplayAllocationService.SetMode(startingGameInfo.gameMode.ToString());
         }
 
         async Task StartBackfill(MatchmakerAllocationPayload payload, GameInfo startingGameInfo)
@@ -129,12 +142,12 @@ namespace Matchplay.Server
         //For now we don't have any mechanics to change the map or mode mid-game. But if we did, we would update the backfill ticket to reflect that too.
         void OnServerChangedMap(Map oldMap, Map newMap)
         {
-            m_MultiplayAllocationService.ChangedMap(newMap);
+            m_MultiplayAllocationService.SetMap(newMap.ToString());
         }
 
         void OnServerChangedMode(GameMode oldMode, GameMode newMode)
         {
-            m_MultiplayAllocationService.ChangedMode(newMode);
+            m_MultiplayAllocationService.SetMode(newMode.ToString());
         }
 
         void UserJoinedServer(UserData joinedUser)

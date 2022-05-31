@@ -19,6 +19,7 @@ namespace Matchplay.Client.UI
         public void SetPlayerLabel(Matchplayer matchPlayer)
         {
             m_player = matchPlayer;
+            ChangeLabelName("", m_player.name);
             m_player.PlayerName.OnValueChanged += ChangeLabelName;
         }
 
@@ -32,10 +33,12 @@ namespace Matchplay.Client.UI
             if (m_player == null)
                 return;
 
-            if(m_Camera==null)
+            if (m_Camera == null)
                 m_Camera = Camera.main;
-            if(m_Camera!=null)
-                m_TextLabel.transform.LookAt(m_TextLabel.transform.position+m_Camera.transform.rotation*transform.forward, m_Camera.transform.rotation* Vector3.up);
+            if (m_Camera != null)
+                m_TextLabel.transform.LookAt(
+                    m_TextLabel.transform.position + m_Camera.transform.rotation * transform.forward,
+                    m_Camera.transform.rotation * Vector3.up);
             transform.position = m_player.transform.position;
         }
 
