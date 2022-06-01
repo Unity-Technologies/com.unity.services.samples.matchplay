@@ -19,7 +19,7 @@ namespace Matchplay.Client.UI
         public void SetPlayerLabel(Matchplayer matchPlayer)
         {
             m_player = matchPlayer;
-            ChangeLabelName("", m_player.name);
+            ChangeLabelName("", m_player.PlayerName.Value);
             m_player.PlayerName.OnValueChanged += ChangeLabelName;
         }
 
