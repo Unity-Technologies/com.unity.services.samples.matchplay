@@ -27,6 +27,7 @@ namespace Matchplay.Client
         public ClientGameManager(string profileName = "default")
         {
             User = new MatchplayUser();
+            Debug.Log($"Beginning with new Profile:{profileName}");
             ProfileName = profileName;
 
             //We can load the mainMenu while the client initializes
@@ -55,6 +56,7 @@ namespace Matchplay.Client
                 User.AuthId = AuthenticationWrapper.ClientId();
             else
                 User.AuthId = Guid.NewGuid().ToString();
+            Debug.Log($"did Auth?{authenticationResult} {User.AuthId}");
             Initialized = true;
         }
 

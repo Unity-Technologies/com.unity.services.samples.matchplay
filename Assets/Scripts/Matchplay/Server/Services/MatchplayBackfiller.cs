@@ -13,17 +13,17 @@ namespace Matchplay.Server
         public bool Backfilling { get; private set; } = false;
 
         CreateBackfillTicketOptions m_CreateBackfillOptions;
-        BackfillTicket m_LocalBackfillData;
+        BackfillTicket m_LocalBackfillTicket;
         bool m_LocalDataDirty = false;
         const int k_TicketCheckMs = 1000;
         int m_MaxPlayers;
-        int MatchPlayerCount => m_LocalBackfillData?.Properties.MatchProperties.Players.Count ?? 0;
+        int MatchPlayerCount => m_LocalBackfillTicket?.Properties.MatchProperties.Players.Count ?? 0;
 
         public MatchplayBackfiller(string connection, string queueName, MatchProperties matchmakerPayloadProperties, int maxPlayers)
         {
             m_MaxPlayers = maxPlayers;
             var backfillProperties = new BackfillTicketProperties(matchmakerPayloadProperties);
-            m_LocalBackfillData = new BackfillTicket { Id = matchmakerPayloadProperties.BackfillTicketId, Properties = backfillProperties };
+            m_LocalBackfillTicket = new BackfillTicket { Id = matchmakerPayloadProperties.BackfillTicketId, Properties = backfillProperties };
 
             m_CreateBackfillOptions = new CreateBackfillTicketOptions
             {
@@ -46,8 +46,8 @@ namespace Matchplay.Server
             Debug.Log($"Starting backfill  Server: {MatchPlayerCount}/{m_MaxPlayers}");
 
             //Create a ticket if we don't have one already (via Allocation)
-            if (string.IsNullOrEmpty(m_LocalBackfillData.Id))
-                m_LocalBackfillData.Id = await MatchmakerService.Instance.CreateBackfillTicketAsync(m_CreateBackfillOptions);
+            if (string.IsNullOrEmpty(m_LocalBackfillTicket.Id))
+                m_LocalBackfillTicket.Id = await MatchmakerService.Instance.CreateBackfillTicketAsync(m_CreateBackfillOptions);
 
             Backfilling = true;
 
@@ -77,7 +77,7 @@ namespace Matchplay.Server
 
             var matchmakerPlayer = new Player(userData.userAuthId, userData.userGamePreferences);
 
-            m_LocalBackfillData.Properties.MatchProperties.Players.Add(matchmakerPlayer);
+            m_LocalBackfillTicket.Properties.MatchProperties.Players.Add(matchmakerPlayer);
 
             m_LocalDataDirty = true;
         }
@@ -91,10 +91,10 @@ namespace Matchplay.Server
                 return;
             }
 
-            m_LocalBackfillData.Properties.MatchProperties.Players.Remove(playerToRemove);
+            m_LocalBackfillTicket.Properties.MatchProperties.Players.Remove(playerToRemove);
 
             //We Only have one team in this game, so this simplifies things here
-            m_LocalBackfillData.Properties.MatchProperties.Teams[0].PlayerIds.Remove(userID);
+            m_LocalBackfillTicket.Properties.MatchProperties.Teams[0].PlayerIds.Remove(userID);
             m_LocalDataDirty = true;
         }
 
@@ -106,9 +106,9 @@ namespace Matchplay.Server
                 return;
             }
 
-            await MatchmakerService.Instance.DeleteBackfillTicketAsync(m_LocalBackfillData.Id);
+            await MatchmakerService.Instance.DeleteBackfillTicketAsync(m_LocalBackfillTicket.Id);
             Backfilling = false;
-            m_LocalBackfillData.Id = null;
+            m_LocalBackfillTicket.Id = null;
         }
 
         public bool NeedsPlayers()
@@ -129,7 +129,7 @@ namespace Matchplay.Server
 
         Player GetPlayerById(string userID)
         {
-            return m_LocalBackfillData.Properties.MatchProperties.Players.FirstOrDefault(p => p.Id.Equals(userID));
+            return m_LocalBackfillTicket.Properties.MatchProperties.Players.FirstOrDefault(p => p.Id.Equals(userID));
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace Matchplay.Server
         {
             while (Backfilling)
             {
-                m_LocalBackfillData = await MatchmakerService.Instance.ApproveBackfillTicketAsync(m_LocalBackfillData.Id);
+                m_LocalBackfillTicket = await MatchmakerService.Instance.ApproveBackfillTicketAsync(m_LocalBackfillTicket.Id);
 
                 if (!NeedsPlayers())
                 {
@@ -149,7 +149,7 @@ namespace Matchplay.Server
 
                 if (m_LocalDataDirty)
                 {
-                    await MatchmakerService.Instance.UpdateBackfillTicketAsync(m_LocalBackfillData.Id, m_LocalBackfillData);
+                    await MatchmakerService.Instance.UpdateBackfillTicketAsync(m_LocalBackfillTicket.Id, m_LocalBackfillTicket);
                     m_LocalDataDirty = false;
                 }
 

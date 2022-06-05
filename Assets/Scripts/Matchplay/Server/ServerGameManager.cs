@@ -22,7 +22,7 @@ namespace Matchplay.Server
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
-        const int k_MultiplayServiceTimeout = 15000;
+        const int k_MultiplayServiceTimeout = 20000;
         bool m_StartedServices;
         MultiplayAllocationService m_MultiplayAllocationService;
         SynchedServerData m_SynchedServerData;

@@ -11,9 +11,9 @@ namespace Matchplay.Shared.Tools
     {
         static string s_LocalProfileSuffix;
 
-        public static string LocalProfileSuffix => s_LocalProfileSuffix ??= CreateParrelSyncSuffix();
+        public static string LocalProfileSuffix => s_LocalProfileSuffix ??= GetCloneName();
 
-        static string CreateParrelSyncSuffix()
+        static string GetCloneName()
         {
 #if UNITY_EDITOR
 
@@ -21,11 +21,9 @@ namespace Matchplay.Shared.Tools
             //This allows us to test services integration locally by utilising Parrelsync.
             if (ClonesManager.IsClone())
             {
-                var cloneSuffix = ClonesManager.CloneNameSuffix;
+                var cloneName = ClonesManager.GetCurrentProject().name;
 
-                var hardcodedProfileID = $"_clone_{cloneSuffix}";
-
-                return hardcodedProfileID;
+                return cloneName;
             }
 #endif
             return "";
