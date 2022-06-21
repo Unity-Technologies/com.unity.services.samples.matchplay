@@ -152,6 +152,7 @@ namespace Matchplay.Server
 
         void UserJoinedServer(UserData joinedUser)
         {
+            Debug.Log($"{joinedUser} joined the game");
             m_Backfiller.AddPlayerToMatch(joinedUser);
             m_MultiplayAllocationService.AddPlayer();
             if (!m_Backfiller.NeedsPlayers() && m_Backfiller.Backfilling)
@@ -164,6 +165,7 @@ namespace Matchplay.Server
 
         void UserLeft(UserData leftUser)
         {
+            Debug.Log($"{leftUser} left the game");
             m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
             m_MultiplayAllocationService.RemovePlayer();
             var playerCount = m_NetworkServer.PlayerCount;

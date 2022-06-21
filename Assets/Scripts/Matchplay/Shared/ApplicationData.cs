@@ -20,8 +20,7 @@ namespace Matchplay.Shared
         const string k_PortCmd = "port";
         const string k_QueryPortCmd = "queryPort";
 
-        //Skips Authentication to test the timeout functionality
-        public static bool AuthTimeoutUnitTest;
+
 
         //Disables some behaviour we don't want to test with the serverTests
         public static bool IsServerUnitTest;

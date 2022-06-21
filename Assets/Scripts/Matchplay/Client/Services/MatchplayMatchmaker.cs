@@ -88,18 +88,6 @@ namespace Matchplay.Client
 
         public bool IsMatchmaking => m_IsMatchmaking;
 
-        public MatchplayMatchmaker()
-        {
-            try
-            {
-                // SetStagingEnvironment(); for internal unity testing only
-            }
-            catch (Exception ex)
-            {
-                Debug.Log(ex);
-            }
-        }
-
         public async Task CancelMatchmaking()
         {
             if (!m_IsMatchmaking)
@@ -149,22 +137,11 @@ namespace Matchplay.Client
         }
 
         /// <summary>
-        /// Testing environment
-        /// </summary>
-        async void SetStagingEnvironment()
-        {
-            await AuthenticationWrapper.Authenticating();
-            var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
-            sdkConfiguration.SetBasePath("https://matchmaker-stg.services.api.unity.com");
-            Debug.LogWarning("CAUTION: Setting Matchmaker environment to Staging!");
-        }
-
-        /// <summary>
         /// From Game player to matchmaking player
         /// </summary>
         static CreateTicketOptions UserDataToTicketRuleOptions(UserData data)
         {
-            //TODO Come up with a good use case for attributes (Skill?)
+            //TODO Set up pooling for game versions, only allowing players of the same version to match one another.
             var attributes = new Dictionary<string, object>
             {
                 //Moved these to Player Preferences

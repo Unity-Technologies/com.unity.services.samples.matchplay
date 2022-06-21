@@ -46,23 +46,6 @@ namespace Matchplay.Tests
             Debug.Log("Client started with services");
         }
 
-        [UnityTest]
-        [RequiresPlayMode]
-        public IEnumerator Client_Initialization_With_Services_Time_Out()
-        {
-            ApplicationData.AuthTimeoutUnitTest = true;
-            ClientGameManager clientManager = new ClientGameManager("timeoutClient");
-            AuthenticationWrapper.SignOut();
-            var awaitClientInitialization = AwaitClientInitializedOrTimeout(clientManager, 6);
-            yield return new WaitUntil(() => awaitClientInitialization.IsCompleted);
-
-            Assert.NotNull(clientManager.User);
-            Assert.NotNull(clientManager.NetworkClient);
-            Assert.NotNull(clientManager.Matchmaker);
-            Assert.AreNotEqual(AuthState.Authenticated, AuthenticationWrapper.AuthorizationState);
-            Debug.Log("Client started without services");
-        }
-
         async Task AwaitClientInitializedOrTimeout(ClientGameManager manager, int timeOutSeconds)
         {
             await Task.WhenAny(new Task(async () =>

@@ -51,7 +51,6 @@ namespace Matchplay.Server
 
             Backfilling = true;
 
-            //we want to create an asynchronous backfill loop.
 #pragma warning disable 4014
             BackfillLoop();
 #pragma warning restore 4014
@@ -78,7 +77,7 @@ namespace Matchplay.Server
             var matchmakerPlayer = new Player(userData.userAuthId, userData.userGamePreferences);
 
             m_LocalBackfillTicket.Properties.MatchProperties.Players.Add(matchmakerPlayer);
-
+            m_LocalBackfillTicket.Properties.MatchProperties.Teams[0].PlayerIds.Add(matchmakerPlayer.Id);
             m_LocalDataDirty = true;
         }
 
@@ -114,17 +113,6 @@ namespace Matchplay.Server
         public bool NeedsPlayers()
         {
             return MatchPlayerCount < m_MaxPlayers;
-        }
-
-
-        /// <summary>
-        /// Internal use Only TODO Remove before shipping
-        /// </summary>
-        void SetStagingEnvironment()
-        {
-            var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
-            sdkConfiguration.SetBasePath("https://matchmaker-stg.services.api.unity.com");
-            Debug.LogWarning("CAUTION: Setting Backfill environment to Staging!");
         }
 
         Player GetPlayerById(string userID)
