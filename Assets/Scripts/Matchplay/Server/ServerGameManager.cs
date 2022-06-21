@@ -22,7 +22,7 @@ namespace Matchplay.Server
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
-        const int k_MultiplayServiceTimeout = 15000;
+        const int k_MultiplayServiceTimeout = 20000;
         bool m_StartedServices;
         MultiplayAllocationService m_MultiplayAllocationService;
         SynchedServerData m_SynchedServerData;
@@ -152,6 +152,7 @@ namespace Matchplay.Server
 
         void UserJoinedServer(UserData joinedUser)
         {
+            Debug.Log($"{joinedUser} joined the game");
             m_Backfiller.AddPlayerToMatch(joinedUser);
             m_MultiplayAllocationService.AddPlayer();
             if (!m_Backfiller.NeedsPlayers() && m_Backfiller.Backfilling)
@@ -164,6 +165,7 @@ namespace Matchplay.Server
 
         void UserLeft(UserData leftUser)
         {
+            Debug.Log($"{leftUser} left the game");
             m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
             m_MultiplayAllocationService.RemovePlayer();
             var playerCount = m_NetworkServer.PlayerCount;

@@ -28,10 +28,10 @@ namespace Matchplay.Shared
             await LaunchInMode(SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null);
         }
 
-        public void OnParrelSyncStarted(bool isServer)
+        public void OnParrelSyncStarted(bool isServer, string cloneName)
         {
 #pragma warning disable 4014
-            LaunchInMode(isServer);
+            LaunchInMode(isServer, cloneName);
 #pragma warning restore 4014
         }
 

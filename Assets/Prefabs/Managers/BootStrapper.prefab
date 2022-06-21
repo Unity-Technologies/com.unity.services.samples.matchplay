@@ -47,8 +47,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ServerPrefab: {fileID: 7148318723478363551, guid: 086dc5b4dd92f4e42a6af0934c2bbf0b, type: 3}
   m_ClientPrefab: {fileID: 2538532228289365691, guid: cf023b2898aba4648bce121a5fb8418d, type: 3}
-  m_ServerManagers:
-  - {fileID: 4356242913966855994, guid: a54a1ff90787fa54c925f8aa3372e48c, type: 3}
 --- !u!114 &805244812784019361
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -61,33 +59,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ec48f5019a1a9f4a9ae7ca2d44d6ce3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onServerStart:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 805244812784019366}
-        m_TargetAssemblyTypeName: Matchplay.Shared.ApplicationController, Matchplay
-        m_MethodName: OnParrelSyncStarted
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-  onClientStart:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 805244812784019366}
-        m_TargetAssemblyTypeName: Matchplay.Shared.ApplicationController, Matchplay
-        m_MethodName: OnParrelSyncStarted
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+  m_Controller: {fileID: 805244812784019366}

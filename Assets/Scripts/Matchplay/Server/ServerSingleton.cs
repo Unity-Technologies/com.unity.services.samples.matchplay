@@ -14,8 +14,6 @@ namespace Matchplay.Server
     /// </summary>
     public class ServerSingleton : MonoBehaviour
     {
-        public SynchedServerData SynchedServerDataPrefab;
-
         public static ServerSingleton Instance
         {
             get
@@ -27,6 +25,7 @@ namespace Matchplay.Server
                     Debug.LogError("No ServerSingleton in scene, did you run this from the bootStrap scene?");
                     return null;
                 }
+
                 return s_ServerSingleton;
             }
         }

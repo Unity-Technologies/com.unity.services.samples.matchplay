@@ -1,16 +1,17 @@
 #if UNITY_EDITOR
 using ParrelSync;
 #endif
+using Matchplay.Shared;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace Matchplay.Editor
 {
     ///Helps launch ParrelSynced Projects for easy testing
     public class EditorApplicationController : MonoBehaviour
     {
-        public UnityEvent onServerStart;
-        public UnityEvent onClientStart;
+        public ApplicationController m_Controller;
+
+
         public void Start()
         {
 #if UNITY_EDITOR
@@ -19,14 +20,14 @@ namespace Matchplay.Editor
             {
                 var argument = ClonesManager.GetArgument();
                 if (argument == "server")
-                    onServerStart?.Invoke();
+                    m_Controller.OnParrelSyncStarted(true,"server");
                 else if (argument == "client")
                 {
-                    onClientStart?.Invoke();
+                    m_Controller.OnParrelSyncStarted(false,"client");
                 }
             }
             else
-                onClientStart?.Invoke();
+                m_Controller.OnParrelSyncStarted(false, "client");
 #endif
         }
     }

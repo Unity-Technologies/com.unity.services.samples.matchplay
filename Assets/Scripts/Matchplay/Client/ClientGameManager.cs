@@ -27,6 +27,7 @@ namespace Matchplay.Client
         public ClientGameManager(string profileName = "default")
         {
             User = new MatchplayUser();
+            Debug.Log($"Beginning with new Profile:{profileName}");
             ProfileName = profileName;
 
             //We can load the mainMenu while the client initializes
@@ -52,9 +53,10 @@ namespace Matchplay.Client
 
             //Catch for if the authentication fails, we can still do local server Testing
             if (authenticationResult == AuthState.Authenticated)
-                User.AuthId = AuthenticationWrapper.ClientId();
+                User.AuthId = AuthenticationWrapper.PlayerID();
             else
                 User.AuthId = Guid.NewGuid().ToString();
+            Debug.Log($"did Auth?{authenticationResult} {User.AuthId}");
             Initialized = true;
         }
 
