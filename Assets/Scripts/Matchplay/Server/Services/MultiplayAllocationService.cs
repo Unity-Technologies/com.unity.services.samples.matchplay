@@ -48,7 +48,7 @@ namespace Matchplay.Server
             m_ServerEvents = await m_MultiplayService.SubscribeToServerEventsAsync(m_Servercallbacks);
 
             var allocationID = await AwaitAllocationID();
-            var mmPayload = await GetMatchmakerAllocationPayloadAsync(allocationID);
+            var mmPayload = await GetMatchmakerAllocationPayloadAsync();
 
             return mmPayload;
         }
@@ -161,6 +161,18 @@ namespace Matchplay.Server
         }
 
         /// <summary>
+        /// Get the Multiplay Allocation Payload for Matchmaker (using Multiplay SDK)
+        /// </summary>
+        /// <returns></returns>
+        async Task<MatchmakerAllocationPayload> GetMatchmakerAllocationPayloadAsync()
+        {
+            var payloadAllocation = await MultiplayService.Instance.GetPayloadAllocationFromJsonAs<MatchmakingResults>();
+            var modelAsJson = JsonConvert.SerializeObject(payloadAllocation, Formatting.Indented);
+            Debug.Log(nameof(GetMatchmakerAllocationPayloadAsync) + ":" + Environment.NewLine + modelAsJson);
+            return MatchmakerAllocationPayload.FromMatchmakingResults(payloadAllocation);
+        }
+
+        /// <summary>
         /// This should be in the SDK but we can use web-requests to get access to the MatchmakerAllocationPayload
         /// </summary>
         /// <param name="allocationID"></param>
@@ -264,6 +276,21 @@ namespace Matchplay.Server
             payloadDescription.AppendFormat("-Players: {0}\n", MatchProperties.Players.Count);
             payloadDescription.AppendFormat("-Region: {0}\n", MatchProperties.Region);
             return payloadDescription.ToString();
+        }
+
+        /// <summary>
+        /// Helper method to transition between Multiplay SDK returned class to sample's.
+        /// </summary>
+        /// <param name="data">Data model for payload allocation returned by Multiplay SDK</param>
+        /// <returns>Data model for payload allocation for sample</returns>
+        public static MatchmakerAllocationPayload FromMatchmakingResults(MatchmakingResults data) 
+        {
+            var payload = new MatchmakerAllocationPayload();
+            payload.MatchProperties = data.MatchProperties;
+            payload.QueueName = data.QueueName;
+            payload.PoolName = data.PoolName;
+            payload.BackfillTicketId = data.BackfillTicketId;
+            return payload;
         }
     }
 }
