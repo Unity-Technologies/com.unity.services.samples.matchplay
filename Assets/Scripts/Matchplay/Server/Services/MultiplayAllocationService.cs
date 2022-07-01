@@ -58,7 +58,7 @@ namespace Matchplay.Server
         {
             if (m_MultiplayService == null)
                 return;
-            m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync((ushort)10,
+            m_ServerCheckManager = await m_MultiplayService.StartServerQueryHandlerAsync((ushort)10,
                 "", "", "0", "");
 
 #pragma warning disable 4014
