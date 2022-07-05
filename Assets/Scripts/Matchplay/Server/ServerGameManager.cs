@@ -7,6 +7,7 @@ using Matchplay.Shared;
 using Matchplay.Shared.Tools;
 using Unity.Netcode;
 using Random = UnityEngine.Random;
+using Unity.Services.Matchmaker.Models;
 
 namespace Matchplay.Server
 {
@@ -91,7 +92,7 @@ namespace Matchplay.Server
             m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
         }
 
-        async Task<MatchmakerAllocationPayload> GetMatchmakerPayload(int timeout)
+        async Task<MatchmakingResults> GetMatchmakerPayload(int timeout)
         {
             if (m_MultiplayAllocationService == null)
                 return null;
@@ -122,7 +123,7 @@ namespace Matchplay.Server
             m_MultiplayAllocationService.SetMode(startingGameInfo.gameMode.ToString());
         }
 
-        async Task StartBackfill(MatchmakerAllocationPayload payload, GameInfo startingGameInfo)
+        async Task StartBackfill(MatchmakingResults payload, GameInfo startingGameInfo)
         {
             m_Backfiller = new MatchplayBackfiller(connectionString, payload.QueueName, payload.MatchProperties,
                 startingGameInfo.MaxUsers);
@@ -190,7 +191,7 @@ namespace Matchplay.Server
         /// <summary>
         /// Take the list of players and find the most popular game preferences and run the server with those
         /// </summary>
-        public static GameInfo PickGameInfo(MatchmakerAllocationPayload mmAllocation)
+        public static GameInfo PickGameInfo(MatchmakingResults mmAllocation)
         {
             //All the players should have the same info, so we just pick the first one to use as the starter.
             var chosenMap = Map.Lab;

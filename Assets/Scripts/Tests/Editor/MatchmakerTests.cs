@@ -36,7 +36,7 @@ namespace Matchplay.Tests
                 $"Users shared Space and Meditating, picked {returnedGameInfo.map} and {returnedGameInfo.gameMode}");
         }
 
-        MatchmakerAllocationPayload CasualDefaultAllocationPayload(List<Player> players)
+        MatchmakingResults CasualDefaultAllocationPayload(List<Player> players)
         {
             var playerIdList = players.Select(player => player.Id).ToList();
             var teamPonder = new Team("Ponderers", FakeId(), playerIdList);
@@ -47,16 +47,11 @@ namespace Matchplay.Tests
             };
 
             var backfillTicketId = FakeId();
+            var matchProperties =
+                    new MatchProperties(teams: teamList, players: players, backfillTicketId: backfillTicketId);
 
             //The Matchmaker constructs this for us
-            return new MatchmakerAllocationPayload()
-            {
-                QueueName = "casual-queue",
-                PoolName = "Default Pool",
-                BackfillTicketId = backfillTicketId,
-                MatchProperties =
-                    new MatchProperties(teams: teamList, players: players, backfillTicketId: backfillTicketId)
-            };
+            return new MatchmakingResults(matchProperties, null, "casual-queue", "Default Pool", null, backfillTicketId);
         }
 
         Player NewMatchPlayer(GameQueue queue, Map chosenMap,
