@@ -162,7 +162,7 @@ Choose a configuration name, select your previously uploaded build, and select M
 Choose SQP for your Query type, and fill in the following as Custom launch parameters 
 
 
-_-ip 0.0.0.0 -port $$port$$ -queryPort $$query_port$$ -logFile $$server_log_dir$$matchplaylog.log_
+_-ip 0.0.0.0 -port $$port$$ -queryPort $$query_port$$ -logFile $$server_log_dir$$/matchplaylog.log_
 
 
 ![Build Settings](~Documentation/Images/Multiplay_2.PNG "Build Settings!")

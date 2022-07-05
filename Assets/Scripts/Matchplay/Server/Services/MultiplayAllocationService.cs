@@ -38,7 +38,7 @@ namespace Matchplay.Server
         /// <summary>
         /// Should be wrapped in a timeout function
         /// </summary>
-        public async Task<MatchmakerAllocationPayload> SubscribeAndAwaitMatchmakerAllocation()
+        public async Task<MatchmakingResults> SubscribeAndAwaitMatchmakerAllocation()
         {
             if (m_MultiplayService == null)
                 return null;
@@ -48,7 +48,7 @@ namespace Matchplay.Server
             m_ServerEvents = await m_MultiplayService.SubscribeToServerEventsAsync(m_Servercallbacks);
 
             var allocationID = await AwaitAllocationID();
-            var mmPayload = await GetMatchmakerAllocationPayloadAsync(allocationID);
+            var mmPayload = await GetMatchmakerAllocationPayloadAsync();
 
             return mmPayload;
         }
@@ -58,7 +58,7 @@ namespace Matchplay.Server
         {
             if (m_MultiplayService == null)
                 return;
-            m_ServerCheckManager = await m_MultiplayService.ConnectToServerCheckAsync((ushort)10,
+            m_ServerCheckManager = await m_MultiplayService.StartServerQueryHandlerAsync((ushort)10,
                 "", "", "0", "");
 
 #pragma warning disable 4014
@@ -161,53 +161,15 @@ namespace Matchplay.Server
         }
 
         /// <summary>
-        /// This should be in the SDK but we can use web-requests to get access to the MatchmakerAllocationPayload
+        /// Get the Multiplay Allocation Payload for Matchmaker (using Multiplay SDK)
         /// </summary>
-        /// <param name="allocationID"></param>
         /// <returns></returns>
-        async Task<MatchmakerAllocationPayload> GetMatchmakerAllocationPayloadAsync(string allocationID)
+        async Task<MatchmakingResults> GetMatchmakerAllocationPayloadAsync()
         {
-            Debug.Log($"Getting Allocation Payload with ID: {allocationID}");
-            var payloadUrl = k_PayloadProxyUrl + $"/payload/{allocationID}";
-            using var webRequest = UnityWebRequest.Get(payloadUrl);
-            var operation = webRequest.SendWebRequest();
-
-            while (!operation.isDone)
-            {
-                await Task.Delay(50);
-            }
-
-            Debug.Log($"Web Request Text:{operation.webRequest.downloadHandler.text}");
-
-            switch (webRequest.result)
-            {
-                case UnityWebRequest.Result.ConnectionError:
-                    Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": ConnectionError: " +
-                        webRequest.error);
-                    break;
-                case UnityWebRequest.Result.DataProcessingError:
-                    Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": Error: " + webRequest.error);
-                    break;
-                case UnityWebRequest.Result.ProtocolError:
-                    Debug.LogError(nameof(GetMatchmakerAllocationPayloadAsync) + ": HTTP Error: " + webRequest.error);
-                    break;
-                case UnityWebRequest.Result.Success:
-                    Debug.Log(nameof(GetMatchmakerAllocationPayloadAsync) + ":\nReceived: " +
-                        webRequest.downloadHandler.text);
-                    break;
-                case UnityWebRequest.Result.InProgress:
-                    break;
-            }
-
-            try
-            {
-                return JsonConvert.DeserializeObject<MatchmakerAllocationPayload>(webRequest.downloadHandler.text);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogError($"Something went wrong deserializing the Allocation Payload:\n{exception}");
-                return null;
-            }
+            var payloadAllocation = await MultiplayService.Instance.GetPayloadAllocationFromJsonAs<MatchmakingResults>();
+            var modelAsJson = JsonConvert.SerializeObject(payloadAllocation, Formatting.Indented);
+            Debug.Log(nameof(GetMatchmakerAllocationPayloadAsync) + ":" + Environment.NewLine + modelAsJson);
+            return payloadAllocation;
         }
 
         void OnMultiplayAllocation(MultiplayAllocation allocation)
@@ -245,24 +207,18 @@ namespace Matchplay.Server
         }
     }
 
-    [Serializable]
-    public class MatchmakerAllocationPayload
+    public static class AllocationPayloadExtensions
     {
-        public MatchProperties MatchProperties;
-        public string QueueName;
-        public string PoolName;
-        public string BackfillTicketId;
-
-        public override string ToString()
+        public static string ToString(this MatchmakingResults payload)
         {
             StringBuilder payloadDescription = new StringBuilder();
             payloadDescription.AppendLine("Matchmaker Allocation Payload:");
-            payloadDescription.AppendFormat("-QueueName: {0}\n", QueueName);
-            payloadDescription.AppendFormat("-PoolName: {0}\n", PoolName);
-            payloadDescription.AppendFormat("-ID: {0}\n", BackfillTicketId);
-            payloadDescription.AppendFormat("-Teams: {0}\n", MatchProperties.Teams.Count);
-            payloadDescription.AppendFormat("-Players: {0}\n", MatchProperties.Players.Count);
-            payloadDescription.AppendFormat("-Region: {0}\n", MatchProperties.Region);
+            payloadDescription.AppendFormat("-QueueName: {0}\n", payload.QueueName);
+            payloadDescription.AppendFormat("-PoolName: {0}\n", payload.PoolName);
+            payloadDescription.AppendFormat("-ID: {0}\n", payload.BackfillTicketId);
+            payloadDescription.AppendFormat("-Teams: {0}\n", payload.MatchProperties.Teams.Count);
+            payloadDescription.AppendFormat("-Players: {0}\n", payload.MatchProperties.Players.Count);
+            payloadDescription.AppendFormat("-Region: {0}\n", payload.MatchProperties.Region);
             return payloadDescription.ToString();
         }
     }
