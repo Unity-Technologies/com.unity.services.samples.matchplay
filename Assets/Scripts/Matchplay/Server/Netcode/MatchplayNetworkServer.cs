@@ -44,7 +44,7 @@ namespace Matchplay.Server
 
             // we add ApprovalCheck callback BEFORE OnNetworkSpawn to avoid spurious Netcode for GameObjects (Netcode)
             // warning: "No ConnectionApproval callback defined. Connection approval will timeout"
-            m_NetworkManager.ConnectionApprovalCallback += ApprovalCheck;
+            m_NetworkManager.ConnectionApprovalCallback = ApprovalCheck;
             m_NetworkManager.OnServerStarted += OnNetworkReady;
         }
 
@@ -111,15 +111,19 @@ namespace Matchplay.Server
         /// This logic plugs into the "ConnectionApprovalCallback" exposed by Netcode.NetworkManager, and is run every time a client connects to us.
         /// See MatchplayNetworkClient.BootClient for the complementary logic that runs when the client starts its connection.
         /// </summary>
-        /// <param name="connectionData">binary data passed into BootClient. In our case this is the client's GUID, which is a unique identifier for their install of the game that persists across app restarts. </param>
-        /// <param name="networkId">This is the networkId that Netcode assigned us on login. It does not persist across multiple logins from the same client. </param>
-        /// <param name="connectionApprovedCallback">The delegate we must invoke to signal that the connection was approved or not. </param>
-        void ApprovalCheck(byte[] connectionData, ulong networkId,
-            NetworkManager.ConnectionApprovedDelegate connectionApprovedCallback)
+        /// <param name="approvalRequest">The request containing the binary data and networkId. </param>
+        /// <param name="approvalResponse">The approval response to modify to notify the NetworkManager. </param>
+        void ApprovalCheck(NetworkManager.ConnectionApprovalRequest approvalRequest,
+            NetworkManager.ConnectionApprovalResponse approvalResponse)
         {
+            var connectionData = approvalRequest.Payload;
+            var networkId = approvalRequest.ClientNetworkId;
             if (connectionData.Length > k_MaxConnectPayload)
             {
-                connectionApprovedCallback(false, 0, false, null, null);
+                approvalResponse.CreatePlayerObject = false;
+                approvalResponse.PlayerPrefabHash = 0;
+                approvalResponse.Approved = false;
+                NetworkManager.Singleton.ConnectionApprovalCallback(approvalRequest, approvalResponse);
                 Debug.LogError($"ConnectionData too big! : {connectionData.Length} / {k_MaxConnectPayload}");
                 return;
             }
@@ -146,7 +150,12 @@ namespace Matchplay.Server
             m_NetworkIdToAuth[networkId] = userData.userAuthId;
             m_ClientData[userData.userAuthId] = userData;
             OnPlayerJoined?.Invoke(userData);
-            connectionApprovedCallback(true, null, true, Vector3.zero, Quaternion.identity);
+            approvalResponse.CreatePlayerObject = true;
+            approvalResponse.PlayerPrefabHash = 0;
+            approvalResponse.Approved = true;
+            approvalResponse.Position = Vector3.zero;
+            approvalResponse.Rotation = Quaternion.identity;
+            NetworkManager.Singleton.ConnectionApprovalCallback(approvalRequest, approvalResponse);
 
             // connection approval will create a player object for you
             SetupPlayerPrefab(networkId, userData.userName);
@@ -226,7 +235,7 @@ namespace Matchplay.Server
         {
             if (m_NetworkManager == null)
                 return;
-            m_NetworkManager.ConnectionApprovalCallback -= ApprovalCheck;
+            m_NetworkManager.ConnectionApprovalCallback = ApprovalCheck;
             m_NetworkManager.OnClientDisconnectCallback -= OnClientDisconnect;
             m_NetworkManager.OnServerStarted -= OnNetworkReady;
             if (m_NetworkManager.IsListening)
