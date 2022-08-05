@@ -123,7 +123,6 @@ namespace Matchplay.Server
                 approvalResponse.CreatePlayerObject = false;
                 approvalResponse.PlayerPrefabHash = 0;
                 approvalResponse.Approved = false;
-                NetworkManager.Singleton.ConnectionApprovalCallback(approvalRequest, approvalResponse);
                 Debug.LogError($"ConnectionData too big! : {connectionData.Length} / {k_MaxConnectPayload}");
                 return;
             }
@@ -155,7 +154,6 @@ namespace Matchplay.Server
             approvalResponse.Approved = true;
             approvalResponse.Position = Vector3.zero;
             approvalResponse.Rotation = Quaternion.identity;
-            NetworkManager.Singleton.ConnectionApprovalCallback(approvalRequest, approvalResponse);
 
             // connection approval will create a player object for you
             SetupPlayerPrefab(networkId, userData.userName);
