@@ -14,7 +14,7 @@ namespace Matchplay.Server
     {
         IMultiplayService m_MultiplayService;
         MultiplayEventCallbacks m_Servercallbacks;
-        IServerCheckManager m_ServerCheckManager;
+        IServerQueryHandler m_ServerCheckManager;
         IServerEvents m_ServerEvents;
         string m_AllocationId;
         bool m_LocalServerValuesChanged = false;
@@ -138,7 +138,7 @@ namespace Matchplay.Server
             var config = m_MultiplayService.ServerConfig;
             Debug.Log($"Awaiting Allocation. Server Config is:\n" +
                 $"-ServerID: {config.ServerId}\n" +
-                $"-AllocationID: {config.AllocatedUuid}\n" +
+                $"-AllocationID: {config.AllocationId}\n" +
                 $"-Port: {config.Port}\n" +
                 $"-QPort: {config.QueryPort}\n" +
                 $"-logs: {config.ServerLogDirectory}");
@@ -146,7 +146,7 @@ namespace Matchplay.Server
             //Waiting on OnMultiplayAllocation() event (Probably wont ever happen in a matchmaker scenario)
             while (string.IsNullOrEmpty(m_AllocationId))
             {
-                var configID = config.AllocatedUuid;
+                var configID = config.AllocationId;
 
                 if (!string.IsNullOrEmpty(configID) && string.IsNullOrEmpty(m_AllocationId))
                 {
