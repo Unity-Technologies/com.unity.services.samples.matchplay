@@ -10,8 +10,8 @@
     "com.unity.netcode.gameobjects": "1.0.0-pre.9",
     "com.unity.render-pipelines.universal": "12.1.6",
     "com.unity.services.authentication": "2.0.0",
-    "com.unity.services.matchmaker": "1.0.0-pre.11",
-    "com.unity.services.multiplay": "1.0.0-pre.2",
+    "com.unity.services.matchmaker": "1.0.0-pre.12",
+    "com.unity.services.multiplay": "1.0.0-pre.5",
     "com.unity.test-framework": "2.0.1-pre.18",
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.toolchain.macos-x86_64-linux-x86_64": "2.0.1",
@@ -48,7 +48,8 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+	"com.veriorpies.parrelsync": "https://github.com/VeriorPies/ParrelSync.git?path=/ParrelSync"
   },
   "scopedRegistries": [
     {
