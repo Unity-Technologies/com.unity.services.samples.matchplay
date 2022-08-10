@@ -133,7 +133,7 @@ It should automatically build your project as a server build, and output it to:
 
 
 
-### Unity Matchmaking
+### Unity Matchmaker
 
 Now that we have our server fleet, we can set up the Matchmaker. Select Matchmaker Setup Guide. You can click through Integrate Matchmaker for this guide, as the sample already has it integrated in the project.
 
