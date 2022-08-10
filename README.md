@@ -1,5 +1,5 @@
 
-# Matchplay - Matchmaker + Multiplay Sample
+# Matchplay: A Matchmaker and Multiplay sample
 
 **Note**: This sample was tested with Unity 2021.2 for PC and OSX clients, and Linux Headless servers.
 
@@ -12,13 +12,13 @@ This sample demonstrates how to create a **Matchmake** button: a basic networked
 
 
 
-**Matchmaking Ticket Config**: Players set their preferences for the map and game mode they want.
-**Matchmaking**: Players click the **Matchmake** button to begin looking for a match.
+* **Matchmaking Ticket Config**: Players set their preferences for the map and game mode they want.
+* **Matchmaking**: Players click the **Matchmake** button to begin looking for a match.
 * **Matchmaker Allocation Payload**: The server gets information about the match and configures the server accordingly.\
 * **Multiplay Server Allocation**: Spins up a dedicated cloud server and passes its information to the player.\
 * **Client Server Netcode**: A lightweight server that can be hosted on Multiplay.
 
-## Project Overview
+## Project overview
 
 
 The project runs in client or server modes and in local service modes. The server will attempt to find services for 5 seconds, and if it can’t, it starts the server with some default settings for local testing. The client can directly connect to this server using the local host ip.
@@ -28,18 +28,18 @@ The project runs in client or server modes and in local service modes. The serve
 
 
 
-**bootStrap**: You must play from this scene for the sample to work.
+* **bootStrap**: You must play from this scene for the sample to work.
 * **mainMenu** - Displays the matchmake and local connection buttons to users.\
 * **game_lab** - A game scene with a table.\
-**game_space**: A game scene which features a sphere.
+* **game_space**: A game scene which features a sphere.
 
 ### Run as a client
 
 The project runs as a client in the following scenarios:
 
-You play the Matchplay project in-editor from the **bootStrap** scene.
+* You play the Matchplay project in-editor from the **bootStrap** scene.
 * You run a non-server build on your platform of choice.
-You play a ParrelSync clone project with “client” in the arguments field from the **bootStrap** scene.
+* You play a ParrelSync clone project with “client” in the arguments field from the **bootStrap** scene.
 
 The client can either connect using the Matchmaker or through a local connection with the UI.
 
@@ -53,7 +53,7 @@ The project runs as a server in the following scenarios:
 
 
 * You run a server build on your platform of choice.
-You run a ParrelSync clone project with “server” in the argument field from the **bootStrap** scene.
+* You run a ParrelSync clone project with “server” in the argument field from the **bootStrap** scene.
 * Multiplay will run the server automatically when the matchmaker finds a match.
 
 Depending on the context the server is running in, it will either fetch its configuration from the matchmaker or start with the default values.
@@ -72,7 +72,7 @@ To test Netcode locally with ParrelSync:
 
 
 
-### Cloud Project and Organization
+### Cloud project and organization
 
 To use Unity’s Multiplayer services, you need a cloud organization ID for your project. Follow the [How do I create a new Organization](https://support.unity.com/hc/en-us/articles/208592876-How-do-I-create-a-new-Organization-) guide to set up your org.
 
@@ -101,14 +101,14 @@ The [Multiplay service](http://documentation.cloud.unity3d.com/en/collections/32
 
 The Multiplay documentation contains code samples and additional information about the service. It includes comprehensive details for using Multiplay along with additional code samples to help you better understand the Matchplay sample.
 
-The Multiplay service can be managed in the [Unity Dashboard](https://dashboard.unity3d.com/multiplay)
+The Multiplay service can be managed in the [Unity Dashboard](https://dashboard.unity3d.com/multiplay).
 
 
 ## Sample Setup Guide
 
 
 1. Link your Editor project to the Cloud Project as described in [Cloud Project and Organization](https://github.com/Unity-Technologies/com.unity.services.samples.matchplay#Cloud-Project-and-Organization).
-2. To build the server, go to your Matchplay project, and select BuildTools > Linux Server.
+2. To build the server, go to your Matchplay project, and select **BuildTools** > **Linux Server**.
 It should automatically build your project as a server build, and output it to:
 `<project root>/Builds/Matchplay-<platformBuildType>_<dateTime>`
 3. Next, upload the server to Multiplay and configure server hosting. Go to your Unity Dashboard and then go to **Multiplay Setup Guide** > **Create a build**.
@@ -135,7 +135,7 @@ It should automatically build your project as a server build, and output it to:
 
 ### Unity Matchmaker
 
-Now that we have our server fleet, we can set up the Matchmaker. Select Matchmaker Setup Guide. You can click through Integrate Matchmaker for this guide, as the sample already has it integrated in the project.
+Now that we have our server fleet, we can set up the Matchmaker by selecting **Matchmaker Setup Guide**. You can click through **Integrate Matchmaker** for this guide, as the sample already has it integrated in the project.
 
 1. Select **Create Queue** and enter a name for the queue. The queue name must be between 1 and 36 characters and contain only alphanumeric or hyphen characters.
 2. Name the queue 'casual-queue' and set the maximum players on a ticket to 10.
@@ -147,10 +147,9 @@ Now that we have our server fleet, we can set up the Matchmaker. Select Matchmak
 ![Queue string in code](~Documentation/Images/Matchmaker_1b.PNG "Queue String in code")
 
 4. To create a pool, select your previously created Multiplay fleet and build configuration. Set the timeout to 15 seconds.
+**Note**: If your server fleet scaling settings have 0 minimum servers, you may need to increase the timeout duration to 180 seconds to accommodate the server initial startup duration.
 
 ![Matchmaker Pool](~Documentation/Images/Matchmaker_2.PNG "Matchmaker Pool")
-
-**Note**: If your server fleet scaling settings have 0 minimum servers, you may need to increase the timeout duration to 180 seconds to accommodate the server initial startup duration.
 
 #### Match Rules
 
