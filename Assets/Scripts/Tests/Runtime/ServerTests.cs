@@ -70,7 +70,7 @@ namespace Matchplay.Tests
             {
                 gameMode = GameMode.Meditating,
                 map = Map.Space,
-                gameQueue = GameQueue.Competetive
+                gameQueue = GameQueue.Competitive
             };
             var createServerTask = CreateServerAsync(k_LocalIP, k_DefaultPort, k_DefaultQPort,
                 startingGameInfo);

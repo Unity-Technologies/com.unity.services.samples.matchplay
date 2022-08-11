@@ -82,7 +82,7 @@ namespace Matchplay.Shared
         {
             if (!IsCommand(arg))
                 return false;
-            if (IsCommand(nextArg)) // If you have need for flags, make a seperate dict for those.
+            if (IsCommand(nextArg)) // If you have need for flags, make a separate dict for those.
             {
                 return false;
             }
