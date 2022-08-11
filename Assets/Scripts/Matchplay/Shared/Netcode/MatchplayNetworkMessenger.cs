@@ -15,9 +15,9 @@ namespace Matchplay.Networking
     /// </summary>
     public class MatchplayNetworkMessenger
     {
-        public static void SendMessageToAll(NetworkMessage mesageType, FastBufferWriter writer)
+        public static void SendMessageToAll(NetworkMessage messageType, FastBufferWriter writer)
         {
-            NetworkManager.Singleton.CustomMessagingManager.SendNamedMessageToAll(mesageType.ToString(), writer);
+            NetworkManager.Singleton.CustomMessagingManager.SendNamedMessageToAll(messageType.ToString(), writer);
         }
 
         public static void SendMessageTo(NetworkMessage messageType, ulong clientId, FastBufferWriter writer)

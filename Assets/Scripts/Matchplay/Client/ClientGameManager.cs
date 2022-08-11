@@ -39,7 +39,7 @@ namespace Matchplay.Client
         }
 
         /// <summary>
-        /// We do service initialization in parrallel to starting the main menu scene
+        /// We do service initialization in parallel to starting the main menu scene
         /// </summary>
         async Task InitAsync()
         {

@@ -10,7 +10,7 @@ namespace Matchplay.Client.UI
     enum MainMenuPlayState
     {
         Authenticating,
-        AuthentionError,
+        AuthenticationError,
         Error,
         Ready,
         MatchMaking,
@@ -144,7 +144,7 @@ namespace Matchplay.Client.UI
                 SetMenuState(MainMenuPlayState.Ready, "Authenticated!");
             else
             {
-                SetMenuState(MainMenuPlayState.AuthentionError,
+                SetMenuState(MainMenuPlayState.AuthenticationError,
                     "Error Authenticating: Check the Console for more details.\n" +
                     "(Did you remember to link the editor with the Unity cloud Project?)");
             }
@@ -231,7 +231,7 @@ namespace Matchplay.Client.UI
             else
             {
 #pragma warning disable 4014
-                gameManager.MatchmakeAsync(OnMatchmade);
+                gameManager.MatchmakeAsync(OnMatchMade);
 #pragma warning restore 4014
                 SetMenuState(MainMenuPlayState.MatchMaking);
             }
@@ -252,7 +252,7 @@ namespace Matchplay.Client.UI
             }
         }
 
-        void OnMatchmade(MatchmakerPollingResult result)
+        void OnMatchMade(MatchmakerPollingResult result)
         {
             switch (result)
             {
@@ -285,7 +285,7 @@ namespace Matchplay.Client.UI
             if (status == ConnectStatus.Success)
                 SetMenuState(MainMenuPlayState.Connected);
             else if (status == ConnectStatus.UserRequestedDisconnect)
-                SetMenuState(MainMenuPlayState.Ready, $"Succsefully Disconnected!");
+                SetMenuState(MainMenuPlayState.Ready, $"Successfully Disconnected!");
             else
                 SetMenuState(MainMenuPlayState.Error, $"Connection Error: {status}");
         }
@@ -305,7 +305,7 @@ namespace Matchplay.Client.UI
                     m_ButtonGroup.SetEnabled(false);
                     SetLabelMessage("Authenticating...", Color.white);
                     break;
-                case MainMenuPlayState.AuthentionError:
+                case MainMenuPlayState.AuthenticationError:
                     SetLabelMessage(message, new Color(1, .2f, .2f, 1));
                     m_PlayButton.contentContainer.style.display = DisplayStyle.Flex;
                     m_ButtonGroup.contentContainer.SetEnabled(false);
