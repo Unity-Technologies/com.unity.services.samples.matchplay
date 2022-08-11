@@ -7,6 +7,22 @@ This sample demonstrates how to create a **Matchmake** button: a basic networked
 
 **Note**: This is not a “drag-and-drop” solution; the Matchplay sample is not a minimal code sample intended to be copied into a full-scale project. Rather, it demonstrates how to use multiple services in a vertical slice with some basic game logic and infrastructure. Use it as a reference to learn how Matchmaker and Multiplay work together to make a common end-user feature.
 
+## Table of Contents
+
+* [Features](#features)
+* [Project Overview](#project-overview)
+  * [Scenes](#scenes)
+  * [Run as a client](#run-as-a-client)
+  * [Run as a server](#run-as-a-server)
+  * [Test Netcode locally with ParrelSync](#test-netcode-locally-with-parrelsync)
+  * [Cloud Project and Organization](#cloud-project-and-organization)
+  * [Services](#services)
+    * [Authentication](#authentication)
+    * [Matchmaker](#matchmaker)
+    * [Multiplay](#multiplay)
+* [Sample Setup Guide](#sample-setup-guide)
+  * [Unity Matchmaker](#unity-matchmaker)
+    * [Match Rules](#match-rules)
 
 ## Features
 
