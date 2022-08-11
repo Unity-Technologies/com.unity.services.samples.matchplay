@@ -7,7 +7,7 @@ This sample demonstrates how to create a **Matchmake** button: a basic networked
 
 **Note**: This is not a “drag-and-drop” solution; the Matchplay sample is not a minimal code sample intended to be copied into a full-scale project. Rather, it demonstrates how to use multiple services in a vertical slice with some basic game logic and infrastructure. Use it as a reference to learn how Matchmaker and Multiplay work together to make a common end-user feature.
 
-## Summary
+## Table of contents
 
 * [Features](#features)
 * [Project Overview](#project-overview)
