@@ -111,23 +111,27 @@ namespace Matchplay.Server
         /// This logic plugs into the "ConnectionApprovalCallback" exposed by Netcode.NetworkManager, and is run every time a client connects to us.
         /// See MatchplayNetworkClient.BootClient for the complementary logic that runs when the client starts its connection.
         /// </summary>
-        /// <param name="connectionData">binary data passed into BootClient. In our case this is the client's GUID, which is a unique identifier for their install of the game that persists across app restarts. </param>
-        /// <param name="networkId">This is the networkId that Netcode assigned us on login. It does not persist across multiple logins from the same client. </param>
-        /// <param name="connectionApprovedCallback">The delegate we must invoke to signal that the connection was approved or not. </param>
-        void ApprovalCheck(byte[] connectionData, ulong networkId,
-            NetworkManager.ConnectionApprovedDelegate connectionApprovedCallback)
+        /// <param name="request">Wrapper for data payload and network/client id.</param>
+        /// <param name="response">Data for approval status and any optional player object spawn information to be returned.</param>
+        void ApprovalCheck(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
         {
-            if (connectionData.Length > k_MaxConnectPayload)
+            if (request.Payload.Length > k_MaxConnectPayload)
             {
-                connectionApprovedCallback(false, 0, false, null, null);
-                Debug.LogError($"ConnectionData too big! : {connectionData.Length} / {k_MaxConnectPayload}");
+                //Set response data
+                response.Approved = false;
+                response.CreatePlayerObject = false;
+                response.Position = null;
+                response.Rotation = null;
+                response.Pending = false;
+
+                Debug.LogError($"Connection payload was too big! : {request.Payload.Length} / {k_MaxConnectPayload}");
                 return;
             }
 
-            var payload = System.Text.Encoding.UTF8.GetString(connectionData);
+            var payload = System.Text.Encoding.UTF8.GetString(request.Payload);
             var userData = JsonUtility.FromJson<UserData>(payload);
-            userData.networkId = networkId;
-            Debug.Log($"Host ApprovalCheck: connecting client: ({networkId}) - {userData}");
+            userData.networkId = request.ClientNetworkId;
+            Debug.Log($"Host ApprovalCheck: connecting client: ({request.ClientNetworkId}) - {userData}");
 
             //Test for Duplicate Login.
             if (m_ClientData.ContainsKey(userData.userAuthId))
@@ -136,20 +140,27 @@ namespace Matchplay.Server
                 Debug.Log($"Duplicate ID Found : {userData.userAuthId}, Disconnecting Old user");
 
                 // kicking old client to leave only current
-                SendClientDisconnected(networkId, ConnectStatus.LoggedInAgain);
+                SendClientDisconnected(request.ClientNetworkId, ConnectStatus.LoggedInAgain);
                 WaitToDisconnect(oldClientId);
             }
 
-            SendClientConnected(networkId, ConnectStatus.Success);
+            SendClientConnected(request.ClientNetworkId, ConnectStatus.Success);
 
             //Populate our dictionaries with the playerData
-            m_NetworkIdToAuth[networkId] = userData.userAuthId;
+            m_NetworkIdToAuth[request.ClientNetworkId] = userData.userAuthId;
             m_ClientData[userData.userAuthId] = userData;
             OnPlayerJoined?.Invoke(userData);
-            connectionApprovedCallback(true, null, true, Vector3.zero, Quaternion.identity);
+
+            //Set response data
+            response.Approved = true;
+            response.CreatePlayerObject = true;
+            response.PlayerPrefabHash = 0;
+            response.Position = Vector3.zero;
+            response.Rotation = Quaternion.identity;
+            response.Pending = false;
 
             // connection approval will create a player object for you
-            SetupPlayerPrefab(networkId, userData.userName);
+            SetupPlayerPrefab(request.ClientNetworkId, userData.userName);
         }
 
         /// <summary>
