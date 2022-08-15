@@ -193,7 +193,6 @@ namespace Matchplay.Server
             // Check player network object exists
             do
             {
-                
                 playerNetworkObject = m_NetworkManager.SpawnManager.GetPlayerNetworkObject(networkId);
                 await Task.Delay(1000);
                 retries--;
