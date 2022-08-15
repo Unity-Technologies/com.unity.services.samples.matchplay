@@ -154,13 +154,13 @@ namespace Matchplay.Server
             //Set response data
             response.Approved = true;
             response.CreatePlayerObject = true;
-            response.PlayerPrefabHash = 0;
             response.Position = Vector3.zero;
             response.Rotation = Quaternion.identity;
             response.Pending = false;
 
-            // connection approval will create a player object for you
-            SetupPlayerPrefab(request.ClientNetworkId, userData.userName);
+            //connection approval will create a player object for you
+            //Run an async task to setup the player network object data when it is intiialized. 
+            Task.Run(async () => await SetupPlayerPrefab(request.ClientNetworkId, userData.userName));
         }
 
         /// <summary>
@@ -185,8 +185,21 @@ namespace Matchplay.Server
             OnServerPlayerDespawned?.Invoke(matchPlayerInstance);
         }
 
-        void SetupPlayerPrefab(ulong networkId, string playerName)
+        async Task SetupPlayerPrefab(ulong networkId, string playerName)
         {
+            NetworkObject playerNetworkObject;
+            int retries = 10;
+
+            // Check player network object exists
+            do
+            {
+                
+                playerNetworkObject = m_NetworkManager.SpawnManager.GetPlayerNetworkObject(networkId);
+                await Task.Delay(1000);
+                retries--;
+            }
+            while (playerNetworkObject == null && retries > 0);
+
             // get this client's player NetworkObject
             var networkedMatchPlayer = GetNetworkedMatchPlayer(networkId);
             networkedMatchPlayer.PlayerName.Value = playerName;
