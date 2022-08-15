@@ -1,7 +1,7 @@
 
 # Matchplay: A Matchmaker and Multiplay sample
 
-**Note**: This sample was tested with Unity 2021.2 for PC and OSX clients, and Linux Headless servers.
+**Note**: This sample was tested with Unity 2021.3 for PC clients, and Linux Headless servers.
 
 This sample demonstrates how to create a **Matchmake** button: a basic networked client-server game with a matchmaking feature from end to end using the Unity Engine and Cloud Services SDK.
 
