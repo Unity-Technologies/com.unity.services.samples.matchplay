@@ -159,8 +159,13 @@ namespace Matchplay.Server
             response.Pending = false;
 
             //connection approval will create a player object for you
-            //Run an async task to setup the player network object data when it is intiialized. 
-            Task.Run(async () => await SetupPlayerPrefab(request.ClientNetworkId, userData.userName));
+            //Run an async 'fire and forget' task to setup the player network object data when it is intiialized, uses main thread context.
+            var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            Task.Factory.StartNew(
+                async () => await SetupPlayerPrefab(request.ClientNetworkId, userData.userName), 
+                System.Threading.CancellationToken.None, 
+                TaskCreationOptions.None, scheduler
+            );
         }
 
         /// <summary>
@@ -188,16 +193,14 @@ namespace Matchplay.Server
         async Task SetupPlayerPrefab(ulong networkId, string playerName)
         {
             NetworkObject playerNetworkObject;
-            int retries = 10;
 
             // Check player network object exists
             do
             {
                 playerNetworkObject = m_NetworkManager.SpawnManager.GetPlayerNetworkObject(networkId);
-                await Task.Delay(1000);
-                retries--;
+                await Task.Delay(100);
             }
-            while (playerNetworkObject == null && retries > 0);
+            while (playerNetworkObject == null);
 
             // get this client's player NetworkObject
             var networkedMatchPlayer = GetNetworkedMatchPlayer(networkId);
