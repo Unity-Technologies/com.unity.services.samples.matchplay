@@ -68,7 +68,7 @@ namespace Matchplay.Server
                 return;
             }
 
-            if (GetPlayerById(userData.userAuthId) == null)
+            if (GetPlayerById(userData.userAuthId) != null)
             {
                 Debug.LogWarning($"User: {userData.userName} - {userData.userAuthId} already in Match. Ignoring add.");
                 return;
@@ -81,13 +81,13 @@ namespace Matchplay.Server
             m_LocalDataDirty = true;
         }
 
-        public void RemovePlayerFromMatch(string userID)
+        public int RemovePlayerFromMatch(string userID)
         {
             var playerToRemove = GetPlayerById(userID);
             if (playerToRemove == null)
             {
                 Debug.LogWarning($"No user by the ID: {userID} in local backfill Data.");
-                return;
+                return MatchPlayerCount;
             }
 
             m_LocalBackfillTicket.Properties.MatchProperties.Players.Remove(playerToRemove);
@@ -95,6 +95,8 @@ namespace Matchplay.Server
             //We Only have one team in this game, so this simplifies things here
             m_LocalBackfillTicket.Properties.MatchProperties.Teams[0].PlayerIds.Remove(userID);
             m_LocalDataDirty = true;
+
+            return MatchPlayerCount;
         }
 
         public async Task StopBackfill()
@@ -127,18 +129,20 @@ namespace Matchplay.Server
         {
             while (Backfilling)
             {
-                m_LocalBackfillTicket = await MatchmakerService.Instance.ApproveBackfillTicketAsync(m_LocalBackfillTicket.Id);
+                if (m_LocalDataDirty)
+                {
+                    await MatchmakerService.Instance.UpdateBackfillTicketAsync(m_LocalBackfillTicket.Id, m_LocalBackfillTicket);
+                    m_LocalDataDirty = false;
+                }
+                else
+                {
+                    m_LocalBackfillTicket = await MatchmakerService.Instance.ApproveBackfillTicketAsync(m_LocalBackfillTicket.Id);
+                }
 
                 if (!NeedsPlayers())
                 {
                     await StopBackfill();
                     break;
-                }
-
-                if (m_LocalDataDirty)
-                {
-                    await MatchmakerService.Instance.UpdateBackfillTicketAsync(m_LocalBackfillTicket.Id, m_LocalBackfillTicket);
-                    m_LocalDataDirty = false;
                 }
 
                 //Backfill Docs reccommend a once-per-second approval for backfill tickets
