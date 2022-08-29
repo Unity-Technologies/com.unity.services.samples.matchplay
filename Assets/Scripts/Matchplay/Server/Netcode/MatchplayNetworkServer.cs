@@ -28,6 +28,8 @@ namespace Matchplay.Server
         //Used in ApprovalCheck. This is intended as a bit of light protection against DOS attacks that rely on sending silly big buffers of garbage.
         const int k_MaxConnectPayload = 1024;
 
+
+        //TODO Possibly combine dictionaries, maybe just keep a list of service Auths for connected players?
         /// <summary>
         /// map a given client guid to the data for a given client player.
         /// </summary>
@@ -114,6 +116,8 @@ namespace Matchplay.Server
         /// <param name="connectionData">binary data passed into BootClient. In our case this is the client's GUID, which is a unique identifier for their install of the game that persists across app restarts. </param>
         /// <param name="networkId">This is the networkId that Netcode assigned us on login. It does not persist across multiple logins from the same client. </param>
         /// <param name="connectionApprovedCallback">The delegate we must invoke to signal that the connection was approved or not. </param>
+
+        //TODO Rename this and remove xml documentation
         void ApprovalCheck(byte[] connectionData, ulong networkId,
             NetworkManager.ConnectionApprovedDelegate connectionApprovedCallback)
         {
@@ -129,16 +133,10 @@ namespace Matchplay.Server
             userData.networkId = networkId;
             Debug.Log($"Host ApprovalCheck: connecting client: ({networkId}) - {userData}");
 
+            //TODO Faster lookup if(m_ClientData.TryGetValue(userData.userAuthId, out userData))
             //Test for Duplicate Login.
-            if (m_ClientData.ContainsKey(userData.userAuthId))
-            {
-                ulong oldClientId = m_ClientData[userData.userAuthId].networkId;
-                Debug.Log($"Duplicate ID Found : {userData.userAuthId}, Disconnecting Old user");
-
-                // kicking old client to leave only current
-                SendClientDisconnected(networkId, ConnectStatus.LoggedInAgain);
-                WaitToDisconnect(oldClientId);
-            }
+            //if (m_ClientData.ContainsKey(userData.userAuthId))
+            CheckForDuplicateConnection(userData.userAuthId);
 
             SendClientConnected(networkId, ConnectStatus.Success);
 
@@ -150,6 +148,16 @@ namespace Matchplay.Server
 
             // connection approval will create a player object for you
             SetupPlayerPrefab(networkId, userData.userName);
+        }
+
+        void CheckForDuplicateConnection(string authID)
+        {
+            ulong oldClientId = m_ClientData[authID].networkId;
+            Debug.Log($"Duplicate ID Found : {authID}, Disconnecting Old user");
+
+            //Kicking old client to leave only current
+            SendClientDisconnected(oldClientId, ConnectStatus.LoggedInAgain);
+            WaitToDisconnect(oldClientId);
         }
 
         /// <summary>

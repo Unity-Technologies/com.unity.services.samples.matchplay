@@ -15,6 +15,7 @@ namespace Matchplay.Shared
 
         ApplicationData m_AppData;
         public static bool IsServer;
+
         async void Start()
         {
             Application.targetFrameRate = 60;
@@ -45,7 +46,10 @@ namespace Matchplay.Shared
             IsServer = isServer;
             if (isServer)
             {
-                var serverSingleton = Instantiate(m_ServerPrefab);
+                //We create the server singleton, and cache it.
+                Instantiate(m_ServerPrefab);
+                //
+                var serverSingleton = ServerSingleton.Instance;
                 await serverSingleton.CreateServer(); //run the init instead of relying on start.
 
                 var defaultGameInfo = new GameInfo
@@ -59,7 +63,9 @@ namespace Matchplay.Shared
             }
             else
             {
-                var clientSingleton = Instantiate(m_ClientPrefab);
+                //We create the client singleton, and cache it.
+                Instantiate(m_ClientPrefab);
+                var clientSingleton = ClientSingleton.Instance;
                 clientSingleton.CreateClient(profileName);
 
                 //We want to load the main menu while the client is still initializing.
