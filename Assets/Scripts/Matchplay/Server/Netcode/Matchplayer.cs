@@ -13,9 +13,12 @@ namespace Matchplay.Server
     /// </summary>
     public class Matchplayer : NetworkBehaviour
     {
+        [HideInInspector]
         public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>();
+        [HideInInspector]
         public NetworkVariable<NetworkString> PlayerName = new NetworkVariable<NetworkString>();
-        public RendererColorer colorSwitcher;
+        [SerializeField]
+        RendererColorer m_ColorSwitcher;
 
         public override void OnNetworkSpawn()
         {
@@ -32,7 +35,7 @@ namespace Matchplay.Server
             if (oldColor == newColor)
                 return;
 
-            colorSwitcher.SetColor(newColor);
+            m_ColorSwitcher.SetColor(newColor);
         }
 
         public override void OnNetworkDespawn()
