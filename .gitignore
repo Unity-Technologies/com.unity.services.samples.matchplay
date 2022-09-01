@@ -100,3 +100,9 @@ crashlytics-build.properties
 
 # Ignore build reports
 /Assets/BuildReports*
+
+*.idea
+*/.idea
+
+*.DS_Store
+
