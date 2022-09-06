@@ -36,7 +36,7 @@ namespace Matchplay.Shared
         }
 
         /// <summary>
-        /// Main project launcher, launched in Awake() for builds, and via the EditorApplicationController in-editor
+        /// Main project launcher, launched in Start() for builds, and via the EditorApplicationController in-editor
         /// </summary>
         async Task LaunchInMode(bool isServer, string profileName = "default")
         {
