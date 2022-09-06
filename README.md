@@ -125,9 +125,9 @@ The Multiplay service can be managed in the [Unity Dashboard](https://dashboard.
 
 1. Link your Editor project to the Cloud Project as described in [Cloud Project and Organization](https://github.com/Unity-Technologies/com.unity.services.samples.matchplay#Cloud-Project-and-Organization).
 2. Go to your build settings and click on dedicated server, then on the button “Install with Unity Hub”. You need to install all the Linux build support modules:
-**- Linux Build Support (IL2CPP)
-- Linux Build Support (Mono)
-- Linux Dedicated Server Build Support**
+- **Linux Build Support (IL2CPP)**
+- **Linux Build Support (Mono)**
+- **Linux Dedicated Server Build Support**
 3. Once the modules are installed, you can build the server. Go to your Matchplay project and select **BuildTools** > **Linux Server**.
 It should automatically build your project as a server build, and output it to:
 `<project root>/Builds/Matchplay-<platformBuildType>_<dateTime>`
