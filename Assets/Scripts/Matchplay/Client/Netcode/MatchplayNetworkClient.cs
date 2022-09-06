@@ -108,7 +108,7 @@ namespace Matchplay.Client
         {
             //On a client disconnect we want to take them back to the main menu.
             //We have to check here in SceneManager if our active scene is the main menu, as if it is, it means we timed out rather than a raw disconnect;
-            if (SceneManager.GetActiveScene().name == "mainMenu")
+            if (SceneManager.GetActiveScene().name != "mainMenu")
                 SceneManager.LoadScene("mainMenu");
                 
             // We're not at the main menu, so we obviously had a connection before... thus, we aren't in a timeout scenario.
