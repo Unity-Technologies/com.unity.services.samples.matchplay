@@ -124,17 +124,21 @@ The Multiplay service can be managed in the [Unity Dashboard](https://dashboard.
 
 
 1. Link your Editor project to the Cloud Project as described in [Cloud Project and Organization](https://github.com/Unity-Technologies/com.unity.services.samples.matchplay#Cloud-Project-and-Organization).
-2. To build the server, go to your Matchplay project, and select **BuildTools** > **Linux Server**.
+2. Go to your build settings and click on dedicated server, then on the button “Install with Unity Hub”. You need to install all the Linux build support modules:
+- **Linux Build Support (IL2CPP)**
+- **Linux Build Support (Mono)**
+- **Linux Dedicated Server Build Support**
+3. Once the modules are installed, you can build the server. Go to your Matchplay project and select **BuildTools** > **Linux Server**.
 It should automatically build your project as a server build, and output it to:
 `<project root>/Builds/Matchplay-<platformBuildType>_<dateTime>`
-3. Next, upload the server to Multiplay and configure server hosting. Go to your Unity Dashboard and then go to **Multiplay Setup Guide** > **Create a build**.
-4. Fill out the Details fields and move to **Upload Files**. Drag your **Linux Headless Build** into the dropbox and select **Upload Files**.
+4. Next, upload the server to Multiplay and configure server hosting. Go to your Unity Dashboard and then go to **Multiplay Setup Guide** > **Create a build**.
+5. Fill out the name, select **Linux**, and **Direct File Upload**. Click Next. Drag your **Linux Headless Build** into the dropbox and select **Upload Files**.
 ![image](https://user-images.githubusercontent.com/83710234/183719787-2abcc610-bc0d-47b6-9b6c-e7e1bd5ad2d6.png)
-5. Continue to set up the build configuration. Complete the fields and enter `Matchplay.x86_64` in the game server executable field.
-6. Select SQP as your query type, and fill in the following as the custom launch parameters:
-`-ip 0.0.0.0 -port $$port$$ -queryPort $$query_port$$ -logFile $$server_log_dir$$/matchplaylog.log`
+6. Continue to set up the build configuration. Complete the fields and enter `Matchplay.x86_64` in the game server executable field.
+7. Select SQP as your query type, and fill in the following as the custom launch parameters:
+`-ip 0.0.0.0 -port $$port$$ -queryPort $$query_port$$ -logFile $$log_dir$$/matchplaylog.log`
 ![image](https://user-images.githubusercontent.com/83710234/183719656-c00d57c7-a80a-4d02-a6ca-e7f367cb4ca5.png)
-7. To create a fleet, enter a fleet name, and select the previously created build configuration. For the scaling settings, select 1 as the minimum available, and 5 as the maximum. The Multiplay fleet is now ready.
+8. To create a fleet, enter a fleet name, and select the previously created build configuration. For the scaling settings, select 1 as the minimum available, and 5 as the maximum. The Multiplay fleet is now ready.
 ![image](https://user-images.githubusercontent.com/83710234/183719735-ae09c2ee-508f-4c53-b94d-98b76a14ffd3.png)
 
 
