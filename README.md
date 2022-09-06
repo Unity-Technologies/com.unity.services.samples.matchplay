@@ -132,7 +132,7 @@ The Multiplay service can be managed in the [Unity Dashboard](https://dashboard.
 It should automatically build your project as a server build, and output it to:
 `<project root>/Builds/Matchplay-<platformBuildType>_<dateTime>`
 4. Next, upload the server to Multiplay and configure server hosting. Go to your Unity Dashboard and then go to **Multiplay Setup Guide** > **Create a build**.
-5. Fill out the Details fields and move to **Upload Files**. Drag your **Linux Headless Build** into the dropbox and select **Upload Files**.
+5. Fill out the name, select **Linux**, and **Direct File Upload**. Click Next. Drag your **Linux Headless Build** into the dropbox and select **Upload Files**.
 ![image](https://user-images.githubusercontent.com/83710234/183719787-2abcc610-bc0d-47b6-9b6c-e7e1bd5ad2d6.png)
 6. Continue to set up the build configuration. Complete the fields and enter `Matchplay.x86_64` in the game server executable field.
 7. Select SQP as your query type, and fill in the following as the custom launch parameters:
