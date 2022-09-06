@@ -50,7 +50,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   PlayerColor:
     m_InternalValue: {r: 0, g: 0, b: 0, a: 0}
-  colorSwitcher: {fileID: 50233370567777802}
+  m_ColorSwitcher: {fileID: 50233370567777802}
 --- !u!114 &3439633038736912634
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -107,6 +107,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RenderInstance: {fileID: 9222171158525413097}
   m_startColor: {r: 1, g: 1, b: 1, a: 1}
+  setColorAtStart: 0
 --- !u!1 &8274927197293675503
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
 using System;
 using Matchplay.Networking;
 using Unity.Netcode;
+using UnityEngine;
 
 namespace Matchplay.Shared
 {
@@ -9,6 +10,7 @@ namespace Matchplay.Shared
     /// </summary>
     public class SynchedServerData : NetworkBehaviour
     {
+        [HideInInspector]
         public NetworkVariable<NetworkString> serverID = new NetworkVariable<NetworkString>();
         public NetworkVariable<Map> map = new NetworkVariable<Map>();
         public NetworkVariable<GameMode> gameMode = new NetworkVariable<GameMode>();
