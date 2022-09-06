@@ -22,7 +22,6 @@ namespace Matchplay.Client.UI
     [RequireComponent(typeof(UIDocument))]
     public class MainMenuUI : MonoBehaviour
     {
-        UIDocument m_Document;
         ClientGameManager gameManager;
         AuthState m_AuthState;
         bool m_LocalLaunchMode;
@@ -58,22 +57,34 @@ namespace Matchplay.Client.UI
         {
             if (ClientSingleton.Instance == null)
                 return;
+            
+            SetUpUI();
+            SetUpInitialState();
+            //Default mode is Matchmaker
+            SetMatchmakerMode();
 
-            m_Document = GetComponent<UIDocument>();
-            var root = m_Document.rootVisualElement;
+            m_AuthState = await AuthenticationWrapper.Authenticating();
+            
+            if (m_AuthState == AuthState.Authenticated)
+                SetMenuState(MainMenuPlayState.Ready, "Authenticated!");
+            else
+            {
+                SetMenuState(MainMenuPlayState.AuthenticationError,
+                    "Error Authenticating: Check the Console for more details.\n" +
+                    "(Did you remember to link the editor with the Unity cloud Project?)");
+            }
+        }
 
-            #region visual_groups
-
+        private void SetUpUI()
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            
             m_ButtonGroup = root.Q<VisualElement>("play_button_group");
             m_QueueGroup = root.Q<VisualElement>("queue_group");
             m_MapGroup = root.Q<VisualElement>("map_group");
             m_ModeGroup = root.Q<VisualElement>("mode_group");
             m_IPPortGroup = root.Q<VisualElement>("ip_port_group");
-
-            #endregion
-
-            #region interactables
-
+            
             m_ExitButton = root.Q<Button>("exit_button");
             m_ExitButton.clicked += ExitApplication;
 
@@ -118,11 +129,10 @@ namespace Matchplay.Client.UI
 
             m_NameLabel = root.Q<Label>("name_label");
             m_MessageLabel = root.Q<Label>("message_label");
+        }
 
-            #endregion
-
-            #region initial_state_setup
-
+        private void SetUpInitialState()
+        {
             gameManager = ClientSingleton.Instance.Manager;
 
             SetName(gameManager.User.Name);
@@ -134,22 +144,6 @@ namespace Matchplay.Client.UI
             gameManager.SetGameMode(Enum.Parse<GameMode>(m_ModeDropDown.value));
             gameManager.SetGameMap(Enum.Parse<Map>(m_MapDropDown.value));
             gameManager.SetGameQueue(Enum.Parse<GameQueue>(m_QueueDropDown.value));
-
-            //Default mode is Matchmaker
-            SetMatchmakerMode();
-
-            m_AuthState = await AuthenticationWrapper.Authenticating();
-
-            if (m_AuthState == AuthState.Authenticated)
-                SetMenuState(MainMenuPlayState.Ready, "Authenticated!");
-            else
-            {
-                SetMenuState(MainMenuPlayState.AuthenticationError,
-                    "Error Authenticating: Check the Console for more details.\n" +
-                    "(Did you remember to link the editor with the Unity cloud Project?)");
-            }
-
-            #endregion
         }
 
         void SetName(string newName)

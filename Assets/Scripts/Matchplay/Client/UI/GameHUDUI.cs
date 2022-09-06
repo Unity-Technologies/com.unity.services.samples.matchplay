@@ -41,7 +41,17 @@ namespace Matchplay.Client.UI
                 return;
             }
 
-            //UIDocument setup
+            SetUpUI();
+            SetUpGameManagerCallbacks();
+        }
+
+        async void Start()
+        {
+            await AwaitSynchedServerData();
+        }
+        
+        private void SetUpUI()
+        {
             var root = gameObject.GetComponent<UIDocument>().rootVisualElement;
             m_ServerLabel = root.Q<Label>("serverValue");
             m_GameModeValue = root.Q<Label>("modeValue");
@@ -50,18 +60,16 @@ namespace Matchplay.Client.UI
             m_ClientUIGroup = root.Q<VisualElement>("clientUIGroup");
             m_DisconnectButton = root.Q<Button>("button_disconnect");
             m_DisconnectButton.clicked += DisconnectPressed;
+        }
 
+        private void SetUpGameManagerCallbacks()
+        {
             //GameManagerCallbacks
             m_ClientGameManager = ClientSingleton.Instance.Manager;
             m_ClientGameManager.NetworkClient.OnLocalConnection += OnLocalConnection;
             m_ClientGameManager.NetworkClient.OnLocalDisconnection += OnLocalDisconnection;
             m_ClientGameManager.MatchPlayerSpawned += AddPlayerLabel;
             m_ClientGameManager.MatchPlayerDespawned += RemovePlayerLabel;
-        }
-
-        async void Start()
-        {
-            await AwaitSynchedServerData();
         }
 
         async Task AwaitSynchedServerData()
