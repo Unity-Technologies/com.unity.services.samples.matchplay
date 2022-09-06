@@ -26,7 +26,6 @@ namespace Matchplay.Client.UI
         Dictionary<int, PlayerNameUI> m_PlayerLabels = new Dictionary<int, PlayerNameUI>();
         Label m_ServerLabel;
         Label m_GameModeValue;
-        Label m_QueueValue;
         Label m_MapValue;
         VisualElement m_ClientUIGroup;
         ClientGameManager m_ClientGameManager;
@@ -55,7 +54,6 @@ namespace Matchplay.Client.UI
             var root = gameObject.GetComponent<UIDocument>().rootVisualElement;
             m_ServerLabel = root.Q<Label>("serverValue");
             m_GameModeValue = root.Q<Label>("modeValue");
-            m_QueueValue = root.Q<Label>("queueValue");
             m_MapValue = root.Q<Label>("mapValue");
             m_ClientUIGroup = root.Q<VisualElement>("clientUIGroup");
             m_DisconnectButton = root.Q<Button>("button_disconnect");
@@ -86,7 +84,6 @@ namespace Matchplay.Client.UI
             m_SynchedServerData.serverID.OnValueChanged += OnServerChanged;
             m_SynchedServerData.map.OnValueChanged += OnMapChanged;
             m_SynchedServerData.gameMode.OnValueChanged += OnModeChanged;
-            m_SynchedServerData.gameQueue.OnValueChanged += OnQueueChanged;
             SetUIToSynchedVariables();
         }
 
@@ -130,7 +127,6 @@ namespace Matchplay.Client.UI
             OnServerChanged(new NetworkString(), m_SynchedServerData.serverID.Value);
             OnMapChanged(Map.Lab, m_SynchedServerData.map.Value);
             OnModeChanged(GameMode.Meditating, m_SynchedServerData.gameMode.Value);
-            OnQueueChanged(GameQueue.Casual, m_SynchedServerData.gameQueue.Value);
         }
 
         void OnServerChanged(NetworkString oldServerID,
@@ -149,11 +145,6 @@ namespace Matchplay.Client.UI
             m_GameModeValue.text = newGameMode.ToString();
         }
 
-        void OnQueueChanged(GameQueue oldQueue, GameQueue newQueue)
-        {
-            m_QueueValue.text = newQueue.ToString();
-        }
-
         void DisconnectPressed()
         {
             m_ClientGameManager.Disconnect();
@@ -169,7 +160,6 @@ namespace Matchplay.Client.UI
             m_ClientGameManager.MatchPlayerDespawned -= RemovePlayerLabel;
             m_SynchedServerData.map.OnValueChanged -= OnMapChanged;
             m_SynchedServerData.gameMode.OnValueChanged -= OnModeChanged;
-            m_SynchedServerData.gameQueue.OnValueChanged -= OnQueueChanged;
         }
     }
 }

@@ -13,10 +13,6 @@
                         <ui:Label text="Game Mode" display-tooltip-when-elided="true" name="modeLabel" class="hudText" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left; -unity-font-style: bold;" />
                         <ui:Label text="####" display-tooltip-when-elided="true" name="modeValue" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left;" />
                     </ui:VisualElement>
-                    <ui:VisualElement name="queueGroup" class="hudText" style="flex-direction: row; align-items: center; background-color: rgba(31, 31, 31, 0);">
-                        <ui:Label text="Queue:" display-tooltip-when-elided="true" name="queueLabel" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left; -unity-font-style: bold;" />
-                        <ui:Label text="####" display-tooltip-when-elided="true" name="queueValue" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left;" />
-                    </ui:VisualElement>
                     <ui:VisualElement name="mapGroup" class="hudText" style="flex-direction: row; align-items: center; background-color: rgba(31, 31, 31, 0); -unity-text-align: upper-left; flex-wrap: nowrap;">
                         <ui:Label text="Map:" display-tooltip-when-elided="true" name="mapLabel" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left; -unity-font-style: bold;" />
                         <ui:Label text="####" display-tooltip-when-elided="true" name="mapValue" style="background-color: rgba(31, 31, 31, 0); -unity-text-align: middle-left;" />

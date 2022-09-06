@@ -20,8 +20,7 @@ namespace Matchplay.Shared
 
     public enum GameQueue
     {
-        Casual,
-        Competitive
+        Casual
     }
 
     /// <summary>
@@ -127,11 +126,9 @@ namespace Matchplay.Shared
 
         //QueueNames in the dashboard can be different than your local queue definitions (If you want nice names for them)
         const string k_MultiplayCasualQueue = "casual-queue";
-        const string k_MultiplayCompetetiveQueue = "competetive-queue";
         static readonly Dictionary<string, GameQueue> k_MultiplayToLocalQueueNames = new Dictionary<string, GameQueue>
         {
-            { k_MultiplayCasualQueue, GameQueue.Casual },
-            { k_MultiplayCompetetiveQueue, GameQueue.Competitive }
+            { k_MultiplayCasualQueue, GameQueue.Casual }
         };
 
         public override string ToString()
@@ -170,7 +167,6 @@ namespace Matchplay.Shared
             return gameQueue switch
             {
                 GameQueue.Casual => k_MultiplayCasualQueue,
-                GameQueue.Competitive => k_MultiplayCompetetiveQueue,
                 _ => k_MultiplayCasualQueue
             };
         }

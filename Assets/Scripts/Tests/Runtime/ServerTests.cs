@@ -62,29 +62,6 @@ namespace Matchplay.Tests
             Assert.IsFalse(createdServer.StartedServices);
         }
 
-        [UnityTest]
-        [RequiresPlayMode]
-        public IEnumerator Create_Local_Server_Meditating_Space_Competitive()
-        {
-            var startingGameInfo = new GameInfo
-            {
-                gameMode = GameMode.Meditating,
-                map = Map.Space,
-                gameQueue = GameQueue.Competitive
-            };
-            var createServerTask = CreateServerAsync(k_LocalIP, k_DefaultPort, k_DefaultQPort,
-                startingGameInfo);
-
-            yield return new WaitUntil(() => createServerTask.IsCompleted);
-            var createdServer = createServerTask.Result;
-            Assert.AreEqual(SceneManager.GetActiveScene(), SceneManager.GetSceneByName(startingGameInfo.ToSceneName));
-            Assert.NotNull(createdServer.ServerData);
-            Assert.AreEqual(startingGameInfo.gameMode, createdServer.ServerData.gameMode.Value);
-            Assert.AreEqual(startingGameInfo.map, createdServer.ServerData.map.Value);
-            Assert.AreEqual(startingGameInfo.gameQueue, createdServer.ServerData.gameQueue.Value);
-            Assert.IsFalse(createdServer.StartedServices);
-        }
-
         async Task<ServerGameManager> CreateServerAsync(string ip, int port, int qport, GameInfo gameInfo)
         {
             var serverGameManager = new ServerGameManager(ip, port, qport, NetworkManager.Singleton);
