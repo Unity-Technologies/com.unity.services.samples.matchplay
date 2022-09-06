@@ -166,10 +166,10 @@ namespace Matchplay.Server
 
         void UserLeft(UserData leftUser)
         {
-            Debug.Log($"{leftUser} left the game");
-            m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
+            var playerCount = m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
             m_MultiplayAllocationService.RemovePlayer();
-            var playerCount = m_NetworkServer.PlayerCount;
+
+            Debug.Log($"player '{leftUser?.userName}' left the game, {playerCount} players left in game.");
             if (playerCount <= 0)
             {
 #pragma warning disable 4014
@@ -210,6 +210,7 @@ namespace Matchplay.Server
 
         async Task CloseServer()
         {
+            Debug.Log($"Closing Server");
             await m_Backfiller.StopBackfill();
             Dispose();
             Application.Quit();
