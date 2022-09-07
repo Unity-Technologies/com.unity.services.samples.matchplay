@@ -167,6 +167,8 @@ Now that we have our server fleet, we can set up the Matchmaker by selecting **M
 
 ![Matchmaker Pool](~Documentation/Images/Matchmaker_2.PNG "Matchmaker Pool")
 
+5. After creating a pool, you can create another queue named 'competitive-queue' and redo steps 2-4 in order to allow players to choose between the two queue types on the lobby screen.
+
 #### Match Rules
 
 The match rules are the filters that we use in the sample to match the players by their preferences. Within the pools and queues, every player’s settings are evaluated against every other player.
