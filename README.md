@@ -133,13 +133,13 @@ It should automatically build your project as a server build, and output it to:
 `<project root>/Builds/Matchplay-<platformBuildType>_<dateTime>`
 4. Next, upload the server to Multiplay and configure server hosting. Go to your Unity Dashboard and then go to **Multiplay Setup Guide** > **Create a build**.
 5. Fill out the name, select **Linux**, and **Direct File Upload**. Click Next. Drag your **Linux Headless Build** into the dropbox and select **Upload Files**.
-![image](https://user-images.githubusercontent.com/83710234/183719787-2abcc610-bc0d-47b6-9b6c-e7e1bd5ad2d6.png)
+![Upload Menu](~Documentation/Images/Multiplay_1.PNG "Upload Menu")
 6. Continue to set up the build configuration. Complete the fields and enter `Matchplay.x86_64` in the game server executable field.
 7. Select SQP as your query type, and fill in the following as the custom launch parameters:
 `-ip 0.0.0.0 -port $$port$$ -queryPort $$query_port$$ -logFile $$log_dir$$/matchplaylog.log`
-![image](https://user-images.githubusercontent.com/83710234/183719656-c00d57c7-a80a-4d02-a6ca-e7f367cb4ca5.png)
+![Build Config](~Documentation/Images/Multiplay_2.PNG "Build Config")
 8. To create a fleet, enter a fleet name, and select the previously created build configuration. For the scaling settings, select 1 as the minimum available, and 5 as the maximum. The Multiplay fleet is now ready.
-![image](https://user-images.githubusercontent.com/83710234/183719735-ae09c2ee-508f-4c53-b94d-98b76a14ffd3.png)
+![Create Fleet](~Documentation/Images/Multiplay_3.PNG "Create Fleet")
 
 
 
@@ -159,12 +159,13 @@ Now that we have our server fleet, we can set up the Matchmaker by selecting **M
 
 1. Select **Create Queue** and enter a name for the queue. The queue name must be between 1 and 36 characters and contain only alphanumeric or hyphen characters.
 2. Name the queue 'casual-queue' and set the maximum players on a ticket to 10.
+**Note**: There is an optional 'competetive-queue' demonstrated as well, to show how to do queue switching. It is set up the same way the casual queue is in the dashboard.
 
 ![Matchmaker Queue](~Documentation/Images/Matchmaker_1.PNG "Matchmaker Queue")
 
 3. The exact string queue name defined in the UDash must match the input string in the following SDK sample:
 
-![Queue string in code](~Documentation/Images/Matchmaker_1b.PNG "Queue String in code")
+![Queue strings in code](~Documentation/Images/Matchmaker_1b.PNG "Queue Strings in code")
 
 4. To create a pool, select your previously created Multiplay fleet and build configuration. Set the timeout to 15 seconds.
 **Note**: If your server fleet scaling settings have 0 minimum servers, you may need to increase the timeout duration to 180 seconds to accommodate the server initial startup duration.
