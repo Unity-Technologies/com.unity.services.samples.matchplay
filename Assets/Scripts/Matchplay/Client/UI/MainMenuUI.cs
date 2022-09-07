@@ -34,13 +34,16 @@ namespace Matchplay.Client.UI
         Button m_MatchmakerButton;
         Button m_CancelButton;
         Button m_LocalButton;
+        Button m_CompetetiveButton;
         Button m_PlayButton;
 
+        DropdownField m_QueueDropDown;
         DropdownField m_ModeDropDown;
         DropdownField m_MapDropDown;
 
         VisualElement m_ButtonGroup;
         VisualElement m_IPPortGroup;
+        VisualElement m_QueueGroup;
         VisualElement m_MapGroup;
         VisualElement m_ModeGroup;
         Label m_NameLabel;
@@ -77,6 +80,7 @@ namespace Matchplay.Client.UI
             var root = GetComponent<UIDocument>().rootVisualElement;
             
             m_ButtonGroup = root.Q<VisualElement>("play_button_group");
+            m_QueueGroup = root.Q<VisualElement>("queue_group");
             m_MapGroup = root.Q<VisualElement>("map_group");
             m_ModeGroup = root.Q<VisualElement>("mode_group");
             m_IPPortGroup = root.Q<VisualElement>("ip_port_group");
@@ -92,6 +96,10 @@ namespace Matchplay.Client.UI
 
             m_LocalButton = root.Q<Button>("local_button");
             m_LocalButton.clicked += SetLocalGameMode;
+
+            m_QueueDropDown = root.Q<DropdownField>("queue_drop_down");
+            m_QueueDropDown.choices = new List<string>(typeof(GameQueue).GetEnumNames());
+            m_QueueDropDown.RegisterValueChangedCallback(QueueDropDownChanged);
 
             m_MapDropDown = root.Q<DropdownField>("map_drop_down");
             m_MapDropDown.choices = new List<string>(typeof(Map).GetEnumNames());
@@ -135,6 +143,7 @@ namespace Matchplay.Client.UI
             //Set the game manager casual gameMode defaults to whatever the UI starts with
             gameManager.SetGameMode(Enum.Parse<GameMode>(m_ModeDropDown.value));
             gameManager.SetGameMap(Enum.Parse<Map>(m_MapDropDown.value));
+            gameManager.SetGameQueue(Enum.Parse<GameQueue>(m_QueueDropDown.value));
         }
 
         void SetName(string newName)
@@ -163,6 +172,7 @@ namespace Matchplay.Client.UI
 
         void OnDestroy()
         {
+            m_QueueDropDown.UnregisterValueChangedCallback(QueueDropDownChanged);
             m_MapDropDown.UnregisterValueChangedCallback(MapDropDownChanged);
             m_ModeDropDown.UnregisterValueChangedCallback(GameModeDropDownChanged);
             gameManager.User.onNameChanged -= SetName;
@@ -182,6 +192,7 @@ namespace Matchplay.Client.UI
             m_PlayButton.text = "Matchmake";
             m_ModeGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_MapGroup.contentContainer.style.display = DisplayStyle.Flex;
+            m_QueueGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.None;
         }
 
@@ -191,6 +202,7 @@ namespace Matchplay.Client.UI
             m_ButtonGroup.contentContainer.SetEnabled(true);
             m_ModeGroup.contentContainer.style.display = DisplayStyle.None;
             m_MapGroup.contentContainer.style.display = DisplayStyle.None;
+            m_QueueGroup.contentContainer.style.display = DisplayStyle.None;
             m_IPPortGroup.contentContainer.style.display = DisplayStyle.Flex;
             m_PlayButton.text = "Play";
         }
@@ -331,6 +343,13 @@ namespace Matchplay.Client.UI
         #endregion
 
         #region gameSelectorCallbacks
+
+        void QueueDropDownChanged(ChangeEvent<string> queueEvent)
+        {
+            if (!Enum.TryParse(queueEvent.newValue, out GameQueue selectedQueue))
+                return;
+            gameManager.SetGameQueue(selectedQueue);
+        }
 
         void GameModeDropDownChanged(ChangeEvent<string> modeEvent)
         {
