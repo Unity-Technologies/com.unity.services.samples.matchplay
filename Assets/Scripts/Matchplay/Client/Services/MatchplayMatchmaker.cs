@@ -34,6 +34,19 @@ namespace Matchplay.Client
         CancellationTokenSource m_CancelToken;
         const int k_GetTicketCooldown = 1000;
 
+        public MatchplayMatchmaker()
+        {
+#if AUTHENTICATION_TESTING_STAGING_UAS
+            SetStagingEnvironment();
+#endif
+        }
+
+        private async void SetStagingEnvironment()
+        {
+            await AuthenticationWrapper.Authenticating();
+            var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
+            sdkConfiguration.SetBasePath("https://matchmaker-stg.services.api.unity.com");
+        }
         /// <summary>
         /// Create a ticket for the one user and begin matchmaking with their preferences
         /// </summary>

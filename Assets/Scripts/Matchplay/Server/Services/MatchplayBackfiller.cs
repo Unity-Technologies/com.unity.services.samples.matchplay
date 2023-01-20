@@ -35,8 +35,9 @@ namespace Matchplay.Server
 
         public async Task BeginBackfilling()
         {
-           // SetStagingEnvironment(); for internal unity testing only.
-
+#if AUTHENTICATION_TESTING_STAGING_UAS
+            SetStagingEnvironment();
+#endif
             if (Backfilling)
             {
                 Debug.LogWarning("Already backfilling, no need to start another.");
@@ -55,6 +56,13 @@ namespace Matchplay.Server
             BackfillLoop();
 #pragma warning restore 4014
         }
+
+        private void SetStagingEnvironment()
+        {
+            var sdkConfiguration = (IMatchmakerSdkConfiguration)MatchmakerService.Instance;
+            sdkConfiguration.SetBasePath("https://matchmaker-stg.services.api.unity.com");
+        }
+
 
         /// <summary>
         /// The matchmaker maintains the state of the match on the backend.
