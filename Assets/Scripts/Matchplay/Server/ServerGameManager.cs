@@ -26,6 +26,7 @@ namespace Matchplay.Server
         const int k_MultiplayServiceTimeout = 20000;
         bool m_StartedServices;
         MultiplayAllocationService m_MultiplayAllocationService;
+        MultiplayServerQueryService m_MultiplayServerQueryService;
         SynchedServerData m_SynchedServerData;
         string m_ServerName = "Matchplay Server";
 
@@ -35,7 +36,7 @@ namespace Matchplay.Server
             m_ServerPort = serverPort;
             m_QueryPort = serverQPort;
             m_NetworkServer = new MatchplayNetworkServer(manager);
-            m_MultiplayAllocationService = new MultiplayAllocationService();
+            m_MultiplayServerQueryService = new MultiplayServerQueryService();
             m_ServerName = NameGenerator.GetName(Guid.NewGuid().ToString());
         }
 
@@ -46,6 +47,10 @@ namespace Matchplay.Server
         {
             Debug.Log($"Starting server with:{startingGameInfo}.");
 
+            // The server should respond to query requests irrespective of the server being allocated.
+            // Hence, start the handler as soon as we can.
+            await m_MultiplayServerQueryService.BeginServerQueryHandler();
+
             try
             {
                 var matchmakerPayload = await GetMatchmakerPayload(k_MultiplayServiceTimeout);
@@ -55,7 +60,7 @@ namespace Matchplay.Server
                     Debug.Log($"Got payload: {matchmakerPayload}");
                     startingGameInfo = PickGameInfo(matchmakerPayload);
 
-                    await StartAllocationService(startingGameInfo,
+                    StartAllocationService(startingGameInfo,
                         (ushort)matchmakerPayload.MatchProperties.Players.Count);
                     await StartBackfill(matchmakerPayload, startingGameInfo);
                     m_NetworkServer.OnPlayerJoined += UserJoinedServer;
@@ -109,18 +114,16 @@ namespace Matchplay.Server
             return null;
         }
 
-        async Task StartAllocationService(GameInfo startingGameInfo, ushort playerCount)
+        private void StartAllocationService(GameInfo startingGameInfo, ushort playerCount)
         {
-            await m_MultiplayAllocationService.BeginServerCheck();
-
             //Create a unique name for the server to show that we are joining the same one
 
-            m_MultiplayAllocationService.SetServerName(m_ServerName);
-            m_MultiplayAllocationService.SetPlayerCount(playerCount);
-            m_MultiplayAllocationService.SetMaxPlayers(10);
-            m_MultiplayAllocationService.SetBuildID("0");
-            m_MultiplayAllocationService.SetMap(startingGameInfo.map.ToString());
-            m_MultiplayAllocationService.SetMode(startingGameInfo.gameMode.ToString());
+            m_MultiplayServerQueryService.SetServerName(m_ServerName);
+            m_MultiplayServerQueryService.SetPlayerCount(playerCount);
+            m_MultiplayServerQueryService.SetMaxPlayers(10);
+            m_MultiplayServerQueryService.SetBuildID("0");
+            m_MultiplayServerQueryService.SetMap(startingGameInfo.map.ToString());
+            m_MultiplayServerQueryService.SetMode(startingGameInfo.gameMode.ToString());
         }
 
         async Task StartBackfill(MatchmakingResults payload, GameInfo startingGameInfo)
@@ -143,19 +146,18 @@ namespace Matchplay.Server
         //For now we don't have any mechanics to change the map or mode mid-game. But if we did, we would update the backfill ticket to reflect that too.
         void OnServerChangedMap(Map oldMap, Map newMap)
         {
-            m_MultiplayAllocationService.SetMap(newMap.ToString());
+            m_MultiplayServerQueryService.SetMap(newMap.ToString());
         }
 
         void OnServerChangedMode(GameMode oldMode, GameMode newMode)
         {
-            m_MultiplayAllocationService.SetMode(newMode.ToString());
+            m_MultiplayServerQueryService.SetMode(newMode.ToString());
         }
-
         void UserJoinedServer(UserData joinedUser)
         {
             Debug.Log($"{joinedUser} joined the game");
             m_Backfiller.AddPlayerToMatch(joinedUser);
-            m_MultiplayAllocationService.AddPlayer();
+            m_MultiplayServerQueryService.AddPlayer();
             if (!m_Backfiller.NeedsPlayers() && m_Backfiller.Backfilling)
             {
 #pragma warning disable 4014
@@ -167,7 +169,7 @@ namespace Matchplay.Server
         void UserLeft(UserData leftUser)
         {
             var playerCount = m_Backfiller.RemovePlayerFromMatch(leftUser.userAuthId);
-            m_MultiplayAllocationService.RemovePlayer();
+            m_MultiplayServerQueryService.RemovePlayer();
 
             Debug.Log($"player '{leftUser?.userName}' left the game, {playerCount} players left in game.");
             if (playerCount <= 0)
