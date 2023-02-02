@@ -60,7 +60,7 @@ namespace Matchplay.Server
                     Debug.Log($"Got payload: {matchmakerPayload}");
                     startingGameInfo = PickGameInfo(matchmakerPayload);
 
-                    StartAllocationService(startingGameInfo,
+                    MatchStartedServerQuery(startingGameInfo,
                         (ushort)matchmakerPayload.MatchProperties.Players.Count);
                     await StartBackfill(matchmakerPayload, startingGameInfo);
                     m_NetworkServer.OnPlayerJoined += UserJoinedServer;
@@ -114,7 +114,7 @@ namespace Matchplay.Server
             return null;
         }
 
-        private void StartAllocationService(GameInfo startingGameInfo, ushort playerCount)
+        private void MatchStartedServerQuery(GameInfo startingGameInfo, ushort playerCount)
         {
             //Create a unique name for the server to show that we are joining the same one
 
