@@ -36,6 +36,7 @@ namespace Matchplay.Server
             m_ServerPort = serverPort;
             m_QueryPort = serverQPort;
             m_NetworkServer = new MatchplayNetworkServer(manager);
+            m_MultiplayAllocationService = new MultiplayAllocationService();
             m_MultiplayServerQueryService = new MultiplayServerQueryService();
             m_ServerName = NameGenerator.GetName(Guid.NewGuid().ToString());
         }
