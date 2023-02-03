@@ -14,11 +14,8 @@ namespace Matchplay.Server
     {
         IMultiplayService m_MultiplayService;
         MultiplayEventCallbacks m_Servercallbacks;
-        IServerQueryHandler m_ServerCheckManager;
         IServerEvents m_ServerEvents;
         string m_AllocationId;
-        bool m_LocalServerValuesChanged = false;
-        CancellationTokenSource m_ServerCheckCancel;
 
         const string k_PayloadProxyUrl = "http://localhost:8086";
 
@@ -27,7 +24,6 @@ namespace Matchplay.Server
             try
             {
                 m_MultiplayService = MultiplayService.Instance;
-                m_ServerCheckCancel = new CancellationTokenSource();
             }
             catch (Exception ex)
             {
@@ -51,86 +47,6 @@ namespace Matchplay.Server
             var mmPayload = await GetMatchmakerAllocationPayloadAsync();
 
             return mmPayload;
-        }
-
-        //The networked server is our source of truth for what is going on, so we update our multiplay check server with values from there.
-        public async Task BeginServerCheck()
-        {
-            if (m_MultiplayService == null)
-                return;
-            m_ServerCheckManager = await m_MultiplayService.StartServerQueryHandlerAsync((ushort)10,
-                "", "", "0", "");
-
-#pragma warning disable 4014
-            ServerCheckLoop(m_ServerCheckCancel.Token);
-#pragma warning restore 4014
-        }
-
-        public void SetServerName(string name)
-        {
-            m_ServerCheckManager.ServerName = name;
-            m_LocalServerValuesChanged = true;
-        }
-
-        public void SetBuildID(string id)
-        {
-            m_ServerCheckManager.BuildId = id;
-            m_LocalServerValuesChanged = true;
-        }
-
-        public void SetMaxPlayers(ushort players)
-        {
-            m_ServerCheckManager.MaxPlayers = players;
-        }
-
-        public void SetPlayerCount(ushort count)
-        {
-            m_ServerCheckManager.CurrentPlayers = count;
-            m_LocalServerValuesChanged = true;
-        }
-
-        public void AddPlayer()
-        {
-            m_ServerCheckManager.CurrentPlayers += 1;
-            m_LocalServerValuesChanged = true;
-        }
-
-        public void RemovePlayer()
-        {
-            m_ServerCheckManager.CurrentPlayers -= 1;
-            m_LocalServerValuesChanged = true;
-        }
-
-        public void SetMap(string newMap)
-        {
-
-            m_ServerCheckManager.Map = newMap;
-            m_LocalServerValuesChanged = true;
-        }
-
-        public void SetMode(string mode)
-        {
-
-            m_ServerCheckManager.GameType = mode;
-            m_LocalServerValuesChanged = true;
-        }
-
-        public void UpdateServerIfChanged()
-        {
-            if (m_LocalServerValuesChanged)
-            {
-                m_ServerCheckManager.UpdateServerCheck();
-                m_LocalServerValuesChanged = false;
-            }
-        }
-
-        async Task ServerCheckLoop(CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                UpdateServerIfChanged();
-                await Task.Delay(1000);
-            }
         }
 
         async Task<string> AwaitAllocationID()
@@ -199,9 +115,6 @@ namespace Matchplay.Server
                 m_Servercallbacks.Deallocate -= OnMultiplayDeAllocation;
                 m_Servercallbacks.Error -= OnMultiplayError;
             }
-
-            if (m_ServerCheckCancel != null)
-                m_ServerCheckCancel.Cancel();
 
             m_ServerEvents?.UnsubscribeAsync();
         }
