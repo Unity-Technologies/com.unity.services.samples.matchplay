@@ -1,8 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Unity.Services.Matchmaker.Models;
 using Unity.Services.Multiplay;
 using Debug = UnityEngine.Debug;
 
@@ -13,7 +11,6 @@ namespace Matchplay.Server
         IMultiplayService m_MultiplayService;
         IServerQueryHandler m_ServerQueryHandler;
         CancellationTokenSource m_ServerCheckCancel;
-
         public MultiplayServerQueryService()
         {
             try
@@ -29,6 +26,9 @@ namespace Matchplay.Server
 
         public async Task BeginServerQueryHandler()
         {
+            if (m_MultiplayService == null)
+                return;
+
             m_ServerQueryHandler = await m_MultiplayService.StartServerQueryHandlerAsync((ushort)10,
                 "", "", "0", "");
 
@@ -75,21 +75,6 @@ namespace Matchplay.Server
         public void SetMode(string mode)
         {
             m_ServerQueryHandler.GameType = mode;
-        }
-
-        /// <summary>
-        /// Should be wrapped in a timeout function
-        /// </summary>
-        public async Task<MatchmakingResults> SubscribeAndAwaitMatchmakerAllocation()
-        {
-            if (m_MultiplayService == null)
-                return null;
-
-            var payloadAllocation =
-                await m_MultiplayService.GetPayloadAllocationFromJsonAs<MatchmakingResults>();
-            var modelAsJson = JsonConvert.SerializeObject(payloadAllocation, Formatting.Indented);
-            Debug.Log($"Got Matchmaker Payload : {Environment.NewLine}{modelAsJson}");
-            return payloadAllocation;
         }
 
         async Task ServerQueryLoop(CancellationToken cancellationToken)

@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Matchplay.Shared;
 using Matchplay.Shared.Tools;
 using Unity.Netcode;
+using Random = UnityEngine.Random;
 using Unity.Services.Matchmaker.Models;
 
 namespace Matchplay.Server
@@ -20,8 +23,9 @@ namespace Matchplay.Server
         string m_ServerIP = "0.0.0.0";
         int m_ServerPort = 7777;
         int m_QueryPort = 7787;
-        const int k_MultiplayServiceTimeout = 5000;
+        const int k_MultiplayServiceTimeout = 20000;
         bool m_StartedServices;
+        MultiplayAllocationService m_MultiplayAllocationService;
         MultiplayServerQueryService m_MultiplayServerQueryService;
         SynchedServerData m_SynchedServerData;
         string m_ServerName = "Matchplay Server";
@@ -43,12 +47,17 @@ namespace Matchplay.Server
         {
             Debug.Log($"Starting server with:{startingGameInfo}.");
 
+            // The server should respond to query requests irrespective of the server being allocated.
+            // Hence, start the handler as soon as we can.
+            await m_MultiplayServerQueryService.BeginServerQueryHandler();
+
             try
             {
-                var matchmakerPayload = await TryStartMatchplayService(k_MultiplayServiceTimeout);
+                var matchmakerPayload = await GetMatchmakerPayload(k_MultiplayServiceTimeout);
+
                 if (matchmakerPayload != null)
                 {
-                    Debug.Log($"Started payload: {matchmakerPayload}");
+                    Debug.Log($"Got payload: {matchmakerPayload}");
                     startingGameInfo = PickGameInfo(matchmakerPayload);
 
                     MatchStartedServerQuery(startingGameInfo,
@@ -88,23 +97,21 @@ namespace Matchplay.Server
             m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
         }
 
-        async Task<MatchmakingResults> TryStartMatchplayService(int timeout)
+        async Task<MatchmakingResults> GetMatchmakerPayload(int timeout)
         {
-            // The server should respond to query requests irrespective of the server being allocated.
-            // Hence, start the handler as soon as we can.
-            var multiplaySetup = BeginQueryAndAwaitMatchmaker();
+            if (m_MultiplayAllocationService == null)
+                return null;
 
-            //If we don't set up and get the payload by the timeout, we stop trying and move on to running locally
-            return await Task.WhenAny(multiplaySetup, Task.Delay(timeout)) == multiplaySetup
-                ? multiplaySetup.Result
-                : null;
+            //Try to get the matchmaker allocation payload from the multiplay services, and init the services if we do.
+            var matchmakerPayloadTask = m_MultiplayAllocationService.SubscribeAndAwaitMatchmakerAllocation();
 
-            async Task<MatchmakingResults> BeginQueryAndAwaitMatchmaker()
+            //If we don't get the payload by the timeout, we stop trying.
+            if (await Task.WhenAny(matchmakerPayloadTask, Task.Delay(timeout)) == matchmakerPayloadTask)
             {
-                await m_MultiplayServerQueryService.BeginServerQueryHandler();
-
-                return await m_MultiplayServerQueryService.SubscribeAndAwaitMatchmakerAllocation();
+                return matchmakerPayloadTask.Result;
             }
+
+            return null;
         }
 
         private void MatchStartedServerQuery(GameInfo startingGameInfo, ushort playerCount)
@@ -146,7 +153,6 @@ namespace Matchplay.Server
         {
             m_MultiplayServerQueryService.SetMode(newMode.ToString());
         }
-
         void UserJoinedServer(UserData joinedUser)
         {
             Debug.Log($"{joinedUser} joined the game");
@@ -229,6 +235,7 @@ namespace Matchplay.Server
             }
 
             m_Backfiller?.Dispose();
+            m_MultiplayAllocationService?.Dispose();
             NetworkServer?.Dispose();
         }
     }
