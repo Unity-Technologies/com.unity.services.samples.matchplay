@@ -61,8 +61,7 @@ namespace Matchplay.Server
                     Debug.Log($"Got payload: {matchmakerPayload}");
                     startingGameInfo = PickGameInfo(matchmakerPayload);
 
-                    MatchStartedServerQuery(startingGameInfo,
-                        (ushort)matchmakerPayload.MatchProperties.Players.Count);
+                    MatchStartedServerQuery(startingGameInfo);
                     await StartBackfill(matchmakerPayload, startingGameInfo);
                     m_NetworkServer.OnPlayerJoined += UserJoinedServer;
                     m_NetworkServer.OnPlayerLeft += UserLeft;
@@ -115,12 +114,11 @@ namespace Matchplay.Server
             return null;
         }
 
-        private void MatchStartedServerQuery(GameInfo startingGameInfo, ushort playerCount)
+        private void MatchStartedServerQuery(GameInfo startingGameInfo)
         {
             //Create a unique name for the server to show that we are joining the same one
 
             m_MultiplayServerQueryService.SetServerName(m_ServerName);
-            m_MultiplayServerQueryService.SetPlayerCount(playerCount);
             m_MultiplayServerQueryService.SetMaxPlayers(10);
             m_MultiplayServerQueryService.SetBuildID("0");
             m_MultiplayServerQueryService.SetMap(startingGameInfo.map.ToString());
