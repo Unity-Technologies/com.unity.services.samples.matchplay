@@ -50,7 +50,8 @@ namespace Matchplay.Server
 
             // The server should respond to query requests irrespective of the server being allocated.
             // Hence, start the handler as soon as we can.
-            await m_MultiplayServerQueryService.BeginServerQueryHandler();
+            await m_MultiplayServerQueryService.BeginServerQueryHandler(startingGameInfo.MaxUsers,
+                m_ServerName, startingGameInfo.gameMode.ToString(), startingGameInfo.map.ToString());
 
             try
             {

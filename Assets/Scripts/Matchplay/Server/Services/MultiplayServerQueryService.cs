@@ -24,13 +24,13 @@ namespace Matchplay.Server
             }
         }
 
-        public async Task BeginServerQueryHandler()
+        public async Task BeginServerQueryHandler(int maxPlayers, string serverName, string gameType, string map)
         {
             if (m_MultiplayService == null)
                 return;
 
-            m_ServerQueryHandler = await m_MultiplayService.StartServerQueryHandlerAsync((ushort)10,
-                "", "", "0", "");
+            m_ServerQueryHandler = await m_MultiplayService.StartServerQueryHandlerAsync((ushort)maxPlayers,
+                serverName, gameType, "0", map);
 
 #pragma warning disable 4014
             ServerQueryLoop(m_ServerCheckCancel.Token);
