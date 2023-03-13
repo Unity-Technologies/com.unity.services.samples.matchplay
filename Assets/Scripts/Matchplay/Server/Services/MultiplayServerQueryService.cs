@@ -30,7 +30,7 @@ namespace Matchplay.Server
                 return;
 
             m_ServerQueryHandler = await m_MultiplayService.StartServerQueryHandlerAsync((ushort)10,
-                "", "", "0", "");
+                "ServerName", "GameType", "0", "MapName");
 
 #pragma warning disable 4014
             ServerQueryLoop(m_ServerCheckCancel.Token);
