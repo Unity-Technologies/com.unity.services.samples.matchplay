@@ -113,7 +113,7 @@ The Matchmaker service can be managed in the [Unity Dashboard](https://dashboard
 
 #### Multiplay
 
-The [Multiplay service](http://documentation.cloud.unity3d.com/en/collections/3254305-multiplay-self-serve) hosts game servers in the cloud to allow for easy connection between players from around the world with the best ping performance possible.
+The [Multiplay service](https://docs.unity.com/game-server-hosting/en/manual/welcome) hosts game servers in the cloud to allow for easy connection between players from around the world with the best ping performance possible.
 
 The Multiplay documentation contains code samples and additional information about the service. It includes comprehensive details for using Multiplay along with additional code samples to help you better understand the Matchplay sample.
 
