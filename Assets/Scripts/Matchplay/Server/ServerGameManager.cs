@@ -95,6 +95,9 @@ namespace Matchplay.Server
 
             m_SynchedServerData.map.OnValueChanged += OnServerChangedMap;
             m_SynchedServerData.gameMode.OnValueChanged += OnServerChangedMode;
+            //Set the count to connected players
+            m_MultiplayServerQueryService.SetPlayerCount((ushort)NetworkServer.PlayerCount);
+
         }
 
         async Task<MatchmakingResults> GetMatchmakerPayload(int timeout)
