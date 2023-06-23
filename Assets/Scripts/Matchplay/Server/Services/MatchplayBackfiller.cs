@@ -129,19 +129,27 @@ namespace Matchplay.Server
         {
             while (Backfilling)
             {
-                if (m_LocalDataDirty)
+                do
                 {
-                    await MatchmakerService.Instance.UpdateBackfillTicketAsync(m_LocalBackfillTicket.Id, m_LocalBackfillTicket);
-                    m_LocalDataDirty = false;
-                }
-                else
-                {
-                    var remoteBackfillTicket = await MatchmakerService.Instance.ApproveBackfillTicketAsync(m_LocalBackfillTicket.Id);
-                    if (!m_LocalDataDirty)
+                    if (m_LocalDataDirty)
                     {
-                        m_LocalBackfillTicket = remoteBackfillTicket;
+                        await MatchmakerService.Instance.UpdateBackfillTicketAsync(m_LocalBackfillTicket.Id, m_LocalBackfillTicket);
+                        m_LocalDataDirty = false;
                     }
-                }
+                    else
+                    {
+                        var newBackfill = await MatchmakerService.Instance.ApproveBackfillTicketAsync(m_LocalBackfillTicket.Id);
+                        if (!m_LocalDataDirty)
+                        {
+                            m_LocalBackfillTicket = newBackfill;
+                        }
+                        else
+                        {
+                            Debug.Log("Local data became dirty during backfill ticket approval!");
+                            await Task.Delay(k_TicketCheckMs);
+                        }
+                    }
+                } while (m_LocalDataDirty);
 
                 if (!NeedsPlayers())
                 {
