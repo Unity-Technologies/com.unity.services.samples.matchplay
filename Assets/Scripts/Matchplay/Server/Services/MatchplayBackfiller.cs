@@ -136,7 +136,11 @@ namespace Matchplay.Server
                 }
                 else
                 {
-                    m_LocalBackfillTicket = await MatchmakerService.Instance.ApproveBackfillTicketAsync(m_LocalBackfillTicket.Id);
+                    var remoteBackfillTicket = await MatchmakerService.Instance.ApproveBackfillTicketAsync(m_LocalBackfillTicket.Id);
+                    if (!m_LocalDataDirty)
+                    {
+                        m_LocalBackfillTicket = remoteBackfillTicket;
+                    }
                 }
 
                 if (!NeedsPlayers())
