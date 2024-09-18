@@ -2,7 +2,7 @@
 # [DEPRECATED] Matchplay: A Matchmaker and Multiplay sample
 
 >[!WARNING] 
->For most users, the [Dedicated Game Sever sample](https://github.com/Unity-Technologies/com.unity.multiplayer.samples.bitesize/tree/main/Experimental/DedicatedGameServer) replaces this Matchplay sample. Starting with Unity 6, the [The Multiplayer Services package](https://docs.unity.com/ugs/en-us/manual/mps-sdk/manual) is the one-stop solution for adding multiplayer elements to your game.
+>For most users, the [Dedicated Game Sever sample](https://docs-multiplayer.unity3d.com/netcode/current/learn/sample-dedicated-server/) replaces this Matchplay sample. Starting with Unity 6, the [The Multiplayer Services package](https://docs.unity.com/ugs/en-us/manual/mps-sdk/manual) is the one-stop solution for adding multiplayer elements to your game.
 
 **Note**: This sample was tested with Unity 2021.3 for PC clients, and Linux Headless servers.
 
