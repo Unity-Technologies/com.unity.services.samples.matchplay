@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "Matchplay",
+        "CombatSystems",
         "UnityEditor.TestRunner",
         "Unity.Services.Matchmaker",
         "Unity.Services.Core",
