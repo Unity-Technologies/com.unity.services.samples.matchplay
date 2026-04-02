@@ -1,0 +1,14 @@
+{
+    "name": "CombatSystems",
+    "rootNamespace": "MilehighWorld.CombatSystems",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
