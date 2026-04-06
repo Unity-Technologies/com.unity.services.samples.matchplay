@@ -48,43 +48,16 @@ namespace Matchplay.Server
             ClientSingleton.Instance.Manager.RemoveMatchPlayer(this);
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        public void RequestDesyncStateServerRpc(ulong clientId, ServerRpcParams rpcParams = default)
+        [ServerRpc]
+        public void ValidateClientStatusServerRpc(ulong clientId)
         {
-            if (!IsServer) return;
-
-            var senderId = rpcParams.Receive.SenderClientId;
-            if (senderId != clientId)
+            if (OwnerClientId != OwnerClientId || OwnerClientId != clientId)
             {
-                Debug.LogWarning($"DoS attempt detected! Client {senderId} tried to desync client {clientId}. Severing attacker's tether.");
-                SeverTetherCommand(senderId);
+                Debug.LogWarning($"Client {OwnerClientId} attempted to spoof status for Client {clientId}.");
                 return;
             }
 
-            if (SynchedServerData.Instance != null && SynchedServerData.Instance.IsClientEchoed(clientId))
-            {
-                Debug.LogWarning($"Client {clientId} is already echoed. Severing tether.");
-                SeverTetherCommand(clientId);
-                return;
-            }
-
-            ExecuteVoidShear(clientId);
-        }
-
-        void SeverTetherCommand(ulong clientId)
-        {
-            Debug.Log($"Severing tether for client {clientId} due to suspected exploit.");
-            NetworkManager.DisconnectClient(clientId);
-        }
-
-        void ExecuteVoidShear(ulong clientId)
-        {
-            Debug.Log($"Executing Void Shear for client {clientId}.");
-            if (SynchedServerData.Instance != null)
-            {
-                SynchedServerData.Instance.MarkClientEchoed(clientId);
-            }
-            // Additional state transition logic would go here
+            // Implementation would proceed if validation passed
         }
     }
 }

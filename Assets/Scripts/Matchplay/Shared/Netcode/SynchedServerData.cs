@@ -1,3 +1,9 @@
+using System;
+using System.Collections.Generic;
+using Matchplay.Networking;
+using Unity.Netcode;
+using UnityEngine;
+
 namespace Matchplay.Shared
 {
     /// <summary>
@@ -13,17 +19,7 @@ namespace Matchplay.Shared
         public NetworkVariable<GameMode> gameMode = new NetworkVariable<GameMode>();
         public NetworkVariable<GameQueue> gameQueue = new NetworkVariable<GameQueue>();
 
-        private HashSet<ulong> m_EchoedClients = new HashSet<ulong>();
-
-        public bool IsClientEchoed(ulong clientId)
-        {
-            return m_EchoedClients.Contains(clientId);
-        }
-
-        public void MarkClientEchoed(ulong clientId)
-        {
-            m_EchoedClients.Add(clientId);
-        }
+        private HashSet<ulong> _validatedClients = new HashSet<ulong>();
 
         /// <summary>
         /// NetworkedVariables have no built-in callback for the initial client-server synch.
@@ -31,26 +27,33 @@ namespace Matchplay.Shared
         /// </summary>
         public Action OnNetworkSpawned;
 
-        public override void OnNetworkSpawn()
+        private void Awake()
         {
             if (Instance != null && Instance != this)
             {
                 Destroy(gameObject);
-                return;
             }
             else
             {
                 Instance = this;
             }
+        }
 
+        public override void OnNetworkSpawn()
+        {
             OnNetworkSpawned?.Invoke();
         }
 
-        public override void OnNetworkDespawn()
+        public bool IsClientValidated(ulong clientId)
         {
-            if (Instance == this)
+            return _validatedClients.Contains(clientId);
+        }
+
+        public void ValidateClient(ulong clientId)
+        {
+            if (IsServer)
             {
-                Instance = null;
+                _validatedClients.Add(clientId);
             }
         }
     }

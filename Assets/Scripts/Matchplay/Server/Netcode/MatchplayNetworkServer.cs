@@ -162,8 +162,8 @@ namespace Matchplay.Server
             //Run an async 'fire and forget' task to setup the player network object data when it is intiialized, uses main thread context.
             var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
             Task.Factory.StartNew(
-                async () => await SetupPlayerPrefab(request.ClientNetworkId, userData.userName),
-                System.Threading.CancellationToken.None,
+                async () => await SetupPlayerPrefab(request.ClientNetworkId, userData.userName), 
+                System.Threading.CancellationToken.None, 
                 TaskCreationOptions.None, scheduler
             );
         }
@@ -247,7 +247,6 @@ namespace Matchplay.Server
             Debug.Log($"Send networkClient Disconnected to : {networkId}");
             MatchplayNetworkMessenger.SendMessageTo(NetworkMessage.LocalClientDisconnected, networkId, writer);
         }
-
 
         public void Dispose()
         {
