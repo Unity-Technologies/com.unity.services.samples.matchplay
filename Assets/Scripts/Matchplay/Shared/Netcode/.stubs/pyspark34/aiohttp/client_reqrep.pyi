@@ -1,0 +1,173 @@
+import asyncio
+from ssl import SSLContext
+from types import MappingProxyType, TracebackType
+from typing import Any, Iterable, List, Mapping, Tuple, Type
+
+from _typeshed import Incomplete
+from multidict import CIMultiDictProxy, MultiDictProxy # pyright: ignore[reportMissingImports]
+from yarl import URL # pyright: ignore[reportMissingImports]
+
+from . import http
+from .abc import AbstractStreamWriter
+from .client import ClientSession
+from .connector import Connection
+from .helpers import BaseTimerContext, BasicAuth, HeadersMixin
+from .streams import StreamReader
+from .tracing import Trace
+from .typedefs import JSONDecoder, LooseCookies, LooseHeaders, RawHeaders
+
+__all__ = ['ClientRequest', 'ClientResponse', 'RequestInfo', 'Fingerprint']
+
+SSLContext = object
+
+class ContentDisposition:
+    type: str | None
+    parameters: MappingProxyType[str, str]
+    filename: str | None
+    def __init__(self) -> None: ...
+    def __lt__(self, other): ...
+    def __le__(self, other): ...
+    def __gt__(self, other): ...
+    def __ge__(self, other): ...
+
+class RequestInfo:
+    url: URL
+    method: str
+    headers: CIMultiDictProxy[str]
+    real_url: URL
+    def real_url_default(self) -> URL: ...
+    def __init__(self, real_url) -> None: ...
+    def __lt__(self, other): ...
+    def __le__(self, other): ...
+    def __gt__(self, other): ...
+    def __ge__(self, other): ...
+
+class Fingerprint:
+    HASHFUNC_BY_DIGESTLEN: Incomplete
+    def __init__(self, fingerprint: bytes) -> None: ...
+    @property
+    def fingerprint(self) -> bytes: ...
+    def check(self, transport: asyncio.Transport) -> None: ...
+
+class ConnectionKey:
+    host: str
+    port: int | None
+    is_ssl: bool
+    ssl: SSLContext | None | bool | Fingerprint # pyright: ignore[reportInvalidTypeForm]
+    proxy: URL | None
+    proxy_auth: BasicAuth | None
+    proxy_headers_hash: int | None
+    def __init__(self) -> None: ...
+    def __lt__(self, other): ...
+    def __le__(self, other): ...
+    def __gt__(self, other): ...
+    def __ge__(self, other): ...
+
+class ClientRequest:
+    GET_METHODS: Incomplete
+    POST_METHODS: Incomplete
+    ALL_METHODS: Incomplete
+    DEFAULT_HEADERS: Incomplete
+    body: bytes
+    auth: Incomplete
+    response: Incomplete
+    original_url: Incomplete
+    url: Incomplete
+    method: Incomplete
+    chunked: Incomplete
+    compress: Incomplete
+    loop: Incomplete
+    length: Incomplete
+    response_class: Incomplete
+    def __init__(self, method: str, url: URL, *, params: Mapping[str, str] | None = None, headers: LooseHeaders | None = None, skip_auto_headers: Iterable[str] = ..., data: Any = None, cookies: LooseCookies | None = None, auth: BasicAuth | None = None, version: http.HttpVersion = ..., compress: str | None = None, chunked: bool | None = None, expect100: bool = False, loop: asyncio.AbstractEventLoop | None = None, response_class: Type['ClientResponse'] | None = None, proxy: URL | None = None, proxy_auth: BasicAuth | None = None, timer: BaseTimerContext | None = None, session: ClientSession | None = None, ssl: SSLContext | bool | Fingerprint | None = None, proxy_headers: LooseHeaders | None = None, traces: List['Trace'] | None = None) -> None: ... # pyright: ignore[reportInvalidTypeForm]
+    def is_ssl(self) -> bool: ...
+    @property
+    def ssl(self) -> SSLContext | None | bool | Fingerprint: ... # pyright: ignore[reportInvalidTypeForm]
+    @property
+    def connection_key(self) -> ConnectionKey: ...
+    @property
+    def host(self) -> str: ...
+    @property
+    def port(self) -> int | None: ...
+    @property
+    def request_info(self) -> RequestInfo: ...
+    def update_host(self, url: URL) -> None:
+        """Update destination host, port and connection type (ssl)."""
+    version: Incomplete
+    def update_version(self, version: http.HttpVersion | str) -> None:
+        """Convert request version to two elements tuple.
+
+        parser HTTP version '1.1' => (1, 1)
+        """
+    headers: Incomplete
+    def update_headers(self, headers: LooseHeaders | None) -> None:
+        """Update request headers."""
+    skip_auto_headers: Incomplete
+    def update_auto_headers(self, skip_auto_headers: Iterable[str]) -> None: ...
+    def update_cookies(self, cookies: LooseCookies | None) -> None:
+        """Update request cookies header."""
+    def update_content_encoding(self, data: Any) -> None:
+        """Set request content encoding."""
+    def update_transfer_encoding(self) -> None:
+        """Analyze transfer-encoding header."""
+    def update_auth(self, auth: BasicAuth | None) -> None:
+        """Set basic auth."""
+    def update_body_from_data(self, body: Any) -> None: ...
+    def update_expect_continue(self, expect: bool = False) -> None: ...
+    proxy: Incomplete
+    proxy_auth: Incomplete
+    proxy_headers: Incomplete
+    def update_proxy(self, proxy: URL | None, proxy_auth: BasicAuth | None, proxy_headers: LooseHeaders | None) -> None: ...
+    def keep_alive(self) -> bool: ...
+    async def write_bytes(self, writer: AbstractStreamWriter, conn: Connection) -> None:
+        """Support coroutines that yields bytes objects."""
+    async def send(self, conn: Connection) -> ClientResponse: ...
+    async def close(self) -> None: ...
+    def terminate(self) -> None: ...
+
+class ClientResponse(HeadersMixin):
+    version: Incomplete
+    status: int
+    reason: Incomplete
+    content: StreamReader
+    method: Incomplete
+    cookies: Incomplete
+    def __init__(self, method: str, url: URL, *, writer: asyncio.Task[None], continue100: asyncio.Future[bool] | None, timer: BaseTimerContext, request_info: RequestInfo, traces: List['Trace'], loop: asyncio.AbstractEventLoop, session: ClientSession) -> None: ...
+    def url(self) -> URL: ...
+    def url_obj(self) -> URL: ...
+    def real_url(self) -> URL: ...
+    def host(self) -> str: ...
+    def headers(self) -> CIMultiDictProxy[str]: ...
+    def raw_headers(self) -> RawHeaders: ...
+    def request_info(self) -> RequestInfo: ...
+    def content_disposition(self) -> ContentDisposition | None: ...
+    def __del__(self, _warnings: Any = ...) -> None: ...
+    @property
+    def connection(self) -> Connection | None: ...
+    def history(self) -> Tuple['ClientResponse', ...]:
+        """A sequence of of responses, if redirects occurred."""
+    def links(self) -> MultiDictProxy[MultiDictProxy[str | URL]]: ...
+    async def start(self, connection: Connection) -> ClientResponse:
+        """Start response processing."""
+    @property
+    def closed(self) -> bool: ...
+    def close(self) -> None: ...
+    def release(self) -> Any: ...
+    @property
+    def ok(self) -> bool:
+        """Returns ``True`` if ``status`` is less than ``400``, ``False`` if not.
+
+        This is **not** a check for ``200 OK`` but a check that the response
+        status is under 400.
+        """
+    def raise_for_status(self) -> None: ...
+    async def wait_for_close(self) -> None: ...
+    async def read(self) -> bytes:
+        """Read response payload."""
+    def get_encoding(self) -> str: ...
+    async def text(self, encoding: str | None = None, errors: str = 'strict') -> str:
+        """Read response payload and decode."""
+    async def json(self, *, encoding: str | None = None, loads: JSONDecoder = ..., content_type: str | None = 'application/json') -> Any:
+        """Read and decodes JSON response."""
+    async def __aenter__(self) -> ClientResponse: ...
+    async def __aexit__(self, exc_type: Type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None: ...
