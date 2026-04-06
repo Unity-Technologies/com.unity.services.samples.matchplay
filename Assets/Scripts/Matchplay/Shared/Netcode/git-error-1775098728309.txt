@@ -1,0 +1,9 @@
+> git push -u origin PHNXENT
+remote: warning: File code_1.86.2-1707854558_amd64 3.deb is 95.15 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB        
+remote: error: Trace: 5ff7976a4dcb10c1f18d8e28989c3c012e74c0ea5f9a6afce9d138300a26c1aa        
+remote: error: See https://gh.io/lfs for more information.        
+remote: error: File VSCode-darwin-universal (1).zip is 209.26 MB; this exceeds GitHub's file size limit of 100.00 MB        
+remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.        
+To https://github.com/evanwilson-arch/Milehigh.guardians.git
+ ! [remote rejected] PHNXENT -> PHNXENT (pre-receive hook declined)
+error: failed to push some refs to 'https://github.com/evanwilson-arch/Milehigh.guardians.git'
