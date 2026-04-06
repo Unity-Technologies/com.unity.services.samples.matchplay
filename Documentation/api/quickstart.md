@@ -14,6 +14,9 @@ To get started with the Jules REST API, you'll need an API key.
 
 In the Jules web app, go to the **[Settings](https://jules.google.com/settings#api)** page to create a new API key. You can have at most 3 API keys at a time.
 
+<ApiNote>
+The API key creation interface in the Settings page allows you to generate, name, and manage your keys. For security, the full key is only displayed once upon creation.
+</ApiNote>
 ![Jules REST API Key creation interface](../../public/jules-api-key-settings.png)
 
 ### Use Your API Key

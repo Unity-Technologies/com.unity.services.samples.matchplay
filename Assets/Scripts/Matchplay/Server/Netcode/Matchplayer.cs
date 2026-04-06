@@ -47,5 +47,17 @@ namespace Matchplay.Server
 
             ClientSingleton.Instance.Manager.RemoveMatchPlayer(this);
         }
+
+        [ServerRpc]
+        public void ValidateClientStatusServerRpc(ulong clientId)
+        {
+            if (OwnerClientId != OwnerClientId || OwnerClientId != clientId)
+            {
+                Debug.LogWarning($"Client {OwnerClientId} attempted to spoof status for Client {clientId}.");
+                return;
+            }
+
+            // Implementation would proceed if validation passed
+        }
     }
 }

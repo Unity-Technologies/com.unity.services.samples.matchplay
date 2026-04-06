@@ -4,6 +4,7 @@
     "references": [
         "Matchplay",
         "CombatSystems",
+        "AI",
         "UnityEditor.TestRunner",
         "Unity.Services.Matchmaker",
         "Unity.Services.Core",
