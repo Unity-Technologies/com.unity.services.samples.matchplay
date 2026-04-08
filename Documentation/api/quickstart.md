@@ -14,11 +14,6 @@ To get started with the Jules REST API, you'll need an API key.
 
 In the Jules web app, go to the **[Settings](https://jules.google.com/settings#api)** page to create a new API key. You can have at most 3 API keys at a time.
 
-<ApiNote>
-The API key creation interface in the Settings page allows you to generate, name, and manage your keys. For security, the full key is only displayed once upon creation.
-</ApiNote>
-![Jules REST API Key creation interface](../../public/jules-api-key-settings.png)
-
 ### Use Your API Key
 
 To authenticate your requests, pass the API key in the `X-Goog-Api-Key` header of your API calls.
@@ -182,13 +177,3 @@ curl 'https://jules.googleapis.com/v1alpha/sessions/SESSION_ID:sendMessage' \
 The response will be empty because the agent will send its response in the next activity. To see the agent's response, list the activities again.
 
 ## Next steps
-
-Now that you've made your first API call, you can explore more advanced workflows:
-
-- **[Install the Jules GitHub app](/docs/)** to connect your own repositories.
-- **[Learn more about Session Activities](#interact-with-the-agent)** to track the agent's progress and communicate with it.
-Now that you've created your first session, you can:
-
--   **Explore the API Reference**: Once the API reaches a stable release, you'll be able to find a comprehensive list of all available endpoints and their parameters.
--   **Automate Your Workflows**: Use the API to integrate Jules into your existing CI/CD pipelines, issue trackers, and communication tools.
--   **Stay Informed**: As the Jules REST API is in alpha, keep an eye on the Jules web app for updates to specifications, API keys, and definitions.
